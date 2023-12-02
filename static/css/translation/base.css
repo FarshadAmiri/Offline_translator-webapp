@@ -1,0 +1,33 @@
+body {
+    background-image: url("..\\..\\bcg\\earth1.jpg");
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    background-size: cover;
+    background-position: center;
+    /* Add other CSS properties as needed */
+  }
+
+  nav {
+    background-color: rgb(0, 0, 0);
+}
+
+  #nav_item,
+  #navbarScrollingDropdown{
+    color: rgb(255, 255, 255);
+    /* font-weight: bold; */
+    font-size: 17px;
+  }
+
+  .navbar-light .navbar-nav .nav-link:hover {
+    background-color: rgb(99, 99, 99);
+    color:rgb(27, 27, 27);
+    border-radius: 15px
+}
+
+
+#logo {
+  content: url("..\\..\\bcg\\logo2.png");
+  /* width: 54px;
+  height: 30px; */
+}

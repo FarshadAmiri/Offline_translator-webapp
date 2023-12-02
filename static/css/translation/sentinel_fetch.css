@@ -1,0 +1,60 @@
+#box_title {
+  font-size: 36px;
+  font-weight: bolder;
+  color: #030F7F;
+}
+
+input[type=checkbox]
+{
+  /* Double-sized Checkboxes */
+  -ms-transform: scale(1.35); /* IE */
+  -moz-transform: scale(1.35); /* FF */
+  -webkit-transform: scale(1.35); /* Safari and Chrome */
+  -o-transform: scale(1.35); /* Opera */
+  transform: scale(1.35);
+  padding: 10px;
+}
+
+/* Might want to wrap a span around your checkbox text */
+.checkboxtext
+{
+  /* Checkbox text */
+  font-size: 110%;
+  display: inline;
+}
+
+
+#clear_coords, #clear_dates {
+  background-image: linear-gradient(to bottom, rgb(255, 255, 255), rgb(212, 212, 212));
+  background-size: 100%;
+  color: rgb(0, 0, 0);
+  border-color: rgb(0, 0, 0);
+  font-weight: bolder;
+  font-size: 16px;
+}
+
+#fill_coords {
+  /* background-image: linear-gradient(to bottom, rgb(255, 255, 255), rgb(170, 170, 170)); */
+  background-image: linear-gradient(to bottom, rgb(0, 0, 0), rgb(0, 46, 114));
+  background-size: 100%;
+  background-position: up;
+  color: rgb(255, 255, 255);
+  border-color: rgb(0, 0, 0);
+  /* font-weight: bold; */
+  font-size: 17px;
+  }
+
+
+  #last_10_days{
+    background-image: linear-gradient(to bottom, rgb(255, 255, 255), rgb(212, 212, 212));
+    background-size: 100%;
+    color: rgb(0, 0, 0);
+    border-color: rgb(0, 0, 0);
+    font-weight: bolder;
+    font-size: 16px;
+  }
+
+  .message_args {
+    font-weight: bold;
+    font-size: 17px;
+  }

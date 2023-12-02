@@ -1,0 +1,176 @@
+.details-row {
+    display: none;
+  }
+  
+.details-row.show {
+display: table-row;
+}
+
+.lonlat {
+color: rgb(182, 71, 43);
+}
+
+.bold_number {
+  color: rgb(182, 71, 43);
+  font-weight: bold;
+  }
+
+.indent-10 {
+    margin-left: 120px;
+}
+
+.date {
+    color: rgb(24, 38, 161);
+    }
+
+.info {
+color: rgb(182, 71, 43);
+font-size: 17px;
+font-weight: normal;
+}
+
+.username {
+  color: rgb(58, 60, 219);
+  font-size: 17px;
+  font-weight: bold;
+  }
+
+table .collapse.in {
+  display:table-row;
+}
+
+#chevron-down {
+  content: url("..\\..\\icons\\chevron-down.svg")
+}
+
+.child-task{
+  background-color: rgb(222, 243, 243);
+}
+
+.parent-task {
+  background-color: rgb(255, 255, 255);
+}
+
+.result-meta {
+  color: rgb(182, 71, 43);
+  font-weight: bolder; 
+  font-size: 26px
+}
+
+.result-meta-green {
+    color: rgb(21, 114, 3);
+    font-weight: bolder; 
+    font-size: 26px
+  }
+
+
+.title {
+  font-size: 26px;
+  font-weight: bold;
+  color: black;
+  padding: 0px;
+}
+
+table.dataTable thead .sorting:after,
+table.dataTable thead .sorting:before,
+table.dataTable thead .sorting_asc:after,
+table.dataTable thead .sorting_asc:before,
+table.dataTable thead .sorting_asc_disabled:after,
+table.dataTable thead .sorting_asc_disabled:before,
+table.dataTable thead .sorting_desc:after,
+table.dataTable thead .sorting_desc:before,
+table.dataTable thead .sorting_desc_disabled:after,
+table.dataTable thead .sorting_desc_disabled:before {
+  bottom: .5em;
+}
+
+
+.wrapper {
+  margin-top: 5vh;
+}
+
+.dataTables_filter {
+  float: right;
+}
+
+.table-hover > tbody > tr:hover {
+  background-color: #ccffff;
+}
+
+@media only screen and (min-width: 768px) {
+  .table {
+    table-layout: fixed;
+    max-width: 100% !important;
+  }
+}
+
+thead {
+  background: #ddd;
+}
+
+.table td:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.highlight {
+  background: #ffff99;
+}
+
+@media only screen and (max-width: 767px) {
+  /* Force table to not be like tables anymore */
+  table,
+thead,
+tbody,
+th,
+td,
+tr {
+    display: block;
+  }
+
+  /* Hide table headers (but not display: none;, for accessibility) */
+  thead tr,
+tfoot tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+
+  td {
+    /* Behave  like a "row" */
+    border: none;
+    border-bottom: 1px solid #eee;
+    position: relative;
+    padding-left: 50% !important;
+  }
+
+  td:before {
+    /* Now like a table header */
+    position: absolute;
+    /* Top/left values mimic padding */
+    top: 6px;
+    left: 6px;
+    width: 45%;
+    padding-right: 10px;
+    white-space: nowrap;
+  }
+
+  .table td:nth-child(1) {
+    background: #ccc;
+    height: 100%;
+    top: 0;
+    left: 0;
+    font-weight: bold;
+  }
+
+  /*
+  Label the data
+  */
+  td:nth-of-type(3):before {
+    content: "Length";
+  }
+
+  td:nth-of-type(4):before {
+    content: "Awake";
+  }
+}

@@ -1,0 +1,65 @@
+.details-row {
+    display: none;
+  }
+  
+.details-row.show {
+display: table-row;
+}
+
+.lonlat {
+color: rgb(182, 71, 43);
+}
+
+.bold_number {
+  color: rgb(182, 71, 43);
+  font-weight: bold;
+  }
+
+.indent-10 {
+    margin-left: 120px;
+}
+
+.date {
+    color: rgb(24, 38, 161);
+    }
+
+.info {
+color: rgb(182, 71, 43);
+font-size: 17px;
+font-weight: normal;
+}
+
+.username {
+  color: rgb(58, 60, 219);
+  font-size: 17px;
+  font-weight: bold;
+  }
+
+table .collapse.in {
+  display:table-row;
+}
+
+#chevron-down {
+  content: url("..\\..\\icons\\chevron-down.svg")
+}
+
+.child-task{
+  background-color: rgb(222, 243, 243);
+}
+
+.parent-task {
+  background-color: rgb(255, 255, 255);
+}
+
+.result-meta {
+  color: rgb(182, 71, 43);
+  font-weight: bolder; 
+  font-size: 26px
+}
+
+.title {
+  font-size: 26px;
+  font-weight: bold;
+  color: black;
+  padding: 0px;
+}
