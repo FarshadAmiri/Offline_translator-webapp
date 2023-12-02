@@ -1,5 +1,5 @@
 body {
-    background-image: url("..\\..\\bcg\\earth1.jpg");
+    background-image: url("..\\..\\bcg\\bcg1.jpg");
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-position: center;
@@ -27,7 +27,7 @@ body {
 
 
 #logo {
-  content: url("..\\..\\bcg\\logo2.png");
-  /* width: 54px;
-  height: 30px; */
+  content: url("..\\..\\bcg\\logo3.png");
+  width: 32px;
+  height: 32px;
 }

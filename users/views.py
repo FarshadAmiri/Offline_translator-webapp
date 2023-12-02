@@ -23,7 +23,7 @@ def login_view(request, *kwargs):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect(reverse('fetch_data:SentinelFetch'))
+            return redirect(reverse('main:translation'))
         message = 'Invalid Credentials!'
         return render(request, 'Login_page.html', {'message':message})
 

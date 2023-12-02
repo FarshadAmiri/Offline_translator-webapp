@@ -1,0 +1,45 @@
+{% extends "main\base.html" %}
+{% load static %}
+
+{% block head-static %}
+<script type="text/javascript" src="{% static 'js/main/translation.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/main/translation.css' %}">
+{% endblock %}
+
+{% block body %}
+<script type="text/javascript" src="{% static 'jquery-3.7.1.min.js' %}"></script>
+
+<div class="container-fluid">
+    {{ form.media }}
+    <form action="{% url 'main:translation' %}" method="post">
+        {% csrf_token %}
+        <div class="row" id="main-container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="box-title">English text</p>
+                    <textarea id="EnglishTextbox" class="form-control" name="eng_text" rows="20" placeholder="Enter text">{{eng_text}}</textarea>
+                    <div class="text-center mt-2">
+                        <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('EnglishTextbox')">Clear</button>
+                        <button type="button" class="btn btn-success copy-btn" onclick="copyText2('EnglishTextbox')">Copy</button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <p class="box-title-persian">ترجمه فارسی</p>
+                    <textarea id="persianTextbox" class="form-control" rows="20" readonly dir="rtl">{{translated_text}}</textarea>
+                    <div class="text-center mt-2">
+                        <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('persianTextbox')">Clear</button>
+                        <button type="button" class="btn btn-success copy-btn" onclick="copyText2('persianTextbox')">Copy to clipboard</button>
+                    </div>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-12 text-center">
+                    <button type="submit" id="translate-btn" class="btn btn-primary">ترجـمـه</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script type="text/javascript" src="{% static 'js/main/translation.js' %}"></script>
+{% endblock %}

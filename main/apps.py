@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class TranslationConfig(AppConfig):
+class MainConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "translation"
+    name = "main"

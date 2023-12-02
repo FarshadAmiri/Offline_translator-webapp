@@ -1,7 +1,75 @@
-#box_title {
-  font-size: 36px;
+@font-face {
+  font-family: B_Nazanin_Bold;
+  src: url("..\\..\\fonts\\B_Nazanin_Bold.ttf");
+}
+
+@font-face {
+  font-family: B_Titr_Bold;
+  src: url("..\\..\\fonts\\B_Titr_Bold.ttf");
+}
+
+@font-face {
+  font-family: B_Nazanin;
+  src: url("..\\..\\fonts\\B_Nazanin.ttf");
+}
+
+#main-container {
+  background-color: #cecece ;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 15px;
+  padding-bottom: 10px;
+  border-radius: 25px;
+  margin-top: 10px;
+  margin-left: 60px;
+  margin-right: 60px;
+}
+
+
+.box-title {
+  font-size: 32px;
   font-weight: bolder;
   color: #030F7F;
+}
+
+.box-title-persian {
+  font-family: B_Titr_Bold ;
+  font-size: 34px;
+  font-weight: bolder;
+  color: #030F7F;
+  text-align: right;
+}
+
+
+#persianTextbox {
+  font-family: B_Nazanin ;
+  font-size: 20px;
+  font-weight: bolder;
+  color: #000000;
+  text-align: right;
+}
+
+
+#EnglishTextbox{
+  font-family: sans-serif ;
+  font-size: 20px;
+  font-weight: normal;
+  color: #000000;
+  text-align: left;
+}
+
+
+#translate-btn{
+  font-family: B_Titr_Bold ;
+  font-size: 24px;
+  font-weight: bold;
+  padding: 8px;
+  margin: 15px;
+}
+
+
+.clear-btn {
+  margin-right: 20px;
 }
 
 input[type=checkbox]
