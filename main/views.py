@@ -21,7 +21,7 @@ import logging
 @login_required(login_url='users:login')
 def Translation(request):
     if request.method == 'GET':
-        return render(request, 'main/translation.html')
+        return render(request, 'main/translation.html', {"eng_source": True,})
     
     elif request.method == 'POST':
         source_lang = request.POST.get('btnradio')
@@ -40,9 +40,9 @@ def Translation(request):
         # user_tasks = TranslationTask.objects.filter(user=request.user).order_by('-queried_at')[:50]
         # print("\n\n\nuser_tasks.first(): ", user_tasks.first() "\n\n\n")
         # TranslationTask.objects.filter(user=request.user, queried_at__lt=user_tasks.first().queried_at).delete()
-        
+        eng_source = True if source_lang == "English" else False
         return render(request, 'main/translation.html', {'translated_text': translated_text, "source_text": source_text,
-                                                         "source_lang": source_lang})
+                                                         "eng_source": eng_source,})
     
 
 @login_required(login_url='users:login')

@@ -37,7 +37,7 @@
 }
 
 #Textbox-1 {
-  font-family: sans-serif ;
+  font-family: RobotoSlab ;
   font-size: 20px;
   font-weight: normal;
   color: #000000;
@@ -46,8 +46,8 @@
 
 #Textbox-2 {
   font-family: IranSans ;
-  font-size: 20px;
-  font-weight: bolder;
+  font-size: 16px;
+  font-weight: bold;
   color: #000000;
   text-align: right;
 }
