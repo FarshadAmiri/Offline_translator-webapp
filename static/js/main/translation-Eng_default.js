@@ -45,6 +45,7 @@ radioButtons.forEach(function(radioButton) {
       textArea1.style.fontSize = '20px';
       textArea1.style.fontWeight = 'normal';
       textArea1.style.textAlign = 'left';
+      textArea1.dir = 'ltr';
       textArea1.rows = 20 ;
 
       textArea2.style.fontFamily = "IranSans";
@@ -52,16 +53,17 @@ radioButtons.forEach(function(radioButton) {
       textArea2.style.fontWeight = 'bold';
       textArea2.style.textAlign = 'right';
       textArea2.rows = 25 ;
+      textArea2.dir = 'rtl';
     } else if (this.id === 'btnradio2') {
       // If the second radio button is selected, set the placeholder to "Enter text2"
       textArea2.style.fontFamily = "RobotoSlab";
       textArea2.style.fontSize = '20px';
       textArea2.style.fontWeight = 'normal';
       textArea2.style.textAlign = 'left';
+      textArea2.dir = 'ltr';
       textArea2.rows = 20 ;
-      textArea2.dir = 'rtl';
 
-      textArea1.placeholder = 'متن را وارد کنید';
+      textArea1.placeholder = "متن را وارد کنید";
       textArea1.style.fontFamily = "IranSans";
       textArea1.style.fontSize = '16px';
       textArea1.style.fontWeight = 'bold';

@@ -27,17 +27,17 @@
     </style>
     <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container-fluid">
-            <a class="navbar-brand logo" id="nav_item" href="{% url 'main:translation' %}" style="font-weight: bold; font-size: 27px">
-            English 2 Persian Translator
-            <img id="logo" width="54" height="30" class="d-inline-block align-text-bottom">
+            <a class="navbar-brand logo" id="page_title" href="{% url 'main:translation' %}">
+            مترجم
+            <img id="logo" width="54" height="30" class="d-inline-block align-text-center">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav" >
+                <ul class="navbar-nav d-flex justify-content-center" >
                     <li class="nav-item" >
-                        <a class="nav-link active" id="nav_item" aria-current="page" href="{% url 'main:translation' %}">Translate</a>
+                        <a class="nav-link active" id="nav_item-persian" aria-current="page" href="{% url 'main:translation' %}">صفحه اصلی</a>
                     </li>
                     {% comment %} <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -52,24 +52,24 @@
                         </li> {% endcomment %}
 
                 </ul>
-                <ul class="navbar-nav ms-auto">
-                    {% if user.is_superuser %}
+                <ul class="navbar-nav d-flex justify-content-center align-items-center ms-auto">
+                    {% comment %} {% if user.is_superuser %}
                         <li class="nav-item">
                             <a class="nav-link active" id="nav_item" aria-current="page" href="{% url 'main:translation' %}">Supervisor panel</a>
                         </li>
-                    {% endif %} 
+                    {% endif %}  {% endcomment %}
                     <li class="nav-item" >
-                        <a class="nav-link active" id="nav_item" aria-current="page" href="{% url 'main:last_tasks' %}">My Fetches</a>
+                        <a class="nav-link active" id="nav_item-persian" aria-current="page" href="{% url 'main:last_tasks' %}">ذخیره شده‌ها</a>
                     </li>
-                    <li class="nav-item">
-                        {% if not request.user.is_authenticated %}
-                            <a href="{% url 'users:login' %}" style="font-size: 17px; margin: 3px" class="btn btn-success" type="button">Log in</a>
-                        {% else %}
-                            <a href="{% url 'users:profile' %}" style="font-size: 17px; margin: 4px; padding: 6px" class="btn btn-primary" type="button">@{{user.username}}</a>
-                        {% endif %}
+                    <li class="nav-item" style="display: flex; align-items: center;">
+                    {% if not request.user.is_authenticated %}
+                        <a href="{% url 'users:login' %}" style="font-size: 17px; margin: 3px" class="btn btn-success" type="button">Log in</a>
+                    {% else %}
+                        <a href="{% url 'users:profile' %}" style="font-size: 17px; margin: 4px; padding: 6px" class="btn btn-primary" type="button">@{{user.username}}</a>
+                    {% endif %}
                     </li>
-                    <li class="nav-item">
-                        <a href="{% url 'users:logout' %}" style="font-size: 17px; margin: 4px; padding: 6px" class="btn btn-danger" type="button">Log out</a>
+                    <li class="nav-item" style="display: flex; align-items: center;">
+                        <a href="{% url 'users:logout' %}" id="nav_item-persian" style="font-size: 17px; margin: 4px; padding: 6px" class="btn btn-danger" type="button">خروج</a>
                     </li>
                 </ul>
             </div>
