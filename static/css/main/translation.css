@@ -13,6 +13,17 @@
   src: url("..\\..\\fonts\\B_Nazanin.ttf");
 }
 
+@font-face {
+  font-family: IranSans;
+  src: url("..\\..\\fonts\\IranSans.ttf");
+}
+
+@font-face {
+  font-family: RobotoSlab;
+  src: url("..\\..\\fonts\\RobotoSlab.ttf");
+}
+
+
 #main-container {
   background-color: #cecece ;
   padding-left: 40px;
@@ -25,6 +36,45 @@
   margin-right: 60px;
 }
 
+#Textbox-1 {
+  font-family: sans-serif ;
+  font-size: 20px;
+  font-weight: normal;
+  color: #000000;
+  text-align: left;
+}
+
+#Textbox-2 {
+  font-family: IranSans ;
+  font-size: 20px;
+  font-weight: bolder;
+  color: #000000;
+  text-align: right;
+}
+
+.persian-btn {
+  font-family: IranSans;
+  font-size: 18px;
+  font-weight: normal;
+}
+
+.english-btn {
+  font-family: sans-serif;
+  font-size: 18px;
+  font-weight: normal;
+}
+
+#translate-btn{
+  font-family: IranSans ;
+  font-size: 20px;
+  font-weight: bold;
+  padding: 8px;
+  margin: 5px;
+}
+
+.clear-btn {
+  margin-right: 20px;
+}
 
 .box-title {
   font-size: 32px;
@@ -33,94 +83,12 @@
 }
 
 .box-title-persian {
-  font-family: B_Titr_Bold ;
+  font-family: IranSans ;
   font-size: 34px;
   font-weight: bolder;
   color: #030F7F;
   text-align: right;
 }
-
-
-#persianTextbox {
-  font-family: B_Nazanin ;
-  font-size: 20px;
-  font-weight: bolder;
-  color: #000000;
-  text-align: right;
-}
-
-
-#EnglishTextbox{
-  font-family: sans-serif ;
-  font-size: 20px;
-  font-weight: normal;
-  color: #000000;
-  text-align: left;
-}
-
-
-#translate-btn{
-  font-family: B_Titr_Bold ;
-  font-size: 24px;
-  font-weight: bold;
-  padding: 8px;
-  margin: 15px;
-}
-
-
-.clear-btn {
-  margin-right: 20px;
-}
-
-input[type=checkbox]
-{
-  /* Double-sized Checkboxes */
-  -ms-transform: scale(1.35); /* IE */
-  -moz-transform: scale(1.35); /* FF */
-  -webkit-transform: scale(1.35); /* Safari and Chrome */
-  -o-transform: scale(1.35); /* Opera */
-  transform: scale(1.35);
-  padding: 10px;
-}
-
-/* Might want to wrap a span around your checkbox text */
-.checkboxtext
-{
-  /* Checkbox text */
-  font-size: 110%;
-  display: inline;
-}
-
-
-#clear_coords, #clear_dates {
-  background-image: linear-gradient(to bottom, rgb(255, 255, 255), rgb(212, 212, 212));
-  background-size: 100%;
-  color: rgb(0, 0, 0);
-  border-color: rgb(0, 0, 0);
-  font-weight: bolder;
-  font-size: 16px;
-}
-
-#fill_coords {
-  /* background-image: linear-gradient(to bottom, rgb(255, 255, 255), rgb(170, 170, 170)); */
-  background-image: linear-gradient(to bottom, rgb(0, 0, 0), rgb(0, 46, 114));
-  background-size: 100%;
-  background-position: up;
-  color: rgb(255, 255, 255);
-  border-color: rgb(0, 0, 0);
-  /* font-weight: bold; */
-  font-size: 17px;
-  }
-
-
-  #last_10_days{
-    background-image: linear-gradient(to bottom, rgb(255, 255, 255), rgb(212, 212, 212));
-    background-size: 100%;
-    color: rgb(0, 0, 0);
-    border-color: rgb(0, 0, 0);
-    font-weight: bolder;
-    font-size: 16px;
-  }
 
   .message_args {
     font-weight: bold;
