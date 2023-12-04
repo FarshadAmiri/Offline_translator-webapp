@@ -59,7 +59,7 @@
                         </li>
                     {% endif %}  {% endcomment %}
                     <li class="nav-item" >
-                        <a class="nav-link active" id="nav_item-persian" aria-current="page" href="{% url 'main:last_tasks' %}">ذخیره شده‌ها</a>
+                        <a class="nav-link active" id="nav_item-persian" aria-current="page" href="{% url 'main:saved_table' %}">ذخیره شده‌ها</a>
                     </li>
                     <li class="nav-item" style="display: flex; align-items: center;">
                     {% if not request.user.is_authenticated %}

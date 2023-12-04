@@ -6,5 +6,6 @@ app_name = 'main'
 
 urlpatterns = [
     path('', Translation, name='translation'),
-    path('last_tasks', LastTasks, name='last_tasks'),
+    path('saved', SavedTable, name='saved_table'),
+    path('edit_text?<int:task_id>', EditText, name='edit_saved_text'),
 ]

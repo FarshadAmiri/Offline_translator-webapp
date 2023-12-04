@@ -73,10 +73,6 @@
   margin: 5px;
 }
 
-.clear-btn {
-  margin-right: 20px;
-}
-
 .box-title {
   font-size: 32px;
   font-weight: bolder;
@@ -96,10 +92,30 @@
     font-size: 17px;
   }
 
+
+  #edit-btn,
+  #remove-btn,
   #save-btn {
     font-family: IranSans ;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: bold;
-    color: #000000;
+    color: #ffffff;
     text-align: right;
+  }
+
+  #copy-btn {
+    font-family: IranSans ;
+    font-size: 15px;
+    font-weight: normal;
+    color: #ffffff;
+    text-align: right;
+  }
+
+  #clear-btn {
+    font-family: IranSans ;
+    font-size: 15px;
+    font-weight: normal;
+    color: #ffffff;
+    text-align: right;
+    margin-right: 20px;
   }

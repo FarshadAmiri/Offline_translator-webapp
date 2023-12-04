@@ -1,0 +1,106 @@
+{% extends "main\\base.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block head-title %}
+    <title>Saved texts</title>
+{% endblock %}
+
+{% block head-static %}
+<script type="text/javascript" src="{% static 'js/main/saved_table.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/main/saved_table.css' %}">
+{% endblock %}
+
+
+{% block body %}
+<div class="container-fluid" style="padding: 7px">
+<div class="row" style="padding: 25px; border-radius: 25px; background-color: #ffffff; margin: 6px">
+    <div class="col-12" style="background-color: #ffffff ; padding: 20px; padding-bottom: 10px; border-radius: 25px;">
+        Your saved texts: <span class="username" style="font-size: 26px">&nbsp @{{user.username}}</span>
+        <table class="table table-responsive table-hover">
+            <thead>
+            <tr>
+                <th scope="col" class="table-head">کد ذخیره</th>
+                <th scope="col" class="table-head">متن ورودی</th>
+                <th scope="col" class="table-head">ترجمه</th>
+                <th scope="col" class="table-head">تاریخ ذخیره‌سازی</th>
+                <th scope="col" class="table-head">گزینه‌ها</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for saved_task in page_objects %}
+            <tr class="clickable parent-task" aria-expanded="true">
+                
+                <td class="table-row">{{ saved_task.number|fa_digits }}</td>
+
+                <td class="concise_text">
+                    <textarea {% if saved_task.source_language == "Persian" %} id="persian-text" rows="4" {% else %} id="english-text" rows="3" {% endif %} class="form-control" name="translation" readonly dir='rtl'>{{ saved_task.source_text }}</textarea>
+                </td>
+
+                <td class="concise_text">
+                    <textarea {% if saved_task.target_language == "Persian" %} id="persian-text" rows="4" {% else %} id="english-text" rows="3" {% endif %} class="form-control" name="translation" rows="3" readonly dir='rtl'>{{ saved_task.translation }}</textarea>
+                </td>
+
+                <td class="table-row">{{ saved_task.save_time|fa_digits }}</td>
+
+                <td class="table-row">
+                    <a class="btn btn-primary" id="task-number" href="{% url 'main:edit_saved_text' saved_task.task_id %}">بازبینی و ویرایش</a>
+                    <a class="btn btn-danger" href="{% url 'main:saved_table' %}?page={{page_objects.number}}">حذف</a>
+                </td>
+                
+
+            </tr>
+            {% endfor %}
+            
+            <nav style="text-align: center; background-color: White;">
+                <ul class="pagination">
+                {% if page_objects.has_previous %} {# whether the previous page exists #}
+                    <li class="page-item"><a class="page-link" href="?page=1">First</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{page_objects.previous_page_number}}">Previous</a></li>
+                {% else %}
+                    <li class="page-item active"><a class="page-link" href="?page=1">1</a></li>
+                {% endif %}
+                {% if page_objects.has_next and page_objects.has_previous%}
+                    <li class="page-item active"> <a class="page-link" href="#">{{page_objects.number}}<span class="sr-only"></span></a></li>
+                {% endif %}
+                {% comment %} <span>{{page_parent_tasks.number}}</span> {% endcomment %}
+                    {% comment %} <li class="page-item"><a class="page-link" href="?page=1">1</a></li>
+                    <li class="page-item"><a class="page-link" href="?page=2">2</a></li>
+                    <li class="page-item"><a class="page-link" href="?page=3">3</a></li> {% endcomment %}
+                {% if page_objects.has_next%} {# whether the previous page exists #}
+                    <li class="page-item"><a class="page-link" href="?page={{page_objects.next_page_number}}">Next</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{num_pages}}">Last</a></li>
+                {% else%}
+                    <li class="page-item active"><a class="page-link" href="?page={{num_pages}}">Last</a></li>
+                {% endif %}
+                </ul>
+            </nav>
+            </div>
+            <tbody>
+        </table>
+            <nav style="text-align: center; background-color: White;">
+                <ul class="pagination">
+                {% if page_objects.has_previous %} {# whether the previous page exists #}
+                    <li class="page-item"><a class="page-link" href="?page=1">First</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{page_objects.previous_page_number}}">Previous</a></li>
+                {% else %}
+                    <li class="page-item active"><a class="page-link" href="?page=1">1</a></li>
+                {% endif %}
+                {% if page_objects.has_next and page_objects.has_previous%}
+                    <li class="page-item active"> <a class="page-link" href="#">{{page_objects.number}}<span class="sr-only"></span></a></li>
+                {% endif %}
+                {% comment %} <span>{{page_parent_tasks.number}}</span> {% endcomment %}
+                    {% comment %} <li class="page-item"><a class="page-link" href="?page=1">1</a></li>
+                    <li class="page-item"><a class="page-link" href="?page=2">2</a></li>
+                    <li class="page-item"><a class="page-link" href="?page=3">3</a></li> {% endcomment %}
+                {% if page_objects.has_next%} {# whether the previous page exists #}
+                    <li class="page-item"><a class="page-link" href="?page={{page_objects.next_page_number}}">Next</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{num_pages}}">Last</a></li>
+                {% else%}
+                    <li class="page-item active"><a class="page-link" href="?page={{num_pages}}">Last</a></li>
+                {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+{% endblock %}

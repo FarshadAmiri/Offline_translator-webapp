@@ -25,13 +25,11 @@ def detect_language(text):
         n_test_chars = 10000
 
     n_test_chars = int(n_test_chars)
-    print(f"\n\n\ntext_length: %d \n\n\n" % text_length)
-    print(f"\n\n\ntest_chars: %d \n\n\n" % n_test_chars)
 
     test_indices = random.sample(range(text_length), n_test_chars)
     test_chars = [text[i] for i in test_indices]
 
-    persian_counter, english_counter = 0, 0
+    persian_counter, english_counter = 1, 1
     for char in test_chars:
         try:
             if 'ARABIC' in unicodedata.name(char) or 'PERSIAN' in unicodedata.name(char):

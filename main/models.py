@@ -9,4 +9,5 @@ class TranslationTask(models.Model):
     source_language = models.CharField(max_length=255, null=False, default="English")
     target_language = models.CharField(max_length=255, null=False, default="Persian")
     source_text = models.TextField()
-    queried_at = models.DateTimeField(auto_now_add=True)
+    translation = models.TextField(null=True)
+    save_time = models.DateTimeField(auto_now_add=True)
