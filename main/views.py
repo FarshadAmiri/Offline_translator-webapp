@@ -34,7 +34,7 @@ def Translation(request):
         if detected_lang not in [None, source_lang]:
             print(f"\n\n\ndetected_lang: {detected_lang}\n\n\n")
             detect_lang_fa = "فارسی" if detected_lang == "Persian" else "انگلیسی"
-            target_lang_fa = "فارسی" if detected_lang == "انگلیسی" else "انگلیسی"
+            target_lang_fa = "فارسی" if detect_lang_fa == "انگلیسی" else "انگلیسی"
             messages.info(request, f'زبان ورودی {detect_lang_fa} شناسایی شد، در صورتیکه شما زبان ورودی را {target_lang_fa} انتخاب کردید. ترجمه بر اساس زبان ورودی {detect_lang_fa} و زبان مقصد {target_lang_fa} انجام شد.')
             # messages.info(request, f"Detected language is {detected_lang}, and you probably chose wrong input language! Translation performed based on {detected_lang} input.")
             source_lang = detected_lang
@@ -120,7 +120,7 @@ def EditText(request, task_id):
         if detected_lang not in [None, source_lang]:
             print(f"\n\n\ndetected_lang: {detected_lang}\n\n\n")
             detect_lang_fa = "فارسی" if detected_lang == "Persian" else "انگلیسی"
-            target_lang_fa = "فارسی" if detected_lang == "انگلیسی" else "انگلیسی"
+            target_lang_fa = "فارسی" if detect_lang_fa == "انگلیسی" else "انگلیسی"
             messages.info(request, f'زبان ورودی {detect_lang_fa} شناسایی شد، در صورتیکه شما زبان ورودی را {target_lang_fa} انتخاب کردید. ترجمه بر اساس زبان ورودی {detect_lang_fa} و زبان مقصد {target_lang_fa} انجام شد.')
             source_lang = detected_lang
             
