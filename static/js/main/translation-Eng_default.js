@@ -15,7 +15,7 @@ function copyText2(textboxId) {
       });
   }
 
-  var radioButtons = document.querySelectorAll('input[name="btnradio"]');
+  var radioButtons = document.querySelectorAll('input[name="btnradio_right"], input[name="btnradio_left"]');
   radioButtons.forEach(function(radioButton) {
     radioButton.addEventListener('change', function() {
       if (this.id === 'btnradio1') {
@@ -32,9 +32,9 @@ function copyText2(textboxId) {
 
 
 // Add an event listener for the radio buttons
-var radioButtons = document.querySelectorAll('input[name="btnradio"]');
-var textArea1 = document.getElementById('Textbox-1');
-var textArea2 = document.getElementById('Textbox-2');
+var radioButtons = document.querySelectorAll('input[name="btnradio_right"], input[name="btnradio_left"]');
+var textArea1 = document.getElementById('source_text');
+var textArea2 = document.getElementById('translation');
 
 radioButtons.forEach(function(radioButton) {
   radioButton.addEventListener('change', function() {
@@ -73,3 +73,35 @@ radioButtons.forEach(function(radioButton) {
     }
   });
 });
+
+
+function encodeText(event) {
+  var textInput = document.getElementById("source_text");
+  var encodedText;
+
+  // Replace specific characters like ’ with '
+  var replacedText = textInput.value.replace(/[’]/g, "'");
+
+  // Check if btnradio1 is checked (indicating Persian text)
+  var btnradio1 = document.getElementById("btnradio1");
+  if (btnradio1.checked) {
+    alert("English");
+    encodedText = btoa(replacedText);
+  } else {
+    alert("Persian");
+    encodedText = btoa(unescape(encodeURIComponent(replacedText)));
+  }
+
+  textInput.value = "";
+
+  // Create a hidden input element
+  var hiddenInput = document.createElement("input");
+  hiddenInput.type = "hidden";
+  hiddenInput.name = "encoded_text";
+  hiddenInput.id = "encoded_text";
+  hiddenInput.value = encodedText;
+
+  // Append the hidden input to the form
+  var form = document.getElementById("translation_form");
+  form.appendChild(hiddenInput);
+}

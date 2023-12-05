@@ -6,6 +6,7 @@
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <link rel="icon" href="{% static 'icons/logo3.png' %}" type="image/png">
+   
    {% block head-title %}
       <title>Translation</title>
    {% endblock %}
@@ -20,11 +21,9 @@
    {% block head-static %}
    {% endblock %}
 </head>
+
 <body>
     {% block navbar %}
-    <style>
-
-    </style>
     <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container-fluid">
             <a class="navbar-brand logo" id="page_title" href="{% url 'main:translation' %}">
@@ -79,5 +78,9 @@
 
     {% block body %}
     {% endblock %}
+    
+    {% block static-end_body %}
+    {% endblock %}
    </body>
 </html>
+

@@ -2,19 +2,18 @@
 {% load static %}
 
 {% block head-static %}
-<script type="text/javascript" src="{% static 'js/main/translation-Eng_default.js' %}"></script>
+{% comment %} <script type="text/javascript" src="{% static 'js/main/translation-Eng_default.js' %}"></script> {% endcomment %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/main/translation-Eng_default.css' %}">
+<script type="text/javascript" src="{% static 'jquery-3.7.1.min.js' %}"></script>
 {% endblock %}
 
 {% block body %}
-<script type="text/javascript" src="{% static 'jquery-3.7.1.min.js' %}"></script>
-
 <div class="container-fluid">
     {{ form.media }}
     {% if edit_mode %}
-        <form action="{% url 'main:edit_saved_text' task_id%}" method="post">
+        <form action="{% url 'main:edit_saved_text' task_id%}" method="post" onsubmit="encodeText()">
     {% else %}
-        <form action="{% url 'main:translation' %}" method="post">
+        <form  id="translation_form" action="{% url 'main:translation' %}" method="post">
     {% endif %}
         {% csrf_token %}
         <div class="row d-flex justify-content-center" id="main-container">
@@ -29,9 +28,7 @@
             <div class="d-flex justify-content-end" style="position: top: 0; right: 0; padding: 0px;">
             {% if edit_mode %}
                 <button type="submit" id="edit-btn" name="edit-btn" class="btn btn-success" style="margin-right: 5px">ثبت ویرایش</button>
-                <form action="{% url 'main:edit_saved_text' task_id%}" method="get">
                     <button type="submit" id="remove-btn" name="remove-btn" class="btn btn-danger">حذف</button>
-                </form>
             {% else %}
                 <button type="submit" id="save-btn" name="save-btn" class="btn btn-success">ذخیره شود</button>
             {% endif %}
@@ -39,47 +36,45 @@
                 <div class="col-md-6">
                 <div class="btn-group-lg d-flex justify-content-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px">
                     <div>
-                        <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" value="English" checked>
+                        <input type="radio" class="btn-check" name="btnradio_left" id="btnradio1" autocomplete="off" value="English" checked>
                         <label class="btn btn-outline-primary english-btn" for="btnradio1">English</label>
                     </div>
 
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off" value="Persian">
+                        <input type="radio" class="btn-check" name="btnradio_left" id="btnradio2" autocomplete="off" value="Persian">
                         <label class="btn btn-outline-primary persian-btn" for="btnradio2">فارسی</label>
                     </div>
                     </div>
-                    <textarea id="Textbox-1" class="form-control" name="source_text" rows="20" placeholder="Enter text">{{source_text}}</textarea>
+                    <textarea class="form-control" name="source_text" id="source_text" rows="20" placeholder="Enter text">{{source_text}}</textarea>
                     <div class="text-center mt-2">
-                        <button type="button" class="btn btn-secondary" id="clear-btn" onclick="clearText('Textbox-1')">پاک</button>
-                        <button type="button" class="btn btn-success" id="copy-btn" onclick="copyText2('Textbox-1')">کپی</button>
+                        <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('source_text')">پاک</button>
+                        <button type="button" class="btn btn-success copy-btn" id="copy-btn" onclick="copyText2('source_text')">کپی</button>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="btn-group-lg d-flex justify-content-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px">
                     <div>
-                        <input type="radio" class="btn-check" name="btnradio2" id="btnradio4" value="Persian" autocomplete="off" checked disabled>
+                        <input type="radio" class="btn-check" name="btnradio_right" id="btnradio4" value="Persian" autocomplete="off" checked disabled>
                         <label class="btn btn-outline-primary persian-btn" for="btnradio2">فارسی</label>
                     </div>
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnradio2" id="btnradio3" value="English" autocomplete="off" disabled>
+                        <input type="radio" class="btn-check" name="btnradio_right" id="btnradio3" value="English" autocomplete="off" disabled>
                         <label class="btn btn-outline-primary english-btn" for="btnradio1">English</label>
                     </div>
                     </div>
-                    <textarea id="Textbox-2" class="form-control" name="translation" rows="25" readonly dir='rtl'>{{translation}}</textarea>
+                    <textarea class="form-control" name="translation" id="translation" rows="25" readonly dir='rtl'>{{translation}}</textarea>
                     <div class="text-center mt-2">
-                        <button type="button" class="btn btn-secondary" id="clear-btn" onclick="clearText('Textbox-2')">پاک</button>
-                        <button type="button" class="btn btn-success" id="copy-btn" onclick="copyText2('Textbox-2')">کپی</button>
+                        <button type="button" class="btn btn-secondary clear-btn" id="clear-btn" onclick="clearText('translation')">پاک</button>
+                        <button type="button" class="btn btn-success copy-btn" onclick="copyText2('translation')">کپی</button>
                 </div>
             </div>
             <div class="row justify-content-center">
                 <div class="col-12 text-center">
-                    <button type="submit" id="translate-btn" name="translate-btn" class="btn btn-primary">ترجمه</button>
+                    <button type="submit"  id="translate-btn" name="translate-btn" class="btn btn-primary" onclick="encodeText(event)">ترجمه</button>
                 </div>
             </div>
         </div>
     </form>
 </div>
-<script>
-</script>
 <script type="text/javascript" src="{% static 'js/main/translation-Eng_default.js' %}"></script>
 {% endblock %}

@@ -18,6 +18,7 @@ from main.utilities.lang import detect_language
 # from datetime import datetime, timedelta
 from .models import *
 import logging
+import base64
 
 
 @login_required(login_url='users:login')
@@ -26,9 +27,12 @@ def Translation(request):
         return render(request, 'main/translation-Eng_default.html', {"eng_source": True,})
     
     elif (request.method == 'POST') and "translate-btn" in request.POST:
-        source_lang = request.POST.get('btnradio')
+        print(f"\n\n\n {request.POST.get('encoded_text')}\n\n\n")
+        source_lang = request.POST.get('btnradio_left')
+        print(f"\n\nsource_lang: {source_lang}\n\n")
         target_lang = 'Persian' if source_lang == 'English' else 'English'
-        source_text = request.POST.get('source_text')
+        encoded_text = request.POST.get('encoded_text')
+        source_text = base64.b64decode(encoded_text).decode('utf-8')
         detected_lang = detect_language(source_text)
 
         if detected_lang not in [None, source_lang]:
@@ -50,7 +54,7 @@ def Translation(request):
             return render(request, 'main/translation-Per_default.html', {'translation': translation, "source_text": source_text,})
     
     elif (request.method == 'POST') and "save-btn" in request.POST:
-        source_lang = request.POST.get('btnradio')
+        source_lang = request.POST.get('btnradio_left')
         target_lang = 'Persian' if source_lang == 'English' else 'English'
         source_text = request.POST.get('source_text')
         translation = request.POST.get('translation')
@@ -112,7 +116,7 @@ def EditText(request, task_id):
                                                                          "task_id": task_id, "edit_mode":True})
         
     elif (request.method == 'POST') and "translate-btn" in request.POST:
-        source_lang = request.POST.get('btnradio')
+        source_lang = request.POST.get('btnradio_left')
         target_lang = 'Persian' if source_lang == 'English' else 'English'
         source_text = request.POST.get('source_text')
         detected_lang = detect_language(source_text)
@@ -137,11 +141,11 @@ def EditText(request, task_id):
 
     elif (request.method == 'POST') and "edit-btn" in request.POST:
 
-        source_lang = request.POST.get('btnradio')
+        source_lang = request.POST.get('btnradio_left')
         target_lang = 'Persian' if source_lang == 'English' else 'English'
         source_text = request.POST.get('source_text')
         
-        source_lang = request.POST.get('btnradio')
+        source_lang = request.POST.get('btnradio_left')
         target_lang = 'Persian' if source_lang == 'English' else 'English'
         source_text = request.POST.get('source_text')
         translation = request.POST.get('translation')
@@ -165,4 +169,12 @@ def EditText(request, task_id):
         task = TranslationTask.objects.get(task_id=task_id)
         task.delete()
 
+        return HttpResponseRedirect(reverse('main:saved_table',))
+
+
+def DeleteText(request, task_id):
+    if request.method == 'GET':
+        user = request.user
+        task = get_object_or_404(TranslationTask, user=user, task_id=task_id)
+        task.delete()
         return HttpResponseRedirect(reverse('main:saved_table',))

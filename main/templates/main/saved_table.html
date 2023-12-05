@@ -44,10 +44,8 @@
 
                 <td class="table-row">
                     <a class="btn btn-primary" id="task-number" href="{% url 'main:edit_saved_text' saved_task.task_id %}">بازبینی و ویرایش</a>
-                    <a class="btn btn-danger" href="{% url 'main:saved_table' %}?page={{page_objects.number}}">حذف</a>
+                    <a class="btn btn-danger" href="{% url 'main:delete_saved_text' saved_task.task_id %}?page={{page_objects.number}}">حذف</a>
                 </td>
-                
-
             </tr>
             {% endfor %}
             
