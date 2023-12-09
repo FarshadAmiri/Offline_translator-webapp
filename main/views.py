@@ -15,6 +15,7 @@ from django.contrib import auth, messages
 from jdatetime import datetime as jdatetime, timedelta
 from main.utilities.argos import translate_en_fa, translate_fa_en
 from main.utilities.lang import detect_language
+from main.utilities.encryption import *
 # from datetime import datetime, timedelta
 from .models import *
 import logging
@@ -27,12 +28,16 @@ def Translation(request):
         return render(request, 'main/translation-Eng_default.html', {"eng_source": True,})
     
     elif (request.method == 'POST') and "translate-btn" in request.POST:
-        print(f"\n\n\n {request.POST.get('encoded_text')}\n\n\n")
+        print(f"\n\n\nencoded_text from client:\n{request.POST.get('encoded_text')}\n\n\n")
         source_lang = request.POST.get('btnradio_left')
         print(f"\n\nsource_lang: {source_lang}\n\n")
         target_lang = 'Persian' if source_lang == 'English' else 'English'
         encoded_text = request.POST.get('encoded_text')
-        source_text = base64.b64decode(encoded_text).decode('utf-8')
+        encoded_text = encoded_text.split("%NEW_CHUNCK%")
+        print(f"\n\n\nlength of encoded_text: {len(encoded_text)}\n\n\n")
+        source_text = decode_text_cryptodome(encoded_text, source_lang, chunkded=True)
+        print(f"\n\ndecrypted_text: {source_text}\n\n")
+        # source_text = base64.b64decode(encoded_text).decode('utf-8')
         detected_lang = detect_language(source_text)
 
         if detected_lang not in [None, source_lang]:

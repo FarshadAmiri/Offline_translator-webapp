@@ -5,6 +5,38 @@
 {% comment %} <script type="text/javascript" src="{% static 'js/main/translation-Eng_default.js' %}"></script> {% endcomment %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/main/translation-Eng_default.css' %}">
 <script type="text/javascript" src="{% static 'jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'jsencrypt.js' %}"></script>
+<script>
+function loadPublicKeyFromFile(file) {
+  return fetch(file)
+    .then(response => response.text())
+    .then(publicKey => publicKey.trim());
+}
+
+function encrypt(text) {
+  // Replace 'publicKey' with the actual public key
+  var publicKey = "-----BEGIN PUBLIC KEY-----\n" +
+                  "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvRW2QcbKbzDobMdkLqvY\n" +
+                  "Fb66Ih41T1+X3spW1WP6UduM1kS+bVh7HwG23pt8e/XJAf9G4IhWTZfkgVBdMsFP\n" +
+                  "UfCJDiP/9cbQBgNDtT85jlFHjB1dBlJ51Hh8kDkx/1/dgy2b/ZjJ0YwAFLpk2k8W\n" +
+                  "ZO8wtIOEHMSdLryVh8Jkpk1qSYZPZZuW+QEE/G+TJcF286mLEpTfZ/RQN4mg/nCS\n" +
+                  "FhW4Rv9wnF8dhgU43kTiLwV8wVgOTKxAseDxMyvbjKiiH+u5YByZNN1hPVFSYQNx\n" +
+                  "06IK0Ea7wk0UTRhCwLFu2AOPGL3AylFnjlHCd+/vbDrW3WDj3KRTbZFxtysYqn3B\n" +
+                  "SnNZy6D1xPn79nsgWfKrgQo9KTgP9gpSoebBZwFIRmBD5Q2BpwZvbZj5lJgEYJpe\n" +
+                  "xH5LW6Rfv2GZjU+S5SEPNXMlSf6kmfbJAEhsyqKj+tWZtri3AfEBhG7hkmmz51zA\n" +
+                  "32JwSGV/IFqblOHsONsZizOl4OxzSytgfhCyOkAg6zcb5Hcd3Zod0SHscgkYPAeO\n" +
+                  "9ZZvD6pneRrcB1tgBPz3CSp6UOe9ktK0Lo5ZlapNUmpIR1Av/immdBnfRfB6m+ax\n" +
+                  "efNjY6Myl8/aepuND/E1MJviOMCm3cyrmOsNj5rwg2AIGO4vw4hdjXqOLez87t/X\n" +
+                  "OYNP74TrWvLmcNmlKfQNfMsCAwEAAQ==\n" +
+                  "-----END PUBLIC KEY-----";
+
+  var encrypt = new JSEncrypt();
+  encrypt.setPublicKey(publicKey);
+  var encryptedText = encrypt.encrypt(text);
+  //var encryptedText = btoa(encryptedText);
+  return encryptedText;
+}
+</script>
 {% endblock %}
 
 {% block body %}
@@ -48,23 +80,23 @@
                     <textarea class="form-control" name="source_text" id="source_text" rows="20" placeholder="Enter text">{{source_text}}</textarea>
                     <div class="text-center mt-2">
                         <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('source_text')">پاک</button>
-                        <button type="button" class="btn btn-success copy-btn" id="copy-btn" onclick="copyText2('source_text')">کپی</button>
+                        <button type="button" class="btn btn-success copy-btn" onclick="copyText2('source_text')">کپی</button>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="btn-group-lg d-flex justify-content-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px">
                     <div>
                         <input type="radio" class="btn-check" name="btnradio_right" id="btnradio4" value="Persian" autocomplete="off" checked disabled>
-                        <label class="btn btn-outline-primary persian-btn" for="btnradio2">فارسی</label>
+                        <label class="btn btn-outline-primary persian-btn" for="btnradio4">فارسی</label>
                     </div>
                     <div style="margin-left: 7px;">
                         <input type="radio" class="btn-check" name="btnradio_right" id="btnradio3" value="English" autocomplete="off" disabled>
-                        <label class="btn btn-outline-primary english-btn" for="btnradio1">English</label>
+                        <label class="btn btn-outline-primary english-btn" for="btnradio3">English</label>
                     </div>
                     </div>
                     <textarea class="form-control" name="translation" id="translation" rows="25" readonly dir='rtl'>{{translation}}</textarea>
                     <div class="text-center mt-2">
-                        <button type="button" class="btn btn-secondary clear-btn" id="clear-btn" onclick="clearText('translation')">پاک</button>
+                        <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('translation')">پاک</button>
                         <button type="button" class="btn btn-success copy-btn" onclick="copyText2('translation')">کپی</button>
                 </div>
             </div>

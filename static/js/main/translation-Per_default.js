@@ -75,23 +75,44 @@ radioButtons.forEach(function(radioButton) {
 });
 
 
-
 function encodeText(event) {
+
   var textInput = document.getElementById("source_text");
   var encodedText;
+  var chunkSizePersian = 200;
+  var chunkSizeEnglish = 500;
 
   // Replace specific characters like ’ with '
-  var replacedText = textInput.value.replace(/[’]/g, "'");
+  var modifiedText = textInput.value.replace(/[’]/g, "'");
 
   // Check if btnradio1 is checked (indicating Persian text)
+  var encryptedChunks = [];
   var btnradio1 = document.getElementById("btnradio1");
   if (btnradio1.checked) {
-    alert("English");
-    encodedText = btoa(replacedText);
+    // English input
+    var textChunks = textToChuncks(modifiedText, chunkSizeEnglish);
+    for (var i = 0; i < textChunks.length; i++) {
+      var encryptedText = encrypt(textChunks[i]); // Encrypt each text
+      encryptedChunks.push(encryptedText); // Store encrypted text in encryptedChunks
+    }
+    
+    var finalText = encryptedChunks.join("%New_Chunk%");
+
+    encodedText = encrypt(modifiedText);
   } else {
-    alert("Persian");
-    encodedText = btoa(unescape(encodeURIComponent(replacedText)));
+    // Persian input
+    var textChunks = textToChuncks(modifiedText, chunkSizePersian);
+    for (var i = 0; i < textChunks.length; i++) {
+      // encodedText = btoa(unescape(encodeURIComponent(modifiedText)));
+      var encryptedText = unescape(encodeURIComponent(textChunks[i]));
+      encryptedText = btoa(encryptedText);
+      encryptedText = encrypt(encryptedText);
+      encryptedChunks.push(encryptedText); // Store encrypted text in encryptedChunks
+    }
   }
+  // alert(encodedText)
+
+  var encryptedText = encryptedChunks.join("%New_Chunk%");
 
   textInput.value = "";
 
@@ -100,7 +121,7 @@ function encodeText(event) {
   hiddenInput.type = "hidden";
   hiddenInput.name = "encoded_text";
   hiddenInput.id = "encoded_text";
-  hiddenInput.value = encodedText;
+  hiddenInput.value = encryptedText;
 
   // Append the hidden input to the form
   var form = document.getElementById("translation_form");
