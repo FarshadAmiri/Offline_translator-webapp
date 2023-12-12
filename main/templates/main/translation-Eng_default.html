@@ -6,6 +6,7 @@
 <link rel="stylesheet" type="text/css" href="{% static 'css/main/translation-Eng_default.css' %}">
 <script type="text/javascript" src="{% static 'jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'jsencrypt.js' %}"></script>
+{% comment %} <script src="{% static 'crypto.js' %}"></script> {% endcomment %}
 <script>
 function loadPublicKeyFromFile(file) {
   return fetch(file)
@@ -37,13 +38,83 @@ function encrypt(text) {
   return encryptedText;
 }
 </script>
+<script>
+function encodeTextAndKey2(event) {
+const crypto = require('crypto');
+
+  var rsaPublicKey = "-----BEGIN PUBLIC KEY-----\n" +
+          "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvRW2QcbKbzDobMdkLqvY\n" +
+          "Fb66Ih41T1+X3spW1WP6UduM1kS+bVh7HwG23pt8e/XJAf9G4IhWTZfkgVBdMsFP\n" +
+          "UfCJDiP/9cbQBgNDtT85jlFHjB1dBlJ51Hh8kDkx/1/dgy2b/ZjJ0YwAFLpk2k8W\n" +
+          "ZO8wtIOEHMSdLryVh8Jkpk1qSYZPZZuW+QEE/G+TJcF286mLEpTfZ/RQN4mg/nCS\n" +
+          "FhW4Rv9wnF8dhgU43kTiLwV8wVgOTKxAseDxMyvbjKiiH+u5YByZNN1hPVFSYQNx\n" +
+          "06IK0Ea7wk0UTRhCwLFu2AOPGL3AylFnjlHCd+/vbDrW3WDj3KRTbZFxtysYqn3B\n" +
+          "SnNZy6D1xPn79nsgWfKrgQo9KTgP9gpSoebBZwFIRmBD5Q2BpwZvbZj5lJgEYJpe\n" +
+          "xH5LW6Rfv2GZjU+S5SEPNXMlSf6kmfbJAEhsyqKj+tWZtri3AfEBhG7hkmmz51zA\n" +
+          "32JwSGV/IFqblOHsONsZizOl4OxzSytgfhCyOkAg6zcb5Hcd3Zod0SHscgkYPAeO\n" +
+          "9ZZvD6pneRrcB1tgBPz3CSp6UOe9ktK0Lo5ZlapNUmpIR1Av/immdBnfRfB6m+ax\n" +
+          "efNjY6Myl8/aepuND/E1MJviOMCm3cyrmOsNj5rwg2AIGO4vw4hdjXqOLez87t/X\n" +
+          "OYNP74TrWvLmcNmlKfQNfMsCAwEAAQ==\n" +
+          "-----END PUBLIC KEY-----";
+  // Get text input
+  var textInput = document.getElementById("source_text");
+
+  // Generate a 256-bit AES key
+  const aesKey = crypto.randomBytes(32);
+
+  // Create an initialization vector for AES
+  const iv = crypto.randomBytes(16);
+
+  // Encrypt the text using AES
+  const aesCipher = crypto.createCipheriv('aes-256-cbc', aesKey, iv);
+  let encodedText = aesCipher.update(text, 'utf8', 'base64');
+  encodedText += aesCipher.final('base64');
+
+  // Convert the RSA public key to a format that crypto can use
+  const rsaKey = Buffer.from(rsaPublicKey, 'base64').toString('ascii');
+
+  // Encrypt the AES key using RSA
+  const encryptedAESKey = crypto.publicEncrypt(
+    {
+      key: rsaKey,
+      padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+      oaepHash: "sha256",
+    },
+    aesKey
+  );
+    var hiddenEncodedText = document.createElement("input");
+    hiddenEncodedText.type = "hidden";
+    hiddenEncodedText.name = "encodedText";
+    hiddenEncodedText.id = "encodedText";
+    hiddenEncodedText.value = encodedText;
+
+    var hiddenEncryptedAESKey = document.createElement("input");
+    hiddenEncryptedAESKey.type = "hidden";
+    hiddenEncryptedAESKey.name = "encryptedAESKey";
+    hiddenEncryptedAESKey.id = "encryptedAESKey";
+    hiddenEncryptedAESKey.value = encryptedAESKey;
+
+    // Append the hidden input to the form
+    var form = document.getElementById("translation_form");
+    form.appendChild(hiddenEncodedText);
+    form.appendChild(hiddenEncryptedAESKey);
+
+  return {
+    encryptedText: encryptedText,
+    encryptedAesKey: encryptedAesKey.toString('base64')
+  };
+}
+
+{% comment %} module.exports = { encodeTextAndKey2(event) }; {% endcomment %}
+</script>
 {% endblock %}
 
 {% block body %}
 <div class="container-fluid">
     {{ form.media }}
     {% if edit_mode %}
-        <form action="{% url 'main:edit_saved_text' task_id%}" method="post" onsubmit="encodeText()">
+        {% comment %} <form action="{% url 'main:edit_saved_text' task_id%}" method="post" onsubmit="encodeText()"> {% endcomment %}
+        <form action="{% url 'main:edit_saved_text' task_id%}" method="post">
     {% else %}
         <form  id="translation_form" action="{% url 'main:translation' %}" method="post">
     {% endif %}
@@ -102,7 +173,8 @@ function encrypt(text) {
             </div>
             <div class="row justify-content-center">
                 <div class="col-12 text-center">
-                    <button type="submit"  id="translate-btn" name="translate-btn" class="btn btn-primary" onclick="encodeText(event)">ترجمه</button>
+                    {% comment %} <button type="submit"  id="translate-btn" name="translate-btn" class="btn btn-primary" onclick="encodeText(event)">ترجمه</button> {% endcomment %}
+                    <button type="submit"  id="translate-btn" name="translate-btn" class="btn btn-primary" onclick="encodeTextAndKey2(event)">ترجمه</button>
                 </div>
             </div>
         </div>

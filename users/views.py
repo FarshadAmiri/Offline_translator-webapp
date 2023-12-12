@@ -30,22 +30,7 @@ def login_view(request, *kwargs):
 
 def logout_view(request):
     logout(request)
-    return HttpResponseRedirect(reverse('fetch_data:SentinelFetch'))
-
-
-# def signup_view(request):
-#     if request.method == 'GET':
-#         form = SignUpForm()
-#         return render(request, 'Signup_page.html', {'form':form})
-#     elif request.method == 'POST':
-#         form = SignUpForm(request.POST)
-#         if form.is_valid():
-#             user = form.save()
-#             Group.objects.get(name='Registered_users').user_set.add(user)
-#             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-#             return HttpResponseRedirect(reverse('flights:homepage'))
-#         else:
-#             return render(request, 'Error_page.html', {'message':form.errors})
+    return HttpResponseRedirect(reverse('main:translation'))
 
 
 def profile_view(request):
@@ -56,57 +41,3 @@ def profile_view(request):
                                                               # ,'user_profile': user_profile
                                                               })
         return HttpResponse('You Must Log In First')
-
-
-
-
-# class update_profile_view(UpdateView):
-#     model = User
-#     fields = ['username', 'email', 'first_name', 'last_name', 'country', 'phone']
-#     template_name = 'Update_Profile_Page.html'
-#     success_url = reverse_lazy('flights:homepage')
-
-#     def get_object(self, *args, **kwargs):
-#         obj = super(update_profile_view, self).get_object(*args, **kwargs)
-#         if obj == self.request.user:
-#             return obj
-#         raise Http404
-
-
-# class change_password_view(View):
-#     def get(self,request):
-#         form = ChangePasswordForm()
-#         return render(request, 'Change_Password_Page.html', context={'form':form})
-#     def post(self,request):
-#         form = ChangePasswordForm(request.POST)
-#         if request.user.check_password(form.data['old_password']):
-#             if form.data['new_password'] == form.data['new_password_repeated']:
-#                 request.user.set_password(form.data['new_password'])
-#                 request.user.save()
-#                 return HttpResponseRedirect(reverse_lazy('users:profile'))
-#             msg = 'Two passwords which you entered are not identical'
-#         else:
-#             msg = 'Your entered password was not correct'
-#         return HttpResponseRedirect(reverse_lazy('flights:Error_page.html', msg))
-
-
-# def delete_account_view(request):
-#     # def get(self, request):
-#     if request.method =='GET':
-#         form = DeleteUserForm()
-#         return render(request, 'Delete_User_Page.html', context={'user':request.user,
-#                                                                  'form':form})
-#     # def post(self, request):
-#     elif request.method == 'POST':
-#         form = DeleteUserForm(request.POST)
-#         entered_password = form.data['password']
-#         if request.user.check_password(entered_password):
-#             username = request.user.username
-#             user = User.objects.get(username=username)
-#             user.is_active = False
-#             logout(request)
-#             user.delete()
-#             return HttpResponse('You have been successfully deleted your user account')
-#         super(delete_account_view)
-#         return render(request, 'Delete_User_Page.html', context={'user':request.user,
-#                                                                  'msg':'Wrong Password!'})

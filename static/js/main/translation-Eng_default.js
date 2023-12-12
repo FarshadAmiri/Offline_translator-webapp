@@ -116,8 +116,8 @@ function encodeText(event) {
   // Create a hidden input element
   var hiddenInput = document.createElement("input");
   hiddenInput.type = "hidden";
-  hiddenInput.name = "encoded_text";
-  hiddenInput.id = "encoded_text";
+  hiddenInput.name = "encodedText";
+  hiddenInput.id = "encodedText";
   hiddenInput.value = encryptedText;
 
   // Append the hidden input to the form
@@ -140,3 +140,146 @@ function textToChuncks(text, chunkSize) {
   }
   return chunks;
 }
+
+
+async function encodeTextAndKey(event) {
+  event.preventDefault();
+  try {
+    // Declare RSA public key
+    var rsaPublicKey = "-----BEGIN PUBLIC KEY-----\n" +
+    "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvRW2QcbKbzDobMdkLqvY\n" +
+    "Fb66Ih41T1+X3spW1WP6UduM1kS+bVh7HwG23pt8e/XJAf9G4IhWTZfkgVBdMsFP\n" +
+    "UfCJDiP/9cbQBgNDtT85jlFHjB1dBlJ51Hh8kDkx/1/dgy2b/ZjJ0YwAFLpk2k8W\n" +
+    "ZO8wtIOEHMSdLryVh8Jkpk1qSYZPZZuW+QEE/G+TJcF286mLEpTfZ/RQN4mg/nCS\n" +
+    "FhW4Rv9wnF8dhgU43kTiLwV8wVgOTKxAseDxMyvbjKiiH+u5YByZNN1hPVFSYQNx\n" +
+    "06IK0Ea7wk0UTRhCwLFu2AOPGL3AylFnjlHCd+/vbDrW3WDj3KRTbZFxtysYqn3B\n" +
+    "SnNZy6D1xPn79nsgWfKrgQo9KTgP9gpSoebBZwFIRmBD5Q2BpwZvbZj5lJgEYJpe\n" +
+    "xH5LW6Rfv2GZjU+S5SEPNXMlSf6kmfbJAEhsyqKj+tWZtri3AfEBhG7hkmmz51zA\n" +
+    "32JwSGV/IFqblOHsONsZizOl4OxzSytgfhCyOkAg6zcb5Hcd3Zod0SHscgkYPAeO\n" +
+    "9ZZvD6pneRrcB1tgBPz3CSp6UOe9ktK0Lo5ZlapNUmpIR1Av/immdBnfRfB6m+ax\n" +
+    "efNjY6Myl8/aepuND/E1MJviOMCm3cyrmOsNj5rwg2AIGO4vw4hdjXqOLez87t/X\n" +
+    "OYNP74TrWvLmcNmlKfQNfMsCAwEAAQ==\n" +
+    "-----END PUBLIC KEY-----";
+
+    var rsaPublicKeyBase64 = "Ii0tLS0tQkVHSU4gUFVCTElDIEtFWS0tLS0tXG4iICsNC" +
+    "iAgICAiTUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUF2Ulc" + 
+    "yUWNiS2J6RG9iTWRrTHF2WVxuIiArDQogICAgIkZiNjZJaDQxVDErWDNzcFcxV1A2VWR1T" +
+    "TFrUytiVmg3SHdHMjNwdDhlL1hKQWY5RzRJaFdUWmZrZ1ZCZE1zRlBcbiIgKw0KICAgICJ" + 
+    "VZkNKRGlQLzljYlFCZ05EdFQ4NWpsRkhqQjFkQmxKNTFIaDhrRGt4LzEvZGd5MmIvWmpKM" + 
+    "Fl3QUZMcGsyazhXXG4iICsNCiAgICAiWk84d3RJT0VITVNkTHJ5Vmg4SmtwazFxU1laUFp" +
+    "adVcrUUVFL0crVEpjRjI4Nm1MRXBUZlovUlFONG1nL25DU1xuIiArDQogICAgIkZoVzRSd" +
+    "jl3bkY4ZGhnVTQza1RpTHdWOHdWZ09US3hBc2VEeE15dmJqS2lpSCt1NVlCeVpOTjFoUFZ" +
+    "GU1lRTnhcbiIgKw0KICAgICIwNklLMEVhN3drMFVUUmhDd0xGdTJBT1BHTDNBeWxGbmpsS" +
+    "ENkKy92YkRyVzNXRGozS1JUYlpGeHR5c1lxbjNCXG4iICsNCiAgICAiU25OWnk2RDF4UG4" + 
+    "3OW5zZ1dmS3JnUW85S1RnUDlncFNvZWJCWndGSVJtQkQ1UTJCcHdadmJaajVsSmdFWUpwZ" + 
+    "VxuIiArDQogICAgInhINUxXNlJmdjJHWmpVK1M1U0VQTlhNbFNmNmttZmJKQUVoc3lxS2o" + 
+    "rdFdadHJpM0FmRUJoRzdoa21tejUxekFcbiIgKw0KICAgICIzMkp3U0dWL0lGcWJsT0hzT" + 
+    "05zWml6T2w0T3h6U3l0Z2ZoQ3lPa0FnNnpjYjVIY2QzWm9kMFNIc2Nna1lQQWVPXG4iICs" +
+    "NCiAgICAiOVpadkQ2cG5lUnJjQjF0Z0JQejNDU3A2VU9lOWt0SzBMbzVabGFwTlVtcElSM" + 
+    "UF2L2ltbWRCbmZSZkI2bStheFxuIiArDQogICAgImVmTmpZNk15bDgvYWVwdU5EL0UxTUp" + 
+    "2aU9NQ20zY3lybU9zTmo1cndnMkFJR080dnc0aGRqWHFPTGV6ODd0L1hcbiIgKw0KICAgI" + 
+    "CJPWU5QNzRUcld2TG1jTm1sS2ZRTmZNc0NBd0VBQVE9PVxuIiArDQogICAgIi0tLS0tRU5" + 
+    "EIFBVQkxJQyBLRVktLS0tLSI7Ii0tLS0tQkVHSU4gUFVCTElDIEtFWS0tLS0tXG4iICsNC" + 
+    "iAgICAiTUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUF2Ulc" + 
+    "yUWNiS2J6RG9iTWRrTHF2WVxuIiArDQogICAgIkZiNjZJaDQxVDErWDNzcFcxV1A2VWR1T" +
+    "TFrUytiVmg3SHdHMjNwdDhlL1hKQWY5RzRJaFdUWmZrZ1ZCZE1zRlBcbiIgKw0KICAgICJ" +
+    "VZkNKRGlQLzljYlFCZ05EdFQ4NWpsRkhqQjFkQmxKNTFIaDhrRGt4LzEvZGd5MmIvWmpKM" +
+    "Fl3QUZMcGsyazhXXG4iICsNCiAgICAiWk84d3RJT0VITVNkTHJ5Vmg4SmtwazFxU1laUFp" +
+    "adVcrUUVFL0crVEpjRjI4Nm1MRXBUZlovUlFONG1nL25DU1xuIiArDQogICAgIkZoVzRSd" +
+    "jl3bkY4ZGhnVTQza1RpTHdWOHdWZ09US3hBc2VEeE15dmJqS2lpSCt1NVlCeVpOTjFoUFZ" +
+    "GU1lRTnhcbiIgKw0KICAgICIwNklLMEVhN3drMFVUUmhDd0xGdTJBT1BHTDNBeWxGbmpsS" +
+    "ENkKy92YkRyVzNXRGozS1JUYlpGeHR5c1lxbjNCXG4iICsNCiAgICAiU25OWnk2RDF4UG4" +
+    "3OW5zZ1dmS3JnUW85S1RnUDlncFNvZWJCWndGSVJtQkQ1UTJCcHdadmJaajVsSmdFWUpwZ" +
+    "VxuIiArDQogICAgInhINUxXNlJmdjJHWmpVK1M1U0VQTlhNbFNmNmttZmJKQUVoc3lxS2o" +
+    "rdFdadHJpM0FmRUJoRzdoa21tejUxekFcbiIgKw0KICAgICIzMkp3U0dWL0lGcWJsT0hzT" +
+    "05zWml6T2w0T3h6U3l0Z2ZoQ3lPa0FnNnpjYjVIY2QzWm9kMFNIc2Nna1lQQWVPXG4iICs" +
+    "NCiAgICAiOVpadkQ2cG5lUnJjQjF0Z0JQejNDU3A2VU9lOWt0SzBMbzVabGFwTlVtcElSM" +
+    "UF2L2ltbWRCbmZSZkI2bStheFxuIiArDQogICAgImVmTmpZNk15bDgvYWVwdU5EL0UxTUp" +
+    "2aU9NQ20zY3lybU9zTmo1cndnMkFJR080dnc0aGRqWHFPTGV6ODd0L1hcbiIgKw0KICAgI" +
+    "CJPWU5QNzRUcld2TG1jTm1sS2ZRTmZNc0NBd0VBQVE9PVxuIiArDQogICAgIi0tLS0tRU5" + 
+    "EIFBVQkxJQyBLRVktLS0tLSI7"
+    
+    // Get text input
+    var textInput = document.getElementById("source_text");
+    
+    // Generate AES key
+    const aesKey = await window.crypto.subtle.generateKey(
+      {
+        name: 'AES-GCM',
+        length: 256,
+      },
+      true,
+      ['encrypt', 'decrypt']
+    );
+
+    // Import RSA public key
+    const importedRSAPublicKey = await window.crypto.subtle.importKey(
+      'spki',
+      rsaPublicKey,
+      {
+        name: 'RSA-OAEP',
+        hash: { name: 'SHA-512' },
+      },
+      false,
+      ['encrypt']
+    );
+
+    // Export AES key
+    const exportedAESKey = await window.crypto.subtle.exportKey('raw', aesKey);
+
+    // Encrypt text with AES key
+    const textEncoder = new TextEncoder();
+    const encodedText = await window.crypto.subtle.encrypt(
+      {
+        name: 'AES-GCM',
+        iv: window.crypto.getRandomValues(new Uint8Array(12)),
+      },
+      aesKey,
+      textEncoder.encode(textInput)
+    );
+
+    // Encrypt AES key with RSA public key
+    const encryptedAESKey = await window.crypto.subtle.encrypt(
+      {
+        name: 'RSA-OAEP',
+      },
+      importedRSAPublicKey,
+      exportedAESKey
+    );
+
+    alert('exportedAESKey:', exportedAESKey);
+    alert('encodedText:', encodedText);
+
+    // Encoded text and AES key
+    const encodedData = {
+      encodedText: Array.from(new Uint8Array(encodedText))
+        .map(byte => String.fromCharCode(byte))
+        .join(''),
+      encryptedAESKey: Array.from(new Uint8Array(encryptedAESKey))
+        .map(byte => String.fromCharCode(byte))
+        .join(''),
+    };
+    var hiddenEncodedText = document.createElement("input");
+    hiddenEncodedText.type = "hidden";
+    hiddenEncodedText.name = "encodedText";
+    hiddenEncodedText.id = "encodedText";
+    hiddenEncodedText.value = encodedText;
+
+    var hiddenEncryptedAESKey = document.createElement("input");
+    hiddenEncryptedAESKey.type = "hidden";
+    hiddenEncryptedAESKey.name = "encryptedAESKey";
+    hiddenEncryptedAESKey.id = "encryptedAESKey";
+    hiddenEncryptedAESKey.value = encryptedAESKey;
+
+    // Append the hidden input to the form
+    var form = document.getElementById("translation_form");
+    form.appendChild(hiddenEncodedText);
+    form.appendChild(hiddenEncryptedAESKey);
+
+    return encodedData;
+  } catch (error) {
+    alert('Error:', error);
+    return null;
+  }
+}
+

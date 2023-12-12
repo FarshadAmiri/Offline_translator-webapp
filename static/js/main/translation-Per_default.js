@@ -119,8 +119,8 @@ function encodeText(event) {
   // Create a hidden input element
   var hiddenInput = document.createElement("input");
   hiddenInput.type = "hidden";
-  hiddenInput.name = "encoded_text";
-  hiddenInput.id = "encoded_text";
+  hiddenInput.name = "encodedText";
+  hiddenInput.id = "encodedText";
   hiddenInput.value = encryptedText;
 
   // Append the hidden input to the form

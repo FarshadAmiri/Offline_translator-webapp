@@ -28,14 +28,16 @@ def Translation(request):
         return render(request, 'main/translation-Eng_default.html', {"eng_source": True,})
     
     elif (request.method == 'POST') and "translate-btn" in request.POST:
-        print(f"\n\n\nencoded_text from client:\n{request.POST.get('encoded_text')}\n\n\n")
         source_lang = request.POST.get('btnradio_left')
-        print(f"\n\nsource_lang: {source_lang}\n\n")
+        print(f"\nsource_lang: {source_lang}\n")
         target_lang = 'Persian' if source_lang == 'English' else 'English'
-        encoded_text = request.POST.get('encoded_text')
+        encoded_text = request.POST.get('encodedText')
+        encrypted_aes_key = request.POST.get('encryptedAESKey')
+        print(f"\nencoded_text from client:\n{encoded_text}\n")
+        print(f"\nencrypted_aes_key from client:\n{encrypted_aes_key}\n")
         encoded_text = encoded_text.split("%NEW_CHUNCK%")
         print(f"\n\n\nlength of encoded_text: {len(encoded_text)}\n\n\n")
-        source_text = decode_text_cryptodome(encoded_text, source_lang, chunkded=True)
+        source_text = decode_chuncks(encoded_text, source_lang, chunkded=True)
         print(f"\n\ndecrypted_text: {source_text}\n\n")
         # source_text = base64.b64decode(encoded_text).decode('utf-8')
         detected_lang = detect_language(source_text)
