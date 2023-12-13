@@ -6,7 +6,17 @@
 <link rel="stylesheet" type="text/css" href="{% static 'css/main/translation-Eng_default.css' %}">
 <script type="text/javascript" src="{% static 'jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'jsencrypt.js' %}"></script>
-{% comment %} <script src="{% static 'crypto.js' %}"></script> {% endcomment %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.2.1/jsencrypt.min.js"></script>
+<script>
+function decryptText(encryptedText, aesKey) {
+    // Decrypt the text with the AES key
+    var decryptedBytes = CryptoJS.AES.decrypt(encryptedText, aesKey, { iv: aesKey });
+    var decryptedText = decryptedBytes.toString(CryptoJS.enc.Utf8);
+    return decryptedText;
+}
+
+</script>
 <script>
 function loadPublicKeyFromFile(file) {
   return fetch(file)
@@ -14,7 +24,7 @@ function loadPublicKeyFromFile(file) {
     .then(publicKey => publicKey.trim());
 }
 
-function encrypt(text) {
+function encrypt2(text) {
   // Replace 'publicKey' with the actual public key
   var publicKey = "-----BEGIN PUBLIC KEY-----\n" +
                   "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvRW2QcbKbzDobMdkLqvY\n" +
@@ -39,49 +49,46 @@ function encrypt(text) {
 }
 </script>
 <script>
-function encodeTextAndKey2(event) {
-const crypto = require('crypto');
+function generateRandomKey(length) {
+      var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      var result = "";
+      for (var i = 0; i < length; i++) {
+        result += charset.charAt(Math.floor(Math.random() * charset.length));
+      }
+      return result;
+    }
 
-  var rsaPublicKey = "-----BEGIN PUBLIC KEY-----\n" +
-          "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvRW2QcbKbzDobMdkLqvY\n" +
-          "Fb66Ih41T1+X3spW1WP6UduM1kS+bVh7HwG23pt8e/XJAf9G4IhWTZfkgVBdMsFP\n" +
-          "UfCJDiP/9cbQBgNDtT85jlFHjB1dBlJ51Hh8kDkx/1/dgy2b/ZjJ0YwAFLpk2k8W\n" +
-          "ZO8wtIOEHMSdLryVh8Jkpk1qSYZPZZuW+QEE/G+TJcF286mLEpTfZ/RQN4mg/nCS\n" +
-          "FhW4Rv9wnF8dhgU43kTiLwV8wVgOTKxAseDxMyvbjKiiH+u5YByZNN1hPVFSYQNx\n" +
-          "06IK0Ea7wk0UTRhCwLFu2AOPGL3AylFnjlHCd+/vbDrW3WDj3KRTbZFxtysYqn3B\n" +
-          "SnNZy6D1xPn79nsgWfKrgQo9KTgP9gpSoebBZwFIRmBD5Q2BpwZvbZj5lJgEYJpe\n" +
-          "xH5LW6Rfv2GZjU+S5SEPNXMlSf6kmfbJAEhsyqKj+tWZtri3AfEBhG7hkmmz51zA\n" +
-          "32JwSGV/IFqblOHsONsZizOl4OxzSytgfhCyOkAg6zcb5Hcd3Zod0SHscgkYPAeO\n" +
-          "9ZZvD6pneRrcB1tgBPz3CSp6UOe9ktK0Lo5ZlapNUmpIR1Av/immdBnfRfB6m+ax\n" +
-          "efNjY6Myl8/aepuND/E1MJviOMCm3cyrmOsNj5rwg2AIGO4vw4hdjXqOLez87t/X\n" +
-          "OYNP74TrWvLmcNmlKfQNfMsCAwEAAQ==\n" +
-          "-----END PUBLIC KEY-----";
-  // Get text input
-  var textInput = document.getElementById("source_text");
+function encryptText3(event) {
+    var publicKey = "-----BEGIN PUBLIC KEY-----\n" +
+                "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvRW2QcbKbzDobMdkLqvY\n" +
+                "Fb66Ih41T1+X3spW1WP6UduM1kS+bVh7HwG23pt8e/XJAf9G4IhWTZfkgVBdMsFP\n" +
+                "UfCJDiP/9cbQBgNDtT85jlFHjB1dBlJ51Hh8kDkx/1/dgy2b/ZjJ0YwAFLpk2k8W\n" +
+                "ZO8wtIOEHMSdLryVh8Jkpk1qSYZPZZuW+QEE/G+TJcF286mLEpTfZ/RQN4mg/nCS\n" +
+                "FhW4Rv9wnF8dhgU43kTiLwV8wVgOTKxAseDxMyvbjKiiH+u5YByZNN1hPVFSYQNx\n" +
+                "06IK0Ea7wk0UTRhCwLFu2AOPGL3AylFnjlHCd+/vbDrW3WDj3KRTbZFxtysYqn3B\n" +
+                "SnNZy6D1xPn79nsgWfKrgQo9KTgP9gpSoebBZwFIRmBD5Q2BpwZvbZj5lJgEYJpe\n" +
+                "xH5LW6Rfv2GZjU+S5SEPNXMlSf6kmfbJAEhsyqKj+tWZtri3AfEBhG7hkmmz51zA\n" +
+                "32JwSGV/IFqblOHsONsZizOl4OxzSytgfhCyOkAg6zcb5Hcd3Zod0SHscgkYPAeO\n" +
+                "9ZZvD6pneRrcB1tgBPz3CSp6UOe9ktK0Lo5ZlapNUmpIR1Av/immdBnfRfB6m+ax\n" +
+                "efNjY6Myl8/aepuND/E1MJviOMCm3cyrmOsNj5rwg2AIGO4vw4hdjXqOLez87t/X\n" +
+                "OYNP74TrWvLmcNmlKfQNfMsCAwEAAQ==\n" +
+                "-----END PUBLIC KEY-----";
+    var plainText = document.getElementById('source_text').value;
 
-  // Generate a 256-bit AES key
-  const aesKey = crypto.randomBytes(32);
+    // Generate a random 128-bit (16 bytes) AES key
+    var aesKey = CryptoJS.enc.Utf8.parse(generateRandomKey(16));
 
-  // Create an initialization vector for AES
-  const iv = crypto.randomBytes(16);
+    // Encrypt the text with the AES key
+    var encodedText = CryptoJS.AES.encrypt(plainText, aesKey, { iv: aesKey }).toString();
 
-  // Encrypt the text using AES
-  const aesCipher = crypto.createCipheriv('aes-256-cbc', aesKey, iv);
-  let encodedText = aesCipher.update(text, 'utf8', 'base64');
-  encodedText += aesCipher.final('base64');
+    // RSA Encryption
+    var encrypt = new JSEncrypt();
+    encrypt.setPublicKey(publicKey);
 
-  // Convert the RSA public key to a format that crypto can use
-  const rsaKey = Buffer.from(rsaPublicKey, 'base64').toString('ascii');
+    // Encrypt AES key using RSA public key
+    var encryptedAesKey = encrypt.encrypt(aesKey.toString(CryptoJS.enc.Base64));
 
-  // Encrypt the AES key using RSA
-  const encryptedAESKey = crypto.publicEncrypt(
-    {
-      key: rsaKey,
-      padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-      oaepHash: "sha256",
-    },
-    aesKey
-  );
+    // Embed AES key and encrypted text into the form
     var hiddenEncodedText = document.createElement("input");
     hiddenEncodedText.type = "hidden";
     hiddenEncodedText.name = "encodedText";
@@ -90,22 +97,23 @@ const crypto = require('crypto');
 
     var hiddenEncryptedAESKey = document.createElement("input");
     hiddenEncryptedAESKey.type = "hidden";
-    hiddenEncryptedAESKey.name = "encryptedAESKey";
-    hiddenEncryptedAESKey.id = "encryptedAESKey";
-    hiddenEncryptedAESKey.value = encryptedAESKey;
+    hiddenEncryptedAESKey.name = "encryptedAesKey";
+    hiddenEncryptedAESKey.id = "encryptedAesKey";
+    hiddenEncryptedAESKey.value = encryptedAesKey;
 
     // Append the hidden input to the form
     var form = document.getElementById("translation_form");
     form.appendChild(hiddenEncodedText);
     form.appendChild(hiddenEncryptedAESKey);
 
-  return {
+    // Return the encrypted text and encrypted AES key
+    return {
     encryptedText: encryptedText,
-    encryptedAesKey: encryptedAesKey.toString('base64')
-  };
+    encryptedAesKey: encryptedAesKey
+    };
 }
 
-{% comment %} module.exports = { encodeTextAndKey2(event) }; {% endcomment %}
+
 </script>
 {% endblock %}
 
@@ -174,7 +182,7 @@ const crypto = require('crypto');
             <div class="row justify-content-center">
                 <div class="col-12 text-center">
                     {% comment %} <button type="submit"  id="translate-btn" name="translate-btn" class="btn btn-primary" onclick="encodeText(event)">ترجمه</button> {% endcomment %}
-                    <button type="submit"  id="translate-btn" name="translate-btn" class="btn btn-primary" onclick="encodeTextAndKey2(event)">ترجمه</button>
+                    <button type="submit"  id="translate-btn" name="translate-btn" class="btn btn-primary" onclick="encryptText3(event)">ترجمه</button>
                 </div>
             </div>
         </div>

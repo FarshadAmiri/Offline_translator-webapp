@@ -32,7 +32,7 @@ def Translation(request):
         print(f"\nsource_lang: {source_lang}\n")
         target_lang = 'Persian' if source_lang == 'English' else 'English'
         encoded_text = request.POST.get('encodedText')
-        encrypted_aes_key = request.POST.get('encryptedAESKey')
+        encrypted_aes_key = request.POST.get('encryptedAesKey')
         print(f"\nencoded_text from client:\n{encoded_text}\n")
         print(f"\nencrypted_aes_key from client:\n{encrypted_aes_key}\n")
         encoded_text = encoded_text.split("%NEW_CHUNCK%")
