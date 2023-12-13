@@ -1,5 +1,6 @@
 {% extends "main\base.html" %}
 {% load static %}
+{% comment %} {% load js %} {% endcomment %}
 
 {% block head-static %}
 {% comment %} <script type="text/javascript" src="{% static 'js/main/translation-Eng_default.js' %}"></script> {% endcomment %}
@@ -8,6 +9,16 @@
 <script src="{% static 'jsencrypt.js' %}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.2.1/jsencrypt.min.js"></script>
+<script>
+{% comment %} function decryptText2(event) {
+    var translation = document.getElementById("translation");
+    var source_text = document.getElementById("source_text");
+    source_text = decryptText("{{ source_textsafe }}", "{{ aesKeysafe }}");
+    translation = decryptText("{{ translationsafe }}", "{{ aesKeysafe }}");
+    source_text.value = source_text;
+    translation.value = translation;
+} {% endcomment %}
+</script>
 <script>
 function decryptText(encryptedText, aesKey) {
     // Decrypt the text with the AES key
@@ -58,7 +69,7 @@ function generateRandomKey(length) {
       return result;
     }
 
-function encryptText3(event) {
+function encryptText(event) {
     var publicKey = "-----BEGIN PUBLIC KEY-----\n" +
                 "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvRW2QcbKbzDobMdkLqvY\n" +
                 "Fb66Ih41T1+X3spW1WP6UduM1kS+bVh7HwG23pt8e/XJAf9G4IhWTZfkgVBdMsFP\n" +
@@ -113,7 +124,6 @@ function encryptText3(event) {
     };
 }
 
-
 </script>
 {% endblock %}
 
@@ -156,7 +166,9 @@ function encryptText3(event) {
                         <label class="btn btn-outline-primary persian-btn" for="btnradio2">فارسی</label>
                     </div>
                     </div>
-                    <textarea class="form-control" name="source_text" id="source_text" rows="20" placeholder="Enter text">{{source_text}}</textarea>
+                    {% comment %} <textarea class="form-control" name="source_text" id="source_text" rows="20" placeholder="Enter text">{{ source_text }}</textarea> {% endcomment %}
+                    <textarea class="form-control" name="source_text" id="source_text" rows="20" placeholder="Enter text"></textarea>
+                    <input type="hidden" id="source_text_hidden" value="{{ source_text }}">
                     <div class="text-center mt-2">
                         <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('source_text')">پاک</button>
                         <button type="button" class="btn btn-success copy-btn" onclick="copyText2('source_text')">کپی</button>
@@ -173,7 +185,10 @@ function encryptText3(event) {
                         <label class="btn btn-outline-primary english-btn" for="btnradio3">English</label>
                     </div>
                     </div>
-                    <textarea class="form-control" name="translation" id="translation" rows="25" readonly dir='rtl'>{{translation}}</textarea>
+                    {% comment %} <textarea class="form-control" name="translation" id="translation" rows="25" readonly dir='rtl'>{{translation}}</textarea> {% endcomment %}
+                    <textarea class="form-control" name="translation" id="translation" rows="25" readonly dir='rtl'></textarea>
+                    <input type="hidden" id="translation_hidden" value="{{ translation }}">
+                    <input type="hidden" id="aesKey_hidden" value="{{ aes_key }}">
                     <div class="text-center mt-2">
                         <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('translation')">پاک</button>
                         <button type="button" class="btn btn-success copy-btn" onclick="copyText2('translation')">کپی</button>
@@ -182,11 +197,24 @@ function encryptText3(event) {
             <div class="row justify-content-center">
                 <div class="col-12 text-center">
                     {% comment %} <button type="submit"  id="translate-btn" name="translate-btn" class="btn btn-primary" onclick="encodeText(event)">ترجمه</button> {% endcomment %}
-                    <button type="submit"  id="translate-btn" name="translate-btn" class="btn btn-primary" onclick="encryptText3(event)">ترجمه</button>
+                    <button type="submit"  id="translate-btn" name="translate-btn" class="btn btn-primary" onclick="encryptText(event)">ترجمه</button>
                 </div>
             </div>
         </div>
     </form>
 </div>
 <script type="text/javascript" src="{% static 'js/main/translation-Eng_default.js' %}"></script>
+<script>
+window.onload = function() {
+    var translation = document.getElementById("translation_hidden");
+    var source_text = document.getElementById("source_text_hidden");
+    var translation_hidden = document.getElementById("translation_hidden");
+    var source_text_hidden = document.getElementById("source_text_hidden");
+    var aesKey = document.getElementById("aesKey_hidden").value;
+    var decrypted_source_text = decryptText(source_text_hidden.value, aesKey);
+    var decrypted_translation = decryptText(translation_hidden.value, aesKey);
+    source_text.value = decrypted_source_text;
+    translation.value = decrypted_translation;
+}
+</script>
 {% endblock %}

@@ -1,4 +1,6 @@
+from django.utils.safestring import mark_safe
 from django import template
+import json
 
 register = template.Library()
 
@@ -9,3 +11,8 @@ def fa_digits(text):
     for i in range(len(english_digits)):
         text = str(text).replace(english_digits[i], persian_digits[i])
     return text
+
+
+@register.filter(is_safe=True)
+def js(obj):
+    return mark_safe(json.dumps(obj))

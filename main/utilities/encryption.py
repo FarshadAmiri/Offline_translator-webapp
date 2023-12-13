@@ -1,5 +1,11 @@
 from Cryptodome.PublicKey import RSA
 from Cryptodome.Cipher import PKCS1_v1_5
+from Crypto.Cipher import AES
+from Crypto.Protocol.KDF import PBKDF2
+from Crypto.Random import get_random_bytes
+import base64
+from Cryptodome.PublicKey import RSA
+from Cryptodome.Cipher import PKCS1_v1_5
 from base64 import b64decode
 
 
@@ -40,6 +46,52 @@ def encrypt_and_chunck(text, lang):
     for i in range(0, len(text), 128):
         chunk = text[i:i + 128]
         encrypted_bytes = cipher.encrypt(chunk)
-        encrypted_chunk = b64encode(encrypted_bytes).decode('utf-8')
+        encrypted_chunk = base64.b64encode(encrypted_bytes).decode('utf-8')
         encrypted_chunks.append(encrypted_chunk)
         
+
+def decode_RSA(encrypted_text, private_key_path:str='private_key.pem'):
+    with open(private_key_path, 'rb') as f:
+        private_key_data = f.read()
+    private_key = RSA.import_key(private_key_data)
+    cipher = PKCS1_v1_5.new(private_key)
+    decrypted_bytes = base64.b64decode(encrypted_text)
+    decrypted_text = cipher.decrypt(decrypted_bytes, None).decode('utf-8')
+    return decrypted_text
+
+
+def decrypt_AES(encrypted_text, encrypted_aes_key):
+    aes_key = decode_RSA(encrypted_aes_key).encode('utf-8')
+    aes_key = base64.b64decode(aes_key)
+    print(f"\naes_key: {aes_key}\n")
+    iv = aes_key  # Use the AES key as the initialization vector (IV)
+    cipher = AES.new(aes_key, AES.MODE_CBC, iv)
+    decrypted_text = cipher.decrypt(base64.b64decode(encrypted_text)).decode('utf-8').strip()
+    return decrypted_text, aes_key
+
+
+from Crypto.Util.Padding import pad, unpad
+# def encrypt_AES(text, aes_key):
+#     iv = get_random_bytes(16)  # Use the AES key as the initialization vector (IV) for demonstration purposes
+#     cipher = AES.new(aes_key, AES.MODE_CBC, iv)
+#     padded_text = pad(text.encode('utf-8'), 16)
+#     encrypted_text = cipher.encrypt(padded_text)
+#     encrypted_text = base64.b64encode(encrypted_text)
+#     return decrypt_AES(encrypted_text, aes_key)[0]
+
+from Crypto import Random
+def encrypt_AES(plain_text, aes_key):
+    # Assuming aes_key is already in bytes form and properly decoded from base64 if it was encoded
+    if isinstance(aes_key, str):
+        aes_key = base64.b64decode(aes_key.encode('utf-8'))
+    
+    # Generate a random IV, do not reuse the AES key as the IV
+    iv = Random.new().read(AES.block_size)
+    
+    # Create cipher object and encrypt the data
+    cipher = AES.new(aes_key, AES.MODE_CBC, iv)
+    padded_data = pad(plain_text.encode('utf-8'), AES.block_size)
+    encrypted_text = cipher.encrypt(padded_data)
+    
+    # Returning the encrypted data and the IV so that decryption can occur
+    return base64.b64encode(iv + encrypted_text)  # Prepend the IV to the encrypted data for use in decryption

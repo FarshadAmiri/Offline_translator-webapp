@@ -35,11 +35,8 @@ def Translation(request):
         encrypted_aes_key = request.POST.get('encryptedAesKey')
         print(f"\nencoded_text from client:\n{encoded_text}\n")
         print(f"\nencrypted_aes_key from client:\n{encrypted_aes_key}\n")
-        encoded_text = encoded_text.split("%NEW_CHUNCK%")
-        print(f"\n\n\nlength of encoded_text: {len(encoded_text)}\n\n\n")
-        source_text = decode_chuncks(encoded_text, source_lang, chunkded=True)
+        source_text, aes_key = decrypt_AES(encoded_text, encrypted_aes_key)
         print(f"\n\ndecrypted_text: {source_text}\n\n")
-        # source_text = base64.b64decode(encoded_text).decode('utf-8')
         detected_lang = detect_language(source_text)
 
         if detected_lang not in [None, source_lang]:
@@ -54,11 +51,16 @@ def Translation(request):
             translation = translate_en_fa(source_text)
         elif source_lang == "Persian":
             translation = translate_fa_en(source_text)
-
+        
+        encrypted_translation = encrypt_AES(translation, aes_key)
+        encrypted_source_text = encrypt_AES(source_text, aes_key)
+        print(f"\n\nencrypted_source_text: {encrypted_source_text}\n\n")
+        print(f"\n\nencrypted_translation: {encrypted_translation}\n\n")
+        print(f"\n\naes_key: {aes_key}\n\n")
         if source_lang == "English":
-            return render(request, 'main/translation-Eng_default.html', {'translation': translation, "source_text": source_text,})
+            return render(request, 'main/translation-Eng_default.html', {'translation': encrypted_translation, "source_text": encrypted_source_text, "aes_key": aes_key})
         elif source_lang == "Persian":
-            return render(request, 'main/translation-Per_default.html', {'translation': translation, "source_text": source_text,})
+            return render(request, 'main/translation-Per_default.html', {'translation': encrypted_translation, "source_text": encrypted_source_text, "aes_key": aes_key})
     
     elif (request.method == 'POST') and "save-btn" in request.POST:
         source_lang = request.POST.get('btnradio_left')
@@ -71,9 +73,9 @@ def Translation(request):
             task.save()
     
         if source_lang == "English":
-            return render(request, 'main/translation-Eng_default.html', {'translation': translation, "source_text": source_text,})
+            return render(request, 'main/translation-Eng_default.html', {'translation': translation, "source_text": source_text, "aes_key": aes_key})
         elif source_lang == "Persian":
-            return render(request, 'main/translation-Per_default.html', {'translation': translation, "source_text": source_text,})
+            return render(request, 'main/translation-Per_default.html', {'translation': translation, "source_text": source_text, "aes_key": aes_key})
 
 
 @login_required(login_url='users:login')
