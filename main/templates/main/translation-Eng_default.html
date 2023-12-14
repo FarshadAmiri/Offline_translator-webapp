@@ -43,7 +43,7 @@ function decryptText2(encryptedText, aesKey, iv) {
 </script>
 <script>
 function decryptText(encryptedText, aesKey, iv) {
-    // Decrypt the text with the AES key
+    // Decrypt the text with the AES key  #https://stackblitz.com/edit/cryptojs-aes-encrypt-decrypt?file=index.js
     {% comment %} var encryptedText = CryptoJS.enc.Hex.parse(encryptedText); {% endcomment %}
     var aesKey = CryptoJS.enc.Utf8.parse(aesKey);
     var iv = CryptoJS.enc.Utf8.parse(iv);
