@@ -44,12 +44,16 @@ function decryptText2(encryptedText, aesKey, iv) {
 <script>
 function decryptText(encryptedText, aesKey, iv) {
     // Decrypt the text with the AES key
+    {% comment %} var encryptedText = CryptoJS.enc.Hex.parse(encryptedText); {% endcomment %}
+    var aesKey = CryptoJS.enc.Utf8.parse(aesKey);
+    var iv = CryptoJS.enc.Utf8.parse(iv);
     var decryptedBytes = CryptoJS.AES.decrypt(encryptedText, aesKey, { iv: iv });
-    var decryptedBytes1 = atob(decryptedBytes)
-    console.log("decryptedBytes1:\n" + decryptedBytes)
-    var decryptedBytes2 = btoa(decryptedBytes)
-    console.log("decryptedBytes2:\n" + decryptedBytes)
+    //var decryptedBytes1 = atob(decryptedBytes)
+    //console.log("decryptedBytes1:\n" + decryptedBytes1)
+    //var decryptedBytes2 = btoa(decryptedBytes)
+    //console.log("decryptedBytes2:\n" + decryptedBytes2)
     var decryptedText = decryptedBytes.toString(CryptoJS.enc.Utf8);
+    console.log("decryptedText:\n" + decryptedText)
     return decryptedText;
 }
 
@@ -243,6 +247,7 @@ window.onload = function() {
     iv_source_hidden = btoa(iv_source_hidden)
     iv_translation_hidden = btoa(iv_translation_hidden)
     var aesKey = document.getElementById("aesKey_hidden").value;
+    aesKey = btoa(aesKey)
     alert("source_text_hidden: \n" + source_text_hidden);
     alert("iv_source_hidden: \n" + iv_source_hidden);
     alert("aesKey: \n" + aesKey);
