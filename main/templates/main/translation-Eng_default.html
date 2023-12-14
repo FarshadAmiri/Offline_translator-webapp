@@ -10,16 +10,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.2.1/jsencrypt.min.js"></script>
 <script>
-{% comment %} function decryptText2(event) {
-    var translation = document.getElementById("translation");
-    var source_text = document.getElementById("source_text");
-    source_text = decryptText("{{ source_textsafe }}", "{{ aesKeysafe }}");
-    translation = decryptText("{{ translationsafe }}", "{{ aesKeysafe }}");
-    source_text.value = source_text;
-    translation.value = translation;
-} {% endcomment %}
-</script>
-<script>
 function decryptText(encryptedText, aesKey, iv) {
   try {
     // Decode the base64-encoded inputs
