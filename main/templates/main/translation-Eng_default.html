@@ -10,7 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.2.1/jsencrypt.min.js"></script>
 <script>
-function decryptText(encryptedText, aesKey, iv) {
+function decryptText2(encryptedText, aesKey, iv) {
   try {
     // Decode the base64-encoded inputs
     const encryptedBytes = CryptoJS.enc.Base64.parse(encryptedText);
@@ -42,9 +42,13 @@ function decryptText(encryptedText, aesKey, iv) {
 }
 </script>
 <script>
-function decryptText2(encryptedText, aesKey, iv) {
+function decryptText(encryptedText, aesKey, iv) {
     // Decrypt the text with the AES key
     var decryptedBytes = CryptoJS.AES.decrypt(encryptedText, aesKey, { iv: iv });
+    var decryptedBytes1 = atob(decryptedBytes)
+    console.log("decryptedBytes1:\n" + decryptedBytes)
+    var decryptedBytes2 = btoa(decryptedBytes)
+    console.log("decryptedBytes2:\n" + decryptedBytes)
     var decryptedText = decryptedBytes.toString(CryptoJS.enc.Utf8);
     return decryptedText;
 }
