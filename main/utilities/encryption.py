@@ -92,6 +92,7 @@ def encrypt_AES(plain_text, aes_key):
     cipher = AES.new(aes_key, AES.MODE_CBC, iv)
     padded_data = pad(plain_text.encode('utf-8'), AES.block_size)
     encrypted_text = cipher.encrypt(padded_data)
+    encrypted_text = base64.b64encode(iv + encrypted_text)
     
     # Returning the encrypted data and the IV so that decryption can occur
-    return base64.b64encode(iv + encrypted_text)  # Prepend the IV to the encrypted data for use in decryption
+    return encrypted_text, iv # Prepend the IV to the encrypted data for use in decryption

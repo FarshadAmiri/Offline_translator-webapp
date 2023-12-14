@@ -20,9 +20,41 @@
 } {% endcomment %}
 </script>
 <script>
-function decryptText(encryptedText, aesKey) {
+function decryptText(encryptedText, aesKey, iv) {
+  try {
+    // Decode the base64-encoded inputs
+    const encryptedBytes = CryptoJS.enc.Base64.parse(encryptedText);
+    const aesKeyBytes = CryptoJS.enc.Base64.parse(aesKey);
+    const ivBytes = CryptoJS.enc.Base64.parse(iv);
+
+    // Create the decryption configuration
+    const decryptionConfig = {
+      iv: ivBytes,
+      mode: CryptoJS.mode.CBC,
+      padding: CryptoJS.pad.Pkcs7,
+    };
+
+    // Decrypt the text with the AES key and IV
+    const decryptedBytes = CryptoJS.AES.decrypt(
+      { ciphertext: encryptedBytes },
+      aesKeyBytes,
+      decryptionConfig
+    );
+
+    // Convert the decrypted byte array to a string using UTF-8 encoding
+    const decryptedText = decryptedBytes.toString(CryptoJS.enc.Utf8);
+
+    return decryptedText;
+  } catch (error) {
+    console.error('Error:', error);
+    return null;
+  }
+}
+</script>
+<script>
+function decryptText2(encryptedText, aesKey, iv) {
     // Decrypt the text with the AES key
-    var decryptedBytes = CryptoJS.AES.decrypt(encryptedText, aesKey, { iv: aesKey });
+    var decryptedBytes = CryptoJS.AES.decrypt(encryptedText, aesKey, { iv: iv });
     var decryptedText = decryptedBytes.toString(CryptoJS.enc.Utf8);
     return decryptedText;
 }
@@ -189,6 +221,8 @@ function encryptText(event) {
                     <textarea class="form-control" name="translation" id="translation" rows="25" readonly dir='rtl'></textarea>
                     <input type="hidden" id="translation_hidden" value="{{ translation }}">
                     <input type="hidden" id="aesKey_hidden" value="{{ aes_key }}">
+                    <input type="hidden" id="iv_source_hidden" value="{{ iv_source }}">
+                    <input type="hidden" id="iv_translation_hidden" value="{{ iv_translation }}">
                     <div class="text-center mt-2">
                         <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('translation')">پاک</button>
                         <button type="button" class="btn btn-success copy-btn" onclick="copyText2('translation')">کپی</button>
@@ -208,11 +242,19 @@ function encryptText(event) {
 window.onload = function() {
     var translation = document.getElementById("translation_hidden");
     var source_text = document.getElementById("source_text_hidden");
-    var translation_hidden = document.getElementById("translation_hidden");
-    var source_text_hidden = document.getElementById("source_text_hidden");
+    var translation_hidden = document.getElementById("translation_hidden").value;
+    var source_text_hidden = document.getElementById("source_text_hidden").value;
+    var iv_source_hidden = document.getElementById("iv_source_hidden").value;
+    var iv_translation_hidden = document.getElementById("iv_translation_hidden").value;
+    iv_source_hidden = btoa(iv_source_hidden)
+    iv_translation_hidden = btoa(iv_translation_hidden)
     var aesKey = document.getElementById("aesKey_hidden").value;
-    var decrypted_source_text = decryptText(source_text_hidden.value, aesKey);
-    var decrypted_translation = decryptText(translation_hidden.value, aesKey);
+    alert("source_text_hidden: \n" + source_text_hidden);
+    alert("iv_source_hidden: \n" + iv_source_hidden);
+    alert("aesKey: \n" + aesKey);
+    var decrypted_source_text = decryptText(source_text_hidden, aesKey, iv_source_hidden);
+    var decrypted_translation = decryptText(translation_hidden, aesKey, iv_translation_hidden);
+    alert("decrypted_source_text.value: \n" + decrypted_source_text.value);
     source_text.value = decrypted_source_text;
     translation.value = decrypted_translation;
 }

@@ -52,15 +52,18 @@ def Translation(request):
         elif source_lang == "Persian":
             translation = translate_fa_en(source_text)
         
-        encrypted_translation = encrypt_AES(translation, aes_key)
-        encrypted_source_text = encrypt_AES(source_text, aes_key)
+        encrypted_translation, iv_source = encrypt_AES(translation, aes_key)
+        encrypted_source_text, iv_translation = encrypt_AES(source_text, aes_key)
         print(f"\n\nencrypted_source_text: {encrypted_source_text}\n\n")
-        print(f"\n\nencrypted_translation: {encrypted_translation}\n\n")
+        # print(f"\n\niv_source: {iv_source}\n\n")
+        print(f"\n\niv_source: {iv_source}\n\n")
         print(f"\n\naes_key: {aes_key}\n\n")
         if source_lang == "English":
-            return render(request, 'main/translation-Eng_default.html', {'translation': encrypted_translation, "source_text": encrypted_source_text, "aes_key": aes_key})
+            return render(request, 'main/translation-Eng_default.html', {'translation': encrypted_translation, "source_text": encrypted_source_text, "aes_key": aes_key,
+                                                                         "iv_source": iv_source, "iv_translation": iv_translation})
         elif source_lang == "Persian":
-            return render(request, 'main/translation-Per_default.html', {'translation': encrypted_translation, "source_text": encrypted_source_text, "aes_key": aes_key})
+            return render(request, 'main/translation-Per_default.html', {'translation': encrypted_translation, "source_text": encrypted_source_text, "aes_key": aes_key,
+                                                                         "iv_source": iv_source, "iv_translation": iv_translation})
     
     elif (request.method == 'POST') and "save-btn" in request.POST:
         source_lang = request.POST.get('btnradio_left')
