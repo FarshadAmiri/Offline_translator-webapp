@@ -31,6 +31,13 @@ def decode_chuncks(encrypted_chunks, lang, chunkded=False):
     decrypted_text = "".join(decrypted_chuncks)
     return decrypted_text
 
+def encrypt3(raw, encrypted_aes_key):
+        aes_key = decode_RSA(encrypted_aes_key).encode('utf-8')
+        aes_key = base64.b64decode(aes_key)
+        raw = pad(raw.encode(),16)
+        cipher = AES.new(aes_key.encode('utf-8'), AES.MODE_ECB)
+        return base64.b64encode(cipher.encrypt(raw))
+
 
 def encrypt_and_chunck(text, lang):
     with open('public_key.pem', 'rb') as f:
@@ -60,12 +67,21 @@ def decode_RSA(encrypted_text, private_key_path:str='private_key.pem'):
     return decrypted_text
 
 
-def decrypt_AES(encrypted_text, encrypted_aes_key):
+def decrypt_AES_CBC(encrypted_text, encrypted_aes_key):
     aes_key = decode_RSA(encrypted_aes_key).encode('utf-8')
     aes_key = base64.b64decode(aes_key)
     print(f"\naes_key: {aes_key}\n")
     iv = aes_key  # Use the AES key as the initialization vector (IV)
     cipher = AES.new(aes_key, AES.MODE_CBC, iv)
+    decrypted_text = cipher.decrypt(base64.b64decode(encrypted_text)).decode('utf-8').strip()
+    return decrypted_text, aes_key
+
+
+def decrypt_AES_ECB(encrypted_text, encrypted_aes_key):
+    aes_key = decode_RSA(encrypted_aes_key).encode('utf-8')
+    aes_key = base64.b64decode(aes_key)
+    print(f"\naes_key: {aes_key}\n")
+    cipher = AES.new(aes_key, AES.MODE_ECB)
     decrypted_text = cipher.decrypt(base64.b64decode(encrypted_text)).decode('utf-8').strip()
     return decrypted_text, aes_key
 
@@ -96,3 +112,18 @@ def encrypt_AES(plain_text, aes_key):
     
     # Returning the encrypted data and the IV so that decryption can occur
     return encrypted_text, iv # Prepend the IV to the encrypted data for use in decryption
+
+
+def encrypt_AES_ECB(plain_text, aes_key):
+    # Assuming aes_key is already in bytes form and properly decoded from base64 if it was encoded
+    if isinstance(aes_key, str):
+        aes_key = base64.b64decode(aes_key.encode('utf-8'))
+    
+    # Create cipher object and encrypt the data
+    cipher = AES.new(aes_key, AES.MODE_ECB)
+    padded_data = pad(plain_text.encode('utf-8'), AES.block_size)
+    encrypted_text = cipher.encrypt(padded_data)
+    encrypted_text = base64.b64encode(encrypted_text)
+    
+    # Returning the encrypted data and the IV so that decryption can occur
+    return encrypted_text # Prepend the IV to the encrypted data for use in decryption

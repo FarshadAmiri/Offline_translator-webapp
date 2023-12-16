@@ -35,7 +35,8 @@ def Translation(request):
         encrypted_aes_key = request.POST.get('encryptedAesKey')
         print(f"\nencoded_text from client:\n{encoded_text}\n")
         print(f"\nencrypted_aes_key from client:\n{encrypted_aes_key}\n")
-        source_text, aes_key = decrypt_AES(encoded_text, encrypted_aes_key)
+        source_text, aes_key = decrypt_AES_ECB(encoded_text, encrypted_aes_key)
+        # source_text, aes_key = decrypt_ecb(encoded_text, encrypted_aes_key)
         print(f"\n\ndecrypted_text: {source_text}\n\n")
         detected_lang = detect_language(source_text)
 
@@ -54,16 +55,21 @@ def Translation(request):
         
         encrypted_translation, iv_source = encrypt_AES(translation, aes_key)
         encrypted_source_text, iv_translation = encrypt_AES(source_text, aes_key)
+
+        encrypted_translation = encrypt_AES_ECB(translation, aes_key)
+        encrypted_source_text = encrypt_AES_ECB(source_text, aes_key)
         print(f"\n\nencrypted_source_text: {encrypted_source_text}\n\n")
         # print(f"\n\niv_source: {iv_source}\n\n")
-        print(f"\n\niv_source: {iv_source}\n\n")
+        # print(f"\n\niv_source: {iv_source}\n\n")
         print(f"\n\naes_key: {aes_key}\n\n")
         if source_lang == "English":
             return render(request, 'main/translation-Eng_default.html', {'translation': encrypted_translation, "source_text": encrypted_source_text, "aes_key": aes_key,
-                                                                         "iv_source": iv_source, "iv_translation": iv_translation})
+                                                                        #  "iv_source": iv_source, "iv_translation": iv_translation
+                                                                         })
         elif source_lang == "Persian":
             return render(request, 'main/translation-Per_default.html', {'translation': encrypted_translation, "source_text": encrypted_source_text, "aes_key": aes_key,
-                                                                         "iv_source": iv_source, "iv_translation": iv_translation})
+                                                                        #  "iv_source": iv_source, "iv_translation": iv_translation
+                                                                         })
     
     elif (request.method == 'POST') and "save-btn" in request.POST:
         source_lang = request.POST.get('btnradio_left')
