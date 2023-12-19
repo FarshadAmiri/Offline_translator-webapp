@@ -6,36 +6,86 @@
 <link rel="stylesheet" type="text/css" href="{% static 'css/main/translation-Per_default.css' %}">
 <script type="text/javascript" src="{% static 'jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'jsencrypt.js' %}"></script>
+<script src="{% static 'crypto-js.js' %}"></script>
 <script>
-function loadPublicKeyFromFile(file) {
-  return fetch(file)
-    .then(response => response.text())
-    .then(publicKey => publicKey.trim());
+function generateRandomKey(length) {
+      var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      var result = "";
+      for (var i = 0; i < length; i++) {
+        result += charset.charAt(Math.floor(Math.random() * charset.length));
+      }
+      return result;
+    }
+
+function encryptText(event, mode) {
+    var publicKey = "-----BEGIN PUBLIC KEY-----\n" +
+                "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvRW2QcbKbzDobMdkLqvY\n" +
+                "Fb66Ih41T1+X3spW1WP6UduM1kS+bVh7HwG23pt8e/XJAf9G4IhWTZfkgVBdMsFP\n" +
+                "UfCJDiP/9cbQBgNDtT85jlFHjB1dBlJ51Hh8kDkx/1/dgy2b/ZjJ0YwAFLpk2k8W\n" +
+                "ZO8wtIOEHMSdLryVh8Jkpk1qSYZPZZuW+QEE/G+TJcF286mLEpTfZ/RQN4mg/nCS\n" +
+                "FhW4Rv9wnF8dhgU43kTiLwV8wVgOTKxAseDxMyvbjKiiH+u5YByZNN1hPVFSYQNx\n" +
+                "06IK0Ea7wk0UTRhCwLFu2AOPGL3AylFnjlHCd+/vbDrW3WDj3KRTbZFxtysYqn3B\n" +
+                "SnNZy6D1xPn79nsgWfKrgQo9KTgP9gpSoebBZwFIRmBD5Q2BpwZvbZj5lJgEYJpe\n" +
+                "xH5LW6Rfv2GZjU+S5SEPNXMlSf6kmfbJAEhsyqKj+tWZtri3AfEBhG7hkmmz51zA\n" +
+                "32JwSGV/IFqblOHsONsZizOl4OxzSytgfhCyOkAg6zcb5Hcd3Zod0SHscgkYPAeO\n" +
+                "9ZZvD6pneRrcB1tgBPz3CSp6UOe9ktK0Lo5ZlapNUmpIR1Av/immdBnfRfB6m+ax\n" +
+                "efNjY6Myl8/aepuND/E1MJviOMCm3cyrmOsNj5rwg2AIGO4vw4hdjXqOLez87t/X\n" +
+                "OYNP74TrWvLmcNmlKfQNfMsCAwEAAQ==\n" +
+                "-----END PUBLIC KEY-----";
+    var plainText = document.getElementById('source_text').value;
+
+    // Generate a random 128-bit (16 bytes) AES key
+    var aesRawKey = generateRandomKey(16)
+    var aesKey = CryptoJS.enc.Utf8.parse(aesRawKey);
+    localStorage.setItem("aesRawKey_translation", aesRawKey);
+
+    // Encrypt the text with the AES key
+    var encryptedText = CryptoJS.AES.encrypt(plainText, aesKey, {mode: CryptoJS.mode.ECB}).toString();
+    
+    if (mode === "saving") {
+        var translation = document.getElementById('translation').value;
+        var encryptedTranslation = CryptoJS.AES.encrypt(translation, aesKey, {mode: CryptoJS.mode.ECB}).toString();
+    }
+
+    // RSA Encryption on AES key using RSA public key
+    var encrypt = new JSEncrypt();
+    encrypt.setPublicKey(publicKey);
+    var encryptedAesKey = encrypt.encrypt(aesKey.toString(CryptoJS.enc.Base64));
+
+    // Embed AES key and encrypted text into the form
+    var hiddenEncodedText = document.createElement("input");
+    hiddenEncodedText.type = "hidden";
+    hiddenEncodedText.name = "encryptedText";
+    hiddenEncodedText.id = "encryptedText";
+    hiddenEncodedText.value = encryptedText;
+
+    var hiddenEncryptedAESKey = document.createElement("input");
+    hiddenEncryptedAESKey.type = "hidden";
+    hiddenEncryptedAESKey.name = "encryptedAesKey";
+    hiddenEncryptedAESKey.id = "encryptedAesKey";
+    hiddenEncryptedAESKey.value = encryptedAesKey;
+
+    // Append the hidden input to the form
+    var form = document.getElementById("translation_form");
+    form.appendChild(hiddenEncodedText);
+    form.appendChild(hiddenEncryptedAESKey);
+    if (mode === "saving") {
+    var hiddenEncryptedTranslation = document.createElement("input");
+    hiddenEncryptedTranslation.type = "hidden";
+    hiddenEncryptedTranslation.name = "encryptedTranslation";
+    hiddenEncryptedTranslation.id = "encryptedTranslation";
+    hiddenEncryptedTranslation.value = encryptedTranslation;
+
+    form.appendChild(hiddenEncryptedTranslation);
+    }
+
+    // Return the encrypted text and encrypted AES key
+    return {
+    encryptedText: encryptedText,
+    encryptedAesKey: encryptedAesKey
+    };
 }
 
-function encrypt(text) {
-  // Replace 'publicKey' with the actual public key
-  var publicKey = "-----BEGIN PUBLIC KEY-----\n" +
-                  "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvRW2QcbKbzDobMdkLqvY\n" +
-                  "Fb66Ih41T1+X3spW1WP6UduM1kS+bVh7HwG23pt8e/XJAf9G4IhWTZfkgVBdMsFP\n" +
-                  "UfCJDiP/9cbQBgNDtT85jlFHjB1dBlJ51Hh8kDkx/1/dgy2b/ZjJ0YwAFLpk2k8W\n" +
-                  "ZO8wtIOEHMSdLryVh8Jkpk1qSYZPZZuW+QEE/G+TJcF286mLEpTfZ/RQN4mg/nCS\n" +
-                  "FhW4Rv9wnF8dhgU43kTiLwV8wVgOTKxAseDxMyvbjKiiH+u5YByZNN1hPVFSYQNx\n" +
-                  "06IK0Ea7wk0UTRhCwLFu2AOPGL3AylFnjlHCd+/vbDrW3WDj3KRTbZFxtysYqn3B\n" +
-                  "SnNZy6D1xPn79nsgWfKrgQo9KTgP9gpSoebBZwFIRmBD5Q2BpwZvbZj5lJgEYJpe\n" +
-                  "xH5LW6Rfv2GZjU+S5SEPNXMlSf6kmfbJAEhsyqKj+tWZtri3AfEBhG7hkmmz51zA\n" +
-                  "32JwSGV/IFqblOHsONsZizOl4OxzSytgfhCyOkAg6zcb5Hcd3Zod0SHscgkYPAeO\n" +
-                  "9ZZvD6pneRrcB1tgBPz3CSp6UOe9ktK0Lo5ZlapNUmpIR1Av/immdBnfRfB6m+ax\n" +
-                  "efNjY6Myl8/aepuND/E1MJviOMCm3cyrmOsNj5rwg2AIGO4vw4hdjXqOLez87t/X\n" +
-                  "OYNP74TrWvLmcNmlKfQNfMsCAwEAAQ==\n" +
-                  "-----END PUBLIC KEY-----";
-
-  var encrypt = new JSEncrypt();
-  encrypt.setPublicKey(publicKey);
-  var encryptedText = encrypt.encrypt(text);
-  //var encryptedText = btoa(encryptedText);
-  return encryptedText;
-}
 </script>
 {% endblock %}
 
@@ -43,7 +93,7 @@ function encrypt(text) {
 <div class="container-fluid">
     {{ form.media }}
     {% if edit_mode %}
-        <form action="{% url 'main:edit_saved_text' task_id%}" method="post" onsubmit="encodeText()">
+        <form id="translation_form" action="{% url 'main:edit_saved_text' task_id%}" method="post">
     {% else %}
         <form id="translation_form" action="{% url 'main:translation' %}" method="post">
     {% endif %}
@@ -52,17 +102,17 @@ function encrypt(text) {
             {% if messages %}
                 {% for message in messages %}
                     <div class="alert alert-warning" role="alert">
-                        <h6 dir='rtl'>{{ message }}</h6>
+                        <h6 dir='ltr'>{{ message }}</h6>
                     </div>
                 {% endfor %}
             {% endif %}
             <div class="row">
             <div class="d-flex justify-content-end" style="position: top: 0; right: 0; padding: 0px;">
             {% if edit_mode %}
-                <button type="submit" id="edit-btn" name="edit-btn" class="btn btn-success" style="margin-right: 5px">ثبت ویرایش</button>
-                    <button type="submit" id="remove-btn" name="remove-btn" class="btn btn-danger">حذف</button>
+                <button type="submit" id="edit-btn" name="edit-btn" class="btn btn-success" style="margin-right: 5px" onclick="encryptText(event, 'saving')">ثبت ویرایش</button>
+                    <button type="submit" id="remove-btn" name="remove-btn" class="btn btn-danger" onclick="encryptText(event)">حذف</button>
             {% else %}
-                <button type="button" id="save-btn" name="save-btn" class="btn btn-success">ذخیره شود</button>
+                <button type="submit" id="save-btn" name="save-btn" class="btn btn-success" onclick="encryptText(event, 'saving')">ذخیره شود</button>
             {% endif %}
             </div>
                 <div class="col-md-6">
@@ -77,7 +127,8 @@ function encrypt(text) {
                         <label class="btn btn-outline-primary persian-btn" for="btnradio2">فارسی</label>
                     </div>
                     </div>
-                    <textarea class="form-control" name="source_text" id="source_text" rows="25" placeholder="متن را وارد کنید" dir='rtl'>{{source_text}}</textarea>
+                    <textarea class="form-control" name="source_text" id="source_text" rows="25" placeholder="متن را وارد کنید" dir='rtl'></textarea>
+                    <input type="hidden" id="source_text_hidden" value="{{ source_text }}">
                     <div class="text-center mt-2">
                         <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('source_text')">پاک</button>
                         <button type="button" class="btn btn-success copy-btn" onclick="copyText2('source_text')">کپی</button>
@@ -94,7 +145,8 @@ function encrypt(text) {
                         <label class="btn btn-outline-primary english-btn" for="btnradio1">English</label>
                     </div>
                     </div>
-                    <textarea class="form-control" id="translation" name="translation" rows="20" readonly>{{translation}}</textarea>
+                    <textarea class="form-control" id="translation" name="translation" rows="20" readonly></textarea>
+                    <input type="hidden" id="translation_hidden" value="{{ translation }}">
                     <div class="text-center mt-2">
                         <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('translation')">پاک</button>
                         <button type="button" class="btn btn-success copy-btn" onclick="copyText2('translation')">کپی</button>
@@ -102,11 +154,29 @@ function encrypt(text) {
             </div>
             <div class="row justify-content-center">
                 <div class="col-12 text-center">
-                    <button type="submit" id="translate-btn" name="translate-btn" class="btn btn-primary" onclick="encodeText(event)">ترجمه</button>
+                    <button type="submit" id="translate-btn" name="translate-btn" class="btn btn-primary" onclick="encryptText(event)">ترجمه</button>
                 </div>
             </div>
         </div>
     </form>
 </div>
 <script type="text/javascript" src="{% static 'js/main/translation-Per_default.js' %}"></script>
+<script>
+window.onload = function() {
+    var translation = document.getElementById("translation");
+    var source_text = document.getElementById("source_text");
+    var translation_hidden = document.getElementById("translation_hidden").value;
+    var source_text_hidden = document.getElementById("source_text_hidden").value;
+    var aesRawKey = localStorage.getItem("aesRawKey_translation", aesRawKey);
+    var aesKey = CryptoJS.enc.Utf8.parse(aesRawKey);
+    var decryptedSourceText = CryptoJS.AES.decrypt(source_text_hidden, aesKey, {mode: CryptoJS.mode.ECB});
+    var decryptedTranslation = CryptoJS.AES.decrypt(translation_hidden, aesKey, {mode: CryptoJS.mode.ECB});
+    var decryptedSourceTextValue = decryptedSourceText.toString(CryptoJS.enc.Utf8);
+    var decryptedTranslationValue = decryptedTranslation.toString(CryptoJS.enc.Utf8);
+    decryptedSourceTextValue = decryptedSourceTextValue.replace(/[\x00-\x09\x0B-\x1F\x7F-\x9F]/g, '');
+    decryptedTranslationValue = decryptedTranslationValue.replace(/[\x00-\x09\x0B-\x1F\x7F-\x9F]/g, '');
+    source_text.value = decryptedSourceTextValue;
+    translation.value = decryptedTranslationValue;
+}
+</script>
 {% endblock %}

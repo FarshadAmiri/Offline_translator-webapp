@@ -6,110 +6,11 @@
 {% comment %} <script type="text/javascript" src="{% static 'js/main/translation-Eng_default.js' %}"></script> {% endcomment %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/main/translation-Eng_default.css' %}">
 <script type="text/javascript" src="{% static 'jquery-3.7.1.min.js' %}"></script>
-<script src="{% static 'index.min.js' %}"></script>
+{% comment %} <script src="{% static 'index.min.js' %}"></script> {% endcomment %}
 <script src="{% static 'jsencrypt.js' %}"></script>
-{% comment %} <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script> {% endcomment %}
-<script src="{% static 'crypto-js.js' %}"></script>
+{% comment %} <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script> {% endcomenmt %}
 {% comment %} <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.2.1/jsencrypt.min.js"></script> {% endcomment %}
-<script>
-function decryptECB(encryptedText, aesKeyBytes) {
-    // Convert the byte array to a word array for CryptoJS
-    var keyWordArray = CryptoJS.lib.WordArray.create(aesKeyBytes);
-
-    // Decrypt the ciphertext
-    var decryptedBytes = CryptoJS.AES.decrypt({ciphertext: CryptoJS.enc.Base64.parse(encryptedText)}, keyWordArray, {
-        mode: CryptoJS.mode.ECB,
-        padding: CryptoJS.pad.Pkcs7
-    });
-    
-    // Convert the decrypted data to a string
-    var decryptedText = decryptedBytes.toString(CryptoJS.enc.Utf8);
-
-    return decryptedText;
-}
-
-function decryptText4(encodedText, aesKey) {
-  try {
-    // Decode the Base64-encoded inputs
-    const encryptedBytes = CryptoJS.enc.Base64.parse(encodedText);
-    const aesKeyBytes = CryptoJS.enc.Utf8.parse(aesKey);
-
-    // Extract the IV from the encrypted bytes
-    const ivBytes = encryptedBytes.clone();
-    ivBytes.sigBytes = 16; // Assuming AES.block_size is 16 bytes
-
-    // Create the decryption configuration
-    const decryptionConfig = {
-      iv: ivBytes,
-      mode: CryptoJS.mode.CBC,
-      padding: CryptoJS.pad.Pkcs7,
-    };
-
-    // Decrypt the text with the AES key and IV
-    const decryptedBytes = CryptoJS.AES.decrypt(
-      { ciphertext: encryptedBytes.slice(16) },
-      aesKeyBytes,
-      decryptionConfig
-    );
-
-    // Remove padding from the decrypted bytes
-    const decryptedText = CryptoJS.enc.Utf8.stringify(decryptedBytes);
-
-    return decryptedText;
-  } catch (error) {
-    console.error('Error:', error);
-    return null;
-  }
-}
-
-function decryptText2(encryptedText, aesKey, iv) {
-  try {
-    // Decode the base64-encoded inputs
-    const encryptedBytes = CryptoJS.enc.Base64.parse(encryptedText);
-    const aesKeyBytes = CryptoJS.enc.Base64.parse(aesKey);
-    const ivBytes = CryptoJS.enc.Base64.parse(iv);
-
-    // Create the decryption configuration
-    const decryptionConfig = {
-      iv: ivBytes,
-      mode: CryptoJS.mode.CBC,
-      padding: CryptoJS.pad.Pkcs7,
-    };
-
-    // Decrypt the text with the AES key and IV
-    const decryptedBytes = CryptoJS.AES.decrypt(
-      { ciphertext: encryptedBytes },
-      aesKeyBytes,
-      decryptionConfig
-    );
-
-    // Convert the decrypted byte array to a string using UTF-8 encoding
-    const decryptedText = decryptedBytes.toString(CryptoJS.enc.Utf8);
-
-    return decryptedText;
-  } catch (error) {
-    console.error('Error:', error);
-    return null;
-  }
-}
-</script>
-<script>
-function decryptText(encryptedText, aesKey, iv) {
-    // Decrypt the text with the AES key  #https://stackblitz.com/edit/cryptojs-aes-encrypt-decrypt?file=index.js
-    {% comment %} var encryptedText = CryptoJS.enc.Hex.parse(encryptedText); {% endcomment %}
-    var aesKey = CryptoJS.enc.Utf8.parse(aesKey);
-    var iv = CryptoJS.enc.Utf8.parse(iv);
-    var decryptedBytes = CryptoJS.AES.decrypt(encryptedText, aesKey, { iv: iv });
-    //var decryptedBytes1 = atob(decryptedBytes)
-    //console.log("decryptedBytes1:\n" + decryptedBytes1)
-    //var decryptedBytes2 = btoa(decryptedBytes)
-    //console.log("decryptedBytes2:\n" + decryptedBytes2)
-    var decryptedText = decryptedBytes.toString(CryptoJS.enc.Utf8);
-    console.log("decryptedText:\n" + decryptedText)
-    return decryptedText;
-}
-
-</script>
+<script src="{% static 'crypto-js.js' %}"></script>
 <script>
 function generateRandomKey(length) {
       var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -120,7 +21,7 @@ function generateRandomKey(length) {
       return result;
     }
 
-function encryptText(event) {
+function encryptText(event, mode) {
     var publicKey = "-----BEGIN PUBLIC KEY-----\n" +
                 "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvRW2QcbKbzDobMdkLqvY\n" +
                 "Fb66Ih41T1+X3spW1WP6UduM1kS+bVh7HwG23pt8e/XJAf9G4IhWTZfkgVBdMsFP\n" +
@@ -138,27 +39,30 @@ function encryptText(event) {
     var plainText = document.getElementById('source_text').value;
 
     // Generate a random 128-bit (16 bytes) AES key
-    var aesKey = CryptoJS.enc.Utf8.parse(generateRandomKey(16));
+    var aesRawKey = generateRandomKey(16)
+    var aesKey = CryptoJS.enc.Utf8.parse(aesRawKey);
+    localStorage.setItem("aesRawKey_translation", aesRawKey);
 
     // Encrypt the text with the AES key
-    //var encodedText = CryptoJS.AES.encrypt(plainText, aesKey, {iv: aesKey}).toString();
-    var encodedText = CryptoJS.AES.encrypt(plainText, aesKey, {mode: CryptoJS.mode.ECB}).toString();
+    var encryptedText = CryptoJS.AES.encrypt(plainText, aesKey, {mode: CryptoJS.mode.ECB}).toString();
     
+    if (mode === "saving") {
+        var translation = document.getElementById('translation').value;
+        var encryptedTranslation = CryptoJS.AES.encrypt(translation, aesKey, {mode: CryptoJS.mode.ECB}).toString();
+    }
 
-    // RSA Encryption
+    // RSA Encryption on AES key using RSA public key
     var encrypt = new JSEncrypt();
     encrypt.setPublicKey(publicKey);
-
-    // Encrypt AES key using RSA public key
     var encryptedAesKey = encrypt.encrypt(aesKey.toString(CryptoJS.enc.Base64));
 
     // Embed AES key and encrypted text into the form
     var hiddenEncodedText = document.createElement("input");
     hiddenEncodedText.type = "hidden";
-    hiddenEncodedText.name = "encodedText";
-    hiddenEncodedText.id = "encodedText";
-    hiddenEncodedText.value = encodedText;
-
+    hiddenEncodedText.name = "encryptedText";
+    hiddenEncodedText.id = "encryptedText";
+    hiddenEncodedText.value = encryptedText;
+    
     var hiddenEncryptedAESKey = document.createElement("input");
     hiddenEncryptedAESKey.type = "hidden";
     hiddenEncryptedAESKey.name = "encryptedAesKey";
@@ -169,6 +73,15 @@ function encryptText(event) {
     var form = document.getElementById("translation_form");
     form.appendChild(hiddenEncodedText);
     form.appendChild(hiddenEncryptedAESKey);
+    if (mode === "saving") {
+        var hiddenEncryptedTranslation = document.createElement("input");
+        hiddenEncryptedTranslation.type = "hidden";
+        hiddenEncryptedTranslation.name = "encryptedTranslation";
+        hiddenEncryptedTranslation.id = "encryptedTranslation";
+        hiddenEncryptedTranslation.value = encryptedTranslation;
+
+        form.appendChild(hiddenEncryptedTranslation);
+    }
 
     // Return the encrypted text and encrypted AES key
     return {
@@ -184,27 +97,26 @@ function encryptText(event) {
 <div class="container-fluid">
     {{ form.media }}
     {% if edit_mode %}
-        {% comment %} <form action="{% url 'main:edit_saved_text' task_id%}" method="post" onsubmit="encodeText()"> {% endcomment %}
-        <form action="{% url 'main:edit_saved_text' task_id%}" method="post">
+        <form id="translation_form" action="{% url 'main:edit_saved_text' task_id%}" method="post">
     {% else %}
-        <form  id="translation_form" action="{% url 'main:translation' %}" method="post">
+        <form id="translation_form" action="{% url 'main:translation' %}" method="post">
     {% endif %}
         {% csrf_token %}
         <div class="row d-flex justify-content-center" id="main-container">
             {% if messages %}
                 {% for message in messages %}
                     <div class="alert alert-warning" role="alert">
-                        <h6 dir='rtl'>{{ message }}</h6>
+                        <h6 dir='ltr'>{{ message }}</h6>
                     </div>
                 {% endfor %}
             {% endif %}
             <div class="row">
             <div class="d-flex justify-content-end" style="position: top: 0; right: 0; padding: 0px;">
             {% if edit_mode %}
-                <button type="submit" id="edit-btn" name="edit-btn" class="btn btn-success" style="margin-right: 5px">ثبت ویرایش</button>
-                    <button type="submit" id="remove-btn" name="remove-btn" class="btn btn-danger">حذف</button>
+                <button type="submit" id="edit-btn" name="edit-btn" class="btn btn-success" style="margin-right: 5px" onclick="encryptText(event, 'saving')">ثبت ویرایش</button>
+                    <button type="submit" id="remove-btn" name="remove-btn" class="btn btn-danger" onclick="encryptText(event)">حذف</button>
             {% else %}
-                <button type="submit" id="save-btn" name="save-btn" class="btn btn-success">ذخیره شود</button>
+                <button type="submit" id="save-btn" name="save-btn" class="btn btn-success" onclick="encryptText(event, 'saving')">ذخیره شود</button>
             {% endif %}
             </div>
                 <div class="col-md-6">
@@ -238,12 +150,8 @@ function encryptText(event) {
                         <label class="btn btn-outline-primary english-btn" for="btnradio3">English</label>
                     </div>
                     </div>
-                    {% comment %} <textarea class="form-control" name="translation" id="translation" rows="25" readonly dir='rtl'>{{translation}}</textarea> {% endcomment %}
                     <textarea class="form-control" name="translation" id="translation" rows="25" readonly dir='rtl'></textarea>
                     <input type="hidden" id="translation_hidden" value="{{ translation }}">
-                    <input type="hidden" id="aesKey_hidden" value="{{ aes_key }}">
-                    <input type="hidden" id="iv_source_hidden" value="{{ iv_source }}">
-                    <input type="hidden" id="iv_translation_hidden" value="{{ iv_translation }}">
                     <div class="text-center mt-2">
                         <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('translation')">پاک</button>
                         <button type="button" class="btn btn-success copy-btn" onclick="copyText2('translation')">کپی</button>
@@ -251,8 +159,7 @@ function encryptText(event) {
             </div>
             <div class="row justify-content-center">
                 <div class="col-12 text-center">
-                    {% comment %} <button type="submit"  id="translate-btn" name="translate-btn" class="btn btn-primary" onclick="encodeText(event)">ترجمه</button> {% endcomment %}
-                    <button type="submit"  id="translate-btn" name="translate-btn" class="btn btn-primary" onclick="encryptText(event)">ترجمه</button>
+                    <button type="submit" id="translate-btn" name="translate-btn" class="btn btn-primary" onclick="encryptText(event, 'translating')">ترجمه</button>
                 </div>
             </div>
         </div>
@@ -265,20 +172,16 @@ window.onload = function() {
     var source_text = document.getElementById("source_text");
     var translation_hidden = document.getElementById("translation_hidden").value;
     var source_text_hidden = document.getElementById("source_text_hidden").value;
-    var iv_source_hidden = document.getElementById("iv_source_hidden").value;
-    var iv_translation_hidden = document.getElementById("iv_translation_hidden").value;
-    {% comment %} iv_source_hidden = btoa(iv_source_hidden)
-    iv_translation_hidden = btoa(iv_translation_hidden) {% endcomment %}
-    var aesKey = document.getElementById("aesKey_hidden").value;
-    aesKey = btoa(aesKey)
-    alert("source_text_hidden: \n" + source_text_hidden);
-    alert("iv_source_hidden: \n" + iv_source_hidden);
-    alert("aesKey: \n" + aesKey);
-    var decrypted_source_text = decryptECB(source_text_hidden, aesKey);
-    var decrypted_translation = decryptECB(translation_hidden, aesKey);
-    alert("decrypted_source_text.value: \n" + decrypted_source_text);
-    source_text.value = decrypted_source_text;
-    translation.value = decrypted_translation;
+    var aesRawKey = localStorage.getItem("aesRawKey_translation", aesRawKey);
+    var aesKey = CryptoJS.enc.Utf8.parse(aesRawKey);
+    var decryptedSourceText = CryptoJS.AES.decrypt(source_text_hidden, aesKey, {mode: CryptoJS.mode.ECB});
+    var decryptedTranslation = CryptoJS.AES.decrypt(translation_hidden, aesKey, {mode: CryptoJS.mode.ECB});
+    var decryptedSourceTextValue = decryptedSourceText.toString(CryptoJS.enc.Utf8);
+    var decryptedTranslationValue = decryptedTranslation.toString(CryptoJS.enc.Utf8);
+    decryptedSourceTextValue = decryptedSourceTextValue.replace(/[\x00-\x09\x0B-\x1F\x7F-\x9F]/g, '');
+    decryptedTranslationValue = decryptedTranslationValue.replace(/[\x00-\x09\x0B-\x1F\x7F-\x9F]/g, '');
+    source_text.value = decryptedSourceTextValue;
+    translation.value = decryptedTranslationValue;
 }
 </script>
 {% endblock %}

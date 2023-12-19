@@ -23,7 +23,7 @@
     src: url("..\\..\\fonts\\RobotoSlab.ttf");
   }
   
-#english-text {
+  .form-control.english-text {
     font-family: RobotoSlab ;
     font-size: 18px;
     font-weight: normal;
@@ -31,7 +31,7 @@
     text-align: left;
   }
   
-  #persian-text {
+  .form-control.persian-text {
     font-family: IranSans ;
     font-size: 14px;
     font-weight: bold;

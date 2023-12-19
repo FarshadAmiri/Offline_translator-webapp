@@ -75,7 +75,7 @@ radioButtons.forEach(function(radioButton) {
 });
 
 
-function encodeText(event) {
+function encodeTextWithRSA(event) {
 
   var textInput = document.getElementById("source_text");
   var encodedText;

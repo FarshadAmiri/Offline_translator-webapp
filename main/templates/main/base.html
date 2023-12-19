@@ -7,19 +7,63 @@
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <link rel="icon" href="{% static 'icons/logo3.png' %}" type="image/png">
    
-   {% block head-title %}
-      <title>Translation</title>
-   {% endblock %}
+{% block head-title %}
+    <title>Translation</title>
+{% endblock %}
 
-    {% block head-static-essential %}
-    <script type="text/javascript" src="{% static 'jquery-3.7.1.min.js' %}"></script>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/main/base.css' %}">
-    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
-    {% endblock %}
+{% block head-static-essential %}
+<script type="text/javascript" src="{% static 'jquery-3.7.1.min.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/main/base.css' %}">
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'crypto-js.js' %}"></script>
+<script src="{% static 'jsencrypt.js' %}"></script>
+{% endblock %}
 
-   {% block head-static %}
-   {% endblock %}
+{% block head-static %}
+<script>
+function generateRandomKey(length) {
+      var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      var result = "";
+      for (var i = 0; i < length; i++) {
+        result += charset.charAt(Math.floor(Math.random() * charset.length));
+      }
+      return result;
+    }
+
+function generateAESKey() {
+    var publicKey = "-----BEGIN PUBLIC KEY-----\n" +
+                "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvRW2QcbKbzDobMdkLqvY\n" +
+                "Fb66Ih41T1+X3spW1WP6UduM1kS+bVh7HwG23pt8e/XJAf9G4IhWTZfkgVBdMsFP\n" +
+                "UfCJDiP/9cbQBgNDtT85jlFHjB1dBlJ51Hh8kDkx/1/dgy2b/ZjJ0YwAFLpk2k8W\n" +
+                "ZO8wtIOEHMSdLryVh8Jkpk1qSYZPZZuW+QEE/G+TJcF286mLEpTfZ/RQN4mg/nCS\n" +
+                "FhW4Rv9wnF8dhgU43kTiLwV8wVgOTKxAseDxMyvbjKiiH+u5YByZNN1hPVFSYQNx\n" +
+                "06IK0Ea7wk0UTRhCwLFu2AOPGL3AylFnjlHCd+/vbDrW3WDj3KRTbZFxtysYqn3B\n" +
+                "SnNZy6D1xPn79nsgWfKrgQo9KTgP9gpSoebBZwFIRmBD5Q2BpwZvbZj5lJgEYJpe\n" +
+                "xH5LW6Rfv2GZjU+S5SEPNXMlSf6kmfbJAEhsyqKj+tWZtri3AfEBhG7hkmmz51zA\n" +
+                "32JwSGV/IFqblOHsONsZizOl4OxzSytgfhCyOkAg6zcb5Hcd3Zod0SHscgkYPAeO\n" +
+                "9ZZvD6pneRrcB1tgBPz3CSp6UOe9ktK0Lo5ZlapNUmpIR1Av/immdBnfRfB6m+ax\n" +
+                "efNjY6Myl8/aepuND/E1MJviOMCm3cyrmOsNj5rwg2AIGO4vw4hdjXqOLez87t/X\n" +
+                "OYNP74TrWvLmcNmlKfQNfMsCAwEAAQ==\n" +
+                "-----END PUBLIC KEY-----";
+    var plainText = document.getElementById('source_text').value;
+
+    // Generate a random 128-bit (16 bytes) AES key
+    var aesRawKey = generateRandomKey(16)
+    var aesKey = CryptoJS.enc.Utf8.parse(aesRawKey);
+    localStorage.setItem("aesRawKey_translation", aesRawKey);
+
+    // RSA Encryption on AES key using RSA public key
+    var encrypt = new JSEncrypt();
+    encrypt.setPublicKey(publicKey);
+    var encryptedAesKey = encrypt.encrypt(aesKey.toString(CryptoJS.enc.Base64));
+
+    // Return the encrypted text and encrypted AES key
+    return encryptedAesKey
+};
+
+</script>
+{% endblock %}
 </head>
 
 <body>
@@ -58,7 +102,10 @@
                         </li>
                     {% endif %}  {% endcomment %}
                     <li class="nav-item" >
-                        <a class="nav-link active" id="nav_item-persian" aria-current="page" href="{% url 'main:saved_table' %}">ذخیره شده‌ها</a>
+                    <form id="saved_table_form" action="{% url 'main:saved_table' %}" method="post">
+                    {% csrf_token %}
+                        <a class="nav-link active" id="nav_item-persian" aria-current="page" href="#" onclick="appendAESKeyAndSubmit(event)">Saved texts</a>
+                    </form>
                     </li>
                     <li class="nav-item" style="display: flex; align-items: center;">
                     {% if not request.user.is_authenticated %}
@@ -78,9 +125,52 @@
 
     {% block body %}
     {% endblock %}
-    
+    <script>
+
+function appendAESKeyAndSubmit(event) {
+    var publicKey = "-----BEGIN PUBLIC KEY-----\n" +
+        "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvRW2QcbKbzDobMdkLqvY\n" +
+        "Fb66Ih41T1+X3spW1WP6UduM1kS+bVh7HwG23pt8e/XJAf9G4IhWTZfkgVBdMsFP\n" +
+        "UfCJDiP/9cbQBgNDtT85jlFHjB1dBlJ51Hh8kDkx/1/dgy2b/ZjJ0YwAFLpk2k8W\n" +
+        "ZO8wtIOEHMSdLryVh8Jkpk1qSYZPZZuW+QEE/G+TJcF286mLEpTfZ/RQN4mg/nCS\n" +
+        "FhW4Rv9wnF8dhgU43kTiLwV8wVgOTKxAseDxMyvbjKiiH+u5YByZNN1hPVFSYQNx\n" +
+        "06IK0Ea7wk0UTRhCwLFu2AOPGL3AylFnjlHCd+/vbDrW3WDj3KRTbZFxtysYqn3B\n" +
+        "SnNZy6D1xPn79nsgWfKrgQo9KTgP9gpSoebBZwFIRmBD5Q2BpwZvbZj5lJgEYJpe\n" +
+        "xH5LW6Rfv2GZjU+S5SEPNXMlSf6kmfbJAEhsyqKj+tWZtri3AfEBhG7hkmmz51zA\n" +
+        "32JwSGV/IFqblOHsONsZizOl4OxzSytgfhCyOkAg6zcb5Hcd3Zod0SHscgkYPAeO\n" +
+        "9ZZvD6pneRrcB1tgBPz3CSp6UOe9ktK0Lo5ZlapNUmpIR1Av/immdBnfRfB6m+ax\n" +
+        "efNjY6Myl8/aepuND/E1MJviOMCm3cyrmOsNj5rwg2AIGO4vw4hdjXqOLez87t/X\n" +
+        "OYNP74TrWvLmcNmlKfQNfMsCAwEAAQ==\n" +
+        "-----END PUBLIC KEY-----";
+    event.preventDefault(); // Prevent the default behavior of the link
+
+    // Generate a random 128-bit (16 bytes) AES key
+    var aesRawKey = generateRandomKey(16)
+    var aesKey = CryptoJS.enc.Utf8.parse(aesRawKey);
+    localStorage.setItem("aesRawKey_translation", aesRawKey);
+
+    // RSA Encryption on AES key using RSA public key
+    var encrypt = new JSEncrypt();
+    encrypt.setPublicKey(publicKey);
+    var encryptedAesKey = encrypt.encrypt(aesKey.toString(CryptoJS.enc.Base64));
+
+    // Create a new form data object
+    var form = document.getElementById("saved_table_form");
+
+    // Embed AES key into the form
+    var hiddenEncryptedAESKey = document.createElement("input");
+    hiddenEncryptedAESKey.type = "hidden";
+    hiddenEncryptedAESKey.name = "encryptedAesKey";
+    hiddenEncryptedAESKey.id = "encryptedAesKey";
+    hiddenEncryptedAESKey.value = encryptedAesKey;
+
+    form.appendChild(hiddenEncryptedAESKey); // Append the variable value to the form data
+    form.submit();
+}
+    </script>
     {% block static-end_body %}
     {% endblock %}
    </body>
 </html>
+
 

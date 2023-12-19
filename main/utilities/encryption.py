@@ -76,14 +76,17 @@ def decrypt_AES_CBC(encrypted_text, encrypted_aes_key):
     decrypted_text = cipher.decrypt(base64.b64decode(encrypted_text)).decode('utf-8').strip()
     return decrypted_text, aes_key
 
-
-def decrypt_AES_ECB(encrypted_text, encrypted_aes_key):
+def decrypt_aes_key(encrypted_aes_key):
+    # decrypting AES key with our RSA private key
     aes_key = decode_RSA(encrypted_aes_key).encode('utf-8')
     aes_key = base64.b64decode(aes_key)
     print(f"\naes_key: {aes_key}\n")
+    return aes_key
+
+def decrypt_AES_ECB(encrypted_text, aes_key):
     cipher = AES.new(aes_key, AES.MODE_ECB)
     decrypted_text = cipher.decrypt(base64.b64decode(encrypted_text)).decode('utf-8').strip()
-    return decrypted_text, aes_key
+    return decrypted_text
 
 
 from Crypto.Util.Padding import pad, unpad
