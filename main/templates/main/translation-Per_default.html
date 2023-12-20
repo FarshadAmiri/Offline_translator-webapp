@@ -33,6 +33,7 @@ function encryptText(event, mode) {
                 "OYNP74TrWvLmcNmlKfQNfMsCAwEAAQ==\n" +
                 "-----END PUBLIC KEY-----";
     var plainText = document.getElementById('source_text').value;
+    
 
     if (plainText.length > 20000) {
         alert("Input texts should not exceed 20,000 characters long regarding computational limits. your input text is " + plainText.length + " characters long.");
@@ -40,6 +41,9 @@ function encryptText(event, mode) {
         return false;
     }
 
+    var spinner = document.getElementById('spinner');
+    spinner.style.display = 'inline-block'; // Show the spinner
+    
     // Generate a random 128-bit (16 bytes) AES key
     var aesRawKey = generateRandomKey(16)
     var aesKey = CryptoJS.enc.Utf8.parse(aesRawKey);
@@ -165,6 +169,9 @@ function encryptText(event, mode) {
             <div class="row justify-content-center">
                 <div class="col-12 text-center">
                     <button type="submit" id="translate-btn" name="translate-btn" class="btn" onclick="encryptText(event, 'translating')">Translate!</button>
+                    <div class="spinner-border" id="spinner" role="status" style="display: none;">
+                    <span class="sr-only">Loading...</span>
+                    </div>
                 </div>
             </div>
         </div>
