@@ -38,6 +38,12 @@ function encryptText(event, mode) {
                 "-----END PUBLIC KEY-----";
     var plainText = document.getElementById('source_text').value;
 
+    if (plainText.length > 20000) {
+        alert("Input texts should not exceed 20,000 characters long regarding computational limits. your input text is " + plainText.length + " characters long.");
+        event.preventDefault();
+        return false;
+    }
+
     // Generate a random 128-bit (16 bytes) AES key
     var aesRawKey = generateRandomKey(16)
     var aesKey = CryptoJS.enc.Utf8.parse(aesRawKey);
@@ -113,14 +119,15 @@ function encryptText(event, mode) {
             <div class="row">
             <div class="d-flex justify-content-end" style="position: top: 0; right: 0; padding: 0px;">
             {% if edit_mode %}
-                <button type="submit" id="edit-btn" name="edit-btn" class="btn btn-success" style="margin-right: 5px" onclick="encryptText(event, 'saving')">ثبت ویرایش</button>
-                    <button type="submit" id="remove-btn" name="remove-btn" class="btn btn-danger" onclick="encryptText(event)">حذف</button>
+                <button type="submit" id="back-btn" name="back-btn" class="btn btn-warning" style="margin-right: 85%" onclick="encryptText(event, 'back')">Back</button>
+                <button type="submit" id="edit-btn" name="edit-btn" class="btn btn-success" style="margin-right: 10px" onclick="encryptText(event, 'saving')">Apply edits</button>
+                <button type="submit" id="remove-btn" name="remove-btn" class="btn btn-danger" onclick="encryptText(event)">Delete</button>
             {% else %}
-                <button type="submit" id="save-btn" name="save-btn" class="btn btn-success" onclick="encryptText(event, 'saving')">ذخیره شود</button>
+                <button type="submit" id="save-btn" name="save-btn" class="btn btn-success" onclick="encryptText(event, 'saving'); showMessage('Saved!', this)"><img id="save-icon">Save</button>
             {% endif %}
             </div>
                 <div class="col-md-6">
-                <div class="btn-group-lg d-flex justify-content-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px">
+                <div class="btn-group-lg d-flex justify-content-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px; margin-top: 0px;">
                     <div>
                         <input type="radio" class="btn-check" name="btnradio_left" id="btnradio1" autocomplete="off" value="English" checked>
                         <label class="btn btn-outline-primary english-btn" for="btnradio1">English</label>
@@ -131,12 +138,14 @@ function encryptText(event, mode) {
                         <label class="btn btn-outline-primary persian-btn" for="btnradio2">فارسی</label>
                     </div>
                     </div>
-                    {% comment %} <textarea class="form-control" name="source_text" id="source_text" rows="20" placeholder="Enter text">{{ source_text }}</textarea> {% endcomment %}
-                    <textarea class="form-control" name="source_text" id="source_text" rows="20" placeholder="Enter text"></textarea>
+                    <div style="position: relative;">
+                    <textarea class="form-control" name="source_text" id="source_text" rows="20" placeholder="Enter text" oninput="updateCharacterCount()"></textarea>
+                    <span id="charCount" style="position: absolute; bottom: -25px; right: 0px; padding: 0; margin: 0; font-weight: bold;"></span>
                     <input type="hidden" id="source_text_hidden" value="{{ source_text }}">
+                    </div>
                     <div class="text-center mt-2">
-                        <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('source_text')">پاک</button>
-                        <button type="button" class="btn btn-success copy-btn" onclick="copyText2('source_text')">کپی</button>
+                        <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('source_text'); showMessage('Cleared!', this)"><img id="clear-icon"></button>
+                        <button type="button" class="btn btn-success copy-btn" onclick="copyText2('source_text'); showMessage('Copied!', this)"><img id="copy-icon"></button>
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -153,13 +162,13 @@ function encryptText(event, mode) {
                     <textarea class="form-control" name="translation" id="translation" rows="25" readonly dir='rtl'></textarea>
                     <input type="hidden" id="translation_hidden" value="{{ translation }}">
                     <div class="text-center mt-2">
-                        <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('translation')">پاک</button>
-                        <button type="button" class="btn btn-success copy-btn" onclick="copyText2('translation')">کپی</button>
+                        <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('translation'); showMessage('Cleared!', this)"><img id="clear-icon"></button>
+                        <button type="button" class="btn btn-success copy-btn" onclick="copyText2('translation'); showMessage('Copied!', this)"><img id="copy-icon"></button>
                 </div>
             </div>
             <div class="row justify-content-center">
                 <div class="col-12 text-center">
-                    <button type="submit" id="translate-btn" name="translate-btn" class="btn btn-primary" onclick="encryptText(event, 'translating')">ترجمه</button>
+                    <button type="submit" id="translate-btn" name="translate-btn" class="btn" onclick="encryptText(event, 'translating')">Translate!</button>
                 </div>
             </div>
         </div>
@@ -182,6 +191,34 @@ window.onload = function() {
     decryptedTranslationValue = decryptedTranslationValue.replace(/[\x00-\x09\x0B-\x1F\x7F-\x9F]/g, '');
     source_text.value = decryptedSourceTextValue;
     translation.value = decryptedTranslationValue;
+}
+
+function showMessage(message, button) {
+  const messageBox = document.createElement('div');
+  messageBox.textContent = message;
+  messageBox.classList.add('showing-message');
+  button.appendChild(messageBox);
+
+  const buttonRect = button.getBoundingClientRect();
+  const messageBoxRect = messageBox.getBoundingClientRect();
+  const topOffset = buttonRect.top - messageBoxRect.height + 10;
+  const leftOffset = buttonRect.left + (buttonRect.width - messageBoxRect.width) / 2;
+
+  messageBox.style.top = topOffset + 'px';
+  messageBox.style.left = leftOffset + 'px';
+
+  setTimeout(function() {
+    messageBox.remove();
+  }, 500);
+}
+
+function updateCharacterCount() {
+  var textarea = document.getElementById('source_text');
+  var charCount = document.getElementById('charCount');
+  var maxLength = 20000;
+  var currentLength = textarea.value.length;
+
+  charCount.textContent = currentLength + '/' + "20,000" + ' characters';
 }
 </script>
 {% endblock %}

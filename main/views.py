@@ -97,11 +97,12 @@ def SavedTable(request):
         saved_tasks = TranslationTask.objects.filter(user=user).order_by('-save_time')
         n_total_saved = len(saved_tasks)
         encrypted_saved_tasks = saved_tasks
-        for task in encrypted_saved_tasks:
+        for idx, task in enumerate(encrypted_saved_tasks):
             task.source_text = encrypt_AES_ECB(task.source_text, aes_key).decode('utf-8')
             task.translation = encrypt_AES_ECB(task.translation, aes_key).decode('utf-8')
+            task.order = n_total_saved - idx
         del saved_tasks
-        paginator = Paginator(encrypted_saved_tasks, 2)
+        paginator = Paginator(encrypted_saved_tasks, 5)
         num_pages = paginator.num_pages
         page_number = request.GET.get('page')
         try:
@@ -127,8 +128,6 @@ def SavedTable(request):
 
 @login_required(login_url='users:login')
 def EditText(request, task_id):
-    print(f"\n\n\nrequest.POST: {request.POST}\n\n\n\n")
-        
     if (request.method == 'POST') and "translate-btn" in request.POST: # Translation
         print("\n\n\nTranslation mode in edit page\n\n\n\n")
         source_lang = request.POST.get('btnradio_left')
@@ -194,11 +193,12 @@ def EditText(request, task_id):
             return HttpResponseRedirect(reverse('main:saved_table',))
     
 
-    elif (request.method == 'POST') and "remove-btn" in request.POST: # Remove text
+    elif (request.method == 'POST') and (('remove-btn' in request.POST) or ('back-btn' in request.POST)): # Remove text or back
+        if "remove-btn" in request.POST:
+            task = TranslationTask.objects.get(task_id=task_id)
+            task.delete()
         encrypted_aes_key = request.POST.get('encryptedAesKey')
         aes_key = decrypt_aes_key(encrypted_aes_key)
-        task = TranslationTask.objects.get(task_id=task_id)
-        task.delete()
         user=request.user
         saved_tasks = TranslationTask.objects.filter(user=user).order_by('-save_time')
         n_total_saved = len(saved_tasks)

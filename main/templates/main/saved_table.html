@@ -19,29 +19,45 @@
         <table class="table table-responsive table-hover">
             <thead>
             <tr>
-                <th scope="col" class="table-head">کد ذخیره</th>
-                <th scope="col" class="table-head">متن ورودی</th>
-                <th scope="col" class="table-head">ترجمه</th>
-                <th scope="col" class="table-head">تاریخ ذخیره‌سازی</th>
-                <th scope="col" class="table-head">گزینه‌ها</th>
+                {% comment %} <th scope="col" class="table-head">کد ذخیره</th>
+                <th scope="col" class="table-head th-persian">متن ورودی</th>
+                <th scope="col" class="table-head th-persian">ترجمه</th>
+                <th scope="col" class="table-head th-persian">تاریخ ذخیره‌سازی</th>
+                <th scope="col" class="table-head th-persian">گزینه‌ها</th> {% endcomment %}
+                <th scope="col" class="table-head th-english">#</th>
+                <th scope="col" class="table-head th-english">Input text</th>
+                <th scope="col" class="table-head th-english">Translation</th>
+                <th scope="col" class="table-head th-english">Saving date & time</th>
+                <th scope="col" class="table-head th-english">Options</th>
             </tr>
             </thead>
             <tbody>
             {% for saved_task in page_objects %}
             <tr class="clickable parent-task" aria-expanded="true">
-                
-                <td class="table-row">{{ saved_task.number|fa_digits }}</td>
+            <div class="row">
 
+                <div class="col-1">
+                <td class="table-row">{{ saved_task.order|fa_digits }}</td>
+                {% comment %} <td class="table-row">{{ saved_task.order }}</td> {% endcomment %}
+                </div>
+                
+                <div class="col-3">
                 <td class="concise_text">
                     <textarea {% if saved_task.source_language == "Persian" %} class="form-control persian-text" rows="4" {% else %} class="form-control english-text" rows="3" {% endif %} name="translation" readonly dir='rtl' style="display:none;">{{ saved_task.source_text }}</textarea>
                 </td>
-
+                </div>
+                
+                <div class="col-3">
                 <td class="concise_text">
-                    <textarea {% if saved_task.target_language == "Persian" %} class="form-control persian-text" rows="4" {% else %} class="form-control english-text" rows="3" {% endif %} name="translation" rows="3" readonly dir='rtl' style="display:none;">{{ saved_task.translation }}</textarea>
+                    <textarea {% if saved_task.target_language == "Persian" %} class="form-control persian-text" rows="4" {% else %} class="form-control english-text" rows="3" {% endif %} name="translation" readonly dir='rtl' style="display:none;">{{ saved_task.translation }}</textarea>
                 </td>
-
+                </div>
+                
+                <div class="col-2">
                 <td class="table-row">{{ saved_task.save_time|fa_digits }}</td>
+                </div>
 
+                <div class="col-3">
                 <td class="table-row">
                 <div class="row">
                 <div class="col-2">
@@ -49,106 +65,110 @@
                 <div class="col-5">
                 <form class="task-form" action="{% url 'main:edit_saved_text' saved_task.task_id %}" method="post">
                     {% csrf_token %}
-                    <a class="btn btn-primary" href="#" onclick="appendAESKeyAndSubmit(event, this)">بازبینی و ویرایش</a>
+                    {% comment %} <a class="btn btn-primary opt-persian" href="#" onclick="appendAESKeyAndSubmit(event, this)">بازبینی و ویرایش</a> {% endcomment %}
+                    <a class="btn btn-primary opt-english" href="#" onclick="appendAESKeyAndSubmit(event, this)">View and edit</a>
                 </form>
                 </div>
                 <div class="col-3">
-                {% comment %} <form class="task-form" action="{% url 'main:delete_saved_text' saved_task.task_id %}?page={{page_objects.number}}" method="post"> {% endcomment %}
                 <form class="task-form" action="{% url 'main:saved_table' %}?page={{page_objects.number}}" method="post">
                 {% csrf_token %}
-                    <a class="btn btn-danger" name="remove-btn" id="{{ saved_task.task_id }}" href="#" onclick="appendAESKeyAndSubmit(event, this)">حذف</a>
+                    {% comment %} <a class="btn btn-danger opt-persian" name="remove-btn" id="{{ saved_task.task_id }}" href="#" onclick="appendAESKeyAndSubmit(event, this)">حذف</a> {% endcomment %}
+                    <a class="btn btn-danger opt-english" name="remove-btn" id="{{ saved_task.task_id }}" href="#" onclick="appendAESKeyAndSubmit(event, this)">Delete</a>
                 </form>
                 </div>
                 <div class="col-2">
                 </div>
                 </div>
                 </td>
+                </div>
+                </div>
             </tr>
             {% endfor %}
             
+            <form id="page-form" action="{% url 'main:saved_table' %}?page={{n_page}}" method="post">
+            {% csrf_token %}
+            </form>
+            {% comment %} <nav style="text-align: center; background-color: White; padding-top: 10px">
+                <ul class="pagination">
+                    {% if num_pages <= 10 %}
+                        {% for n_page in pages_range %}
+                            {% if n_page == page_objects.number %}
+                                <li class="page-item active">
+                                    <a class="page-link" href="{% url 'main:saved_table' %}?page={{n_page}}" onclick="appendAESKeyAndSubmit(event, this)">{{ n_page }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{% url 'main:saved_table' %}?page={{n_page}}" onclick="appendAESKeyAndSubmit(event, this)">{{ n_page }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        {% for n_page in pages_range %}
+                            {% if n_page <= 10 %}
+                                {% if n_page == page_objects.number %}
+                                    <li class="page-item active">
+                                        <a class="page-link" href="{% url 'main:saved_table' %}?page={{n_page}}" onclick="appendAESKeyAndSubmit(event, this)">{{ n_page }}</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{% url 'main:saved_table' %}?page={{ n_page }}" onclick="appendAESKeyAndSubmit(event, this)">{{ n_page }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                        {% if page_objects.number > 10 %}
+                            <li class="page-item active">
+                                <a class="page-link" href="{% url 'main:saved_table' %}?page={{ page_objects.number }}" onclick="appendAESKeyAndSubmit(event, this)">{{ page_objects.number }}</a>
+                            </li>
+                        {% endif %}
+                        {% if page_objects.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{% url 'main:saved_table' %}?page={{page_objects.next_page_number}}" onclick="appendAESKeyAndSubmit(event, this)">Next</a>
+                            </li>
+                        {% endif %}
+                        {% if page_objects.number != num_pages %}
+                            <li class="page-item">
+                                <a class="page-link" href="{% url 'main:saved_table' %}?page={{num_pages}}" onclick="appendAESKeyAndSubmit(event, this)">{{num_pages}}</a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+            </nav> {% endcomment %}
+            <tbody>
+        </table>
             <nav style="text-align: center; background-color: White; padding-top: 10px">
                 <ul class="pagination">
-                {# First #}
-                {% comment %} {% for n_page in range(1, num_pages + 1) %} {% endcomment %}
                 {% if num_pages <= 10 %}
                 {% for n_page in pages_range %}
                     {% if n_page == page_objects.number %}
-                    <li class="page-item active">
-                     <form class="page-form" action="{% url 'main:saved_table' %}?page={{n_page}}" method="post">
-                     {% csrf_token %}
-                    <a class="page-link" href="#" onclick="appendAESKeyAndSubmit(event, this)">{{ n_page }}</a>
-                    </form>
-                    </li>
+                        <li class="page-item active"><a class="page-link" href="{% url 'main:saved_table' %}?page={{n_page}}" onclick="appendAESKeyAndSubmit(event, this)">{{ n_page }}</a></li>
                     {% else %}
-                        <li class="page-item">
-                        <form class="page-form" action="{% url 'main:saved_table' %}?page={{ n_page }}" method="post">
-                        {% csrf_token %}
-                        <a class="page-link" href="#" onclick="appendAESKeyAndSubmit(event, this)">{{ n_page }}</a>
-                        </form>
-                        </li>
+                        <li class="page-item"><a class="page-link" href="{% url 'main:saved_table' %}?page={{ n_page }}" onclick="appendAESKeyAndSubmit(event, this)">{{ n_page }}</a></li>
                     {% endif %}
                 {% endfor %}
                 {% else %}
                 {% for n_page in pages_range %}
                     {% if n_page <= 10 %}
                         {% if n_page == page_objects.number %}
-                            <li class="page-item active"><a class="page-link" href="?page={{n_page}}" onclick="appendAESKeyAndSubmit(event, this)">{{ n_page }}</a></li>
+                            <li class="page-item active"><a class="page-link" href="{% url 'main:saved_table' %}?page={{n_page}}" onclick="appendAESKeyAndSubmit(event, this)">{{ n_page }}</a></li>
                         {% else %}
-                            <li class="page-item"><a class="page-link" href="?page={{ n_page }}" onclick="appendAESKeyAndSubmit(event, this)">{{ n_page }}</a></li>
+                            <li class="page-item"><a class="page-link" href="{% url 'main:saved_table' %}?page={{ n_page }}" onclick="appendAESKeyAndSubmit(event, this)">{{ n_page }}</a></li>
                         {% endif %}
                     {% endif %}
                     {% endfor %}
                     {% if page_objects.number > 10 %}
-                    <li class="page-item active"><a class="page-link" href="?page={{ page_objects.number }}" onclick="appendAESKeyAndSubmit(event, this)">{{ page_objects.number }}</a></li>
+                    <li class="page-item active"><a class="page-link" href="{% url 'main:saved_table' %}?page={{ page_objects.number }}" onclick="appendAESKeyAndSubmit(event, this)">{{ page_objects.number }}</a></li>
                     {% endif %}
                     {% if page_objects.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{page_objects.next_page_number}}" onclick="appendAESKeyAndSubmit(event, this)">Next</a></li>
+                    <li class="page-item"><a class="page-link" href="{% url 'main:saved_table' %}?page={{page_objects.next_page_number}}" onclick="appendAESKeyAndSubmit(event, this)">Next</a></li>
                     {% endif %}
                     {% if page_objects.number != num_pages %}
-                    <li class="page-item"><a class="page-link" href="?page={{num_pages}}" onclick="appendAESKeyAndSubmit(event, this)">{{num_pages}}</a></li>
+                    <li class="page-item"><a class="page-link" href="{% url 'main:saved_table' %}?page={{num_pages}}" onclick="appendAESKeyAndSubmit(event, this)">{{num_pages}}</a></li>
                     {% endif %}
                 {% endif %}
                 </ul>
             </nav>
             </div>
-            <tbody>
-        </table>
-
-                        <nav style="text-align: center; background-color: White; padding-top: 10px">
-                <ul class="pagination">
-                {# First #}
-                {% comment %} {% for n_page in range(1, num_pages + 1) %} {% endcomment %}
-                {% if num_pages <= 10 %}
-                {% for n_page in pages_range %}
-                    {% if n_page == page_objects.number %}
-                    <form>
-                        <li class="page-item active"><a class="page-link" href="?page={{n_page}}">{{ n_page }}</a></li>
-                    {% else %}
-                        <li class="page-item"><a class="page-link" href="?page={{ n_page }}">{{ n_page }}</a></li>
-                    {% endif %}
-                {% endfor %}
-                {% else %}
-                {% for n_page in pages_range %}
-                    {% if n_page <= 10 %}
-                        {% if n_page == page_objects.number %}
-                            <li class="page-item active"><a class="page-link" href="?page={{n_page}}">{{ n_page }}</a></li>
-                        {% else %}
-                            <li class="page-item"><a class="page-link" href="?page={{ n_page }}">{{ n_page }}</a></li>
-                        {% endif %}
-                    {% endif %}
-                    {% endfor %}
-                    {% if page_objects.number > 10 %}
-                    <li class="page-item active"><a class="page-link" href="?page={{ page_objects.number }}">{{ page_objects.number }}</a></li>
-                    {% endif %}
-                    {% if page_objects.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{page_objects.next_page_number}}">Next</a></li>
-                    {% endif %}
-                    {% if page_objects.number != num_pages %}
-                    <li class="page-item"><a class="page-link" href="?page={{num_pages}}">{{num_pages}}</a></li>
-                    {% endif %}
-                {% endif %}
-                </ul>
-            </nav>
         </div>
     </div>
 {% endblock %}
@@ -207,8 +227,10 @@ function appendAESKeyAndSubmit(event, element) {
     encrypt.setPublicKey(publicKey);
     var encryptedAesKey = encrypt.encrypt(aesKey.toString(CryptoJS.enc.Base64));
 
-    if (element.class === "page-link") {
-        var form = element.closest('.page-form');
+    if (element.className === "page-link") {
+        var form = document.getElementById("page-form");
+        form.action = element.href;
+        form.method = "post";
     } else {
         var form = element.closest('.task-form');
     }

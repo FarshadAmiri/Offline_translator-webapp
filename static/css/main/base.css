@@ -3,6 +3,17 @@
   src: url("..\\..\\fonts\\IranSans.ttf");
 }
 
+@font-face {
+  font-family: RobotoSlab;
+  src: url("..\\..\\fonts\\RobotoSlab.ttf");
+}
+
+@font-face {
+  font-family: Exo2;
+  src: url("..\\..\\fonts\\Exo2-Bold.ttf");
+}
+
+
 body {
     background-image: url("..\\..\\bcg\\bcg1.jpg");
     background-repeat: no-repeat;
@@ -18,10 +29,28 @@ body {
 }
 
   #page_title {
-    font-family: IranSans;
+    font-family: Exo2;
     font-weight: bolder;
-    font-size: 24px;
-    color: rgb(255, 255, 255);
+    font-size: 42px;
+    color: rgb(255, 153, 0);
+    position: absolute;
+    left: 50%;
+    margin-left: -115px !important;
+  }
+
+
+  #version {
+    font-family: Exo2;
+    font-weight: normal;
+    font-size: 18px;
+    color: rgb(255, 153, 0);
+  }
+
+
+  #page_title:hover {
+    background-color: rgba(0, 0, 0, 0.0);
+    border-radius: 30px;
+    color: rgb(80, 219, 238);
   }
 
   #nav_item,
@@ -32,22 +61,38 @@ body {
   }
 
 
-  #nav_item-persian {
+  .nav-item-persian {
     font-family: IranSans;
     font-weight: bolder;
     font-size: 16px;
     color: rgb(255, 255, 255);
   }
 
+
+  .navbar-light .navbar-nav .nav-link.nav-item-english {
+    color: white;
+    font-family: RobotoSlab;
+    font-weight: normal;
+    font-size: 19px;
+  }
+  
+  .navbar-light .navbar-nav .nav-link {
+    transition: background-color 0.0s, border-radius 0.0s;
+  }
+  
   .navbar-light .navbar-nav .nav-link:hover {
-    background-color: rgb(99, 99, 99);
-    color:rgb(27, 27, 27);
-    border-radius: 15px
-}
+    background-color: rgb(0, 0, 0);
+    border-radius: 30px;
+    color: rgb(80, 219, 238);
+  }
 
-
-#logo {
-  content: url("..\\..\\bcg\\logo3.png");
-  width: 32px;
-  height: 32px;
-}
+  .logo {
+    display: flex;
+    align-items: center;
+  }
+  
+  #logo {
+    content: url("..\\..\\bcg\\logo3.png");
+    width: 40px;
+    height: 40px;
+  }

@@ -39,9 +39,17 @@
     text-align: right;
   }
 
-  .table-head{
+  .th-persian{
     font-family: IranSans ;
     font-size: 14px;
+    font-weight: bold;
+    color: #000000;
+    text-align: center;
+  }
+
+  .th-english{
+    font-family: RobotoSlab ;
+    font-size: 19px;
     font-weight: bold;
     color: #000000;
     text-align: center;
@@ -55,4 +63,9 @@
     color: #000000;
     text-align: center;
     vertical-align: middle;
+  }
+
+  .opt-english{
+    font-family: RobotoSlab;
+    font-size: 18px;
   }
