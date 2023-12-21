@@ -16,3 +16,8 @@ def fa_digits(text):
 @register.filter(is_safe=True)
 def js(obj):
     return mark_safe(json.dumps(obj))
+
+
+@register.filter(name='has_group') 
+def has_group(user, group_name):
+    return user.groups.filter(name=group_name).exists() 

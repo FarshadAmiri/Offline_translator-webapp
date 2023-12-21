@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.contrib import auth, messages
 from jdatetime import datetime as jdatetime, timedelta
+from .decorators import admins_only
 from main.utilities.argos import translate_en_fa, translate_fa_en
 from main.utilities.lang import detect_language
 from main.utilities.encryption import *
@@ -121,8 +122,57 @@ def SavedTable(request):
         for idx, obj in enumerate(page_objects[::-1]):
             obj.number = idx + 1
 
-        context={'page_objects': page_objects, "n_total_saved": n_total_saved, "num_pages": num_pages, "pages_range": paginator.page_range, "user": user}
+        context={'page_objects': page_objects, "n_total_saved": n_total_saved, "num_pages": num_pages,
+                 "pages_range": paginator.page_range,"user": user, "mode": "normal", }
         return render(request, 'main/saved_table.html', context)
+    
+
+
+@admins_only
+def SupervisorAllSavedTable(request):
+    print("111")
+    if request.method == 'POST':
+        if "removingTextID" in request.POST:
+            removing_text_id = int(request.POST.get('removingTextID'))
+            user = request.user
+            task = get_object_or_404(TranslationTask, user=user, task_id=removing_text_id)
+            task.delete()
+        encrypted_aes_key = request.POST.get('encryptedAesKey')
+        aes_key = decrypt_aes_key(encrypted_aes_key)
+        user=request.user
+        saved_tasks = TranslationTask.objects.all().order_by('-save_time')
+        n_total_saved = len(saved_tasks)
+        encrypted_saved_tasks = saved_tasks
+        for idx, task in enumerate(encrypted_saved_tasks):
+            task.source_text = encrypt_AES_ECB(task.source_text, aes_key).decode('utf-8')
+            task.translation = encrypt_AES_ECB(task.translation, aes_key).decode('utf-8')
+            task.order = n_total_saved - idx
+        del saved_tasks
+        paginator = Paginator(encrypted_saved_tasks, 5)
+        num_pages = paginator.num_pages
+        page_number = request.GET.get('page')
+        try:
+            page_objects = paginator.get_page(page_number)  # returns the desired page object
+        except PageNotAnInteger:   # if page_number is not an integer then assign the first page
+            page_objects = paginator.page(1)
+        except EmptyPage:    # if page is empty then return last page
+            page_objects = paginator.page(paginator.num_pages)
+        
+        for obj in page_objects:
+            save_time = jdatetime.fromgregorian(datetime=obj.save_time)
+            save_time = save_time + timedelta(hours=3, minutes=30)
+            save_time = save_time.strftime("%Y/%m/%d ‌‌ ‌ ‌ ‌  %H:%M")
+            obj.save_time = save_time
+
+        for idx, obj in enumerate(page_objects[::-1]):
+            obj.number = idx + 1
+
+        users_list = User.objects.all()
+        context={'page_objects': page_objects, "n_total_saved": n_total_saved, "num_pages": num_pages,
+                 "pages_range": paginator.page_range,"user": user, "mode": "supervisor", "users_list": users_list }
+        return render(request, 'main/saved_table.html', context)
+    
+
     
     
 
@@ -176,8 +226,11 @@ def EditText(request, task_id):
             source_lang = detected_lang
 
         if source_text.strip() != "" or translation.strip() != "" :
-            task = TranslationTask.objects.create(user=request.user, source_text=source_text, translation=translation,
-                                                source_language=source_lang, target_language=target_lang)
+            task = TranslationTask.objects.get(task_id=task_id)
+            task.source_text = source_text
+            task.translation = translation
+            task.source_language = source_lang
+            task.target_language = target_lang
             task.save()
             
             encrypted_translation = encrypt_AES_ECB(translation, aes_key).decode('utf-8')
@@ -203,9 +256,10 @@ def EditText(request, task_id):
         saved_tasks = TranslationTask.objects.filter(user=user).order_by('-save_time')
         n_total_saved = len(saved_tasks)
         encrypted_saved_tasks = saved_tasks
-        for task in encrypted_saved_tasks:
+        for idx, task in enumerate(encrypted_saved_tasks):
             task.source_text = encrypt_AES_ECB(task.source_text, aes_key).decode('utf-8')
             task.translation = encrypt_AES_ECB(task.translation, aes_key).decode('utf-8')
+            task.order = n_total_saved - idx
         del saved_tasks
         paginator = Paginator(encrypted_saved_tasks, 5)
         num_pages = paginator.num_pages

@@ -147,7 +147,7 @@ function encryptText(event, mode) {
                     <input type="hidden" id="source_text_hidden" value="{{ source_text }}">
                     </div>
                     <div class="text-center mt-2">
-                        <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('source_text'); showMessage('Cleared!', this)"><img id="clear-icon"></button>
+                        <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('source_text'); showMessage('Cleared!', this); updateCharacterCount()"><img id="clear-icon"></button>
                         <button type="button" class="btn btn-success copy-btn" onclick="copyText2('source_text'); showMessage('Copied!', this)"><img id="copy-icon"></button>
                     </div>
                 </div>
@@ -225,8 +225,14 @@ function updateCharacterCount() {
   var charCount = document.getElementById('charCount');
   var maxLength = 20000;
   var currentLength = textarea.value.length;
+  if (currentLength > maxLength) {
+    charCount.textContent = currentLength + '/' + maxLength + ' characters';
+    charCount.style.color = 'red';
+  } else {
+    charCount.textContent = currentLength + '/' + "20,000" + ' characters';
+    charCount.style.color = 'black';
+  }
 
-  charCount.textContent = currentLength + '/' + "20,000" + ' characters';
 }
 </script>
 {% endblock %}

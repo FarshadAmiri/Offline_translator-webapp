@@ -9,6 +9,8 @@
 {% block head-static %}
 <script type="text/javascript" src="{% static 'js/main/saved_table.js' %}"></script>
 <link rel="stylesheet" type="text/css" href="{% static 'css/main/saved_table.css' %}">
+<script type="text/javascript" src="{% static 'js/select2.min.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css//select2.min.css' %}">
 {% endblock %}
 
 
@@ -16,6 +18,17 @@
 <div class="container-fluid" style="padding: 7px">
 <div class="row" style="padding: 25px; border-radius: 25px; background-color: #ffffff; margin: 6px">
     <div class="col-12" style="background-color: #ffffff ; padding: 20px; padding-bottom: 10px; border-radius: 25px;">
+    {% if mode == "supervisor" %}
+    <div class="dropdown">
+        <select class="select2" name="users">
+        <option value="all_users">All users</option>
+        {% for user in users_list %}
+            <option value="{{user}}">{{user.username}}</option>
+        {% endfor %}
+        </select>
+        <button type="submit" onclick="">Get user's saved texts</button>
+    </div>
+    {% endif %}
         <table class="table table-responsive table-hover">
             <thead>
             <tr>
@@ -24,11 +37,14 @@
                 <th scope="col" class="table-head th-persian">ترجمه</th>
                 <th scope="col" class="table-head th-persian">تاریخ ذخیره‌سازی</th>
                 <th scope="col" class="table-head th-persian">گزینه‌ها</th> {% endcomment %}
-                <th scope="col" class="table-head th-english">#</th>
-                <th scope="col" class="table-head th-english">Input text</th>
-                <th scope="col" class="table-head th-english">Translation</th>
-                <th scope="col" class="table-head th-english">Saving date & time</th>
-                <th scope="col" class="table-head th-english">Options</th>
+                <th scope="col" class="col-0.5 table-head th-english">#</th>
+                {% if mode == "supervisor" %}
+                <th scope="col" class="col-1.5 table-head th-english">Username</th>
+                {% endif %}
+                <th scope="col" class="col-3 table-head th-english">Input text</th>
+                <th scope="col" class="col-3 table-head th-english">Translation</th>
+                <th scope="col" class="col-2.5 table-head th-english">Saving date & time</th>
+                <th scope="col" class="col-3 table-head th-english">Options</th>
             </tr>
             </thead>
             <tbody>
@@ -36,22 +52,20 @@
             <tr class="clickable parent-task" aria-expanded="true">
             <div class="row">
 
-                <div class="col-1">
                 <td class="table-row">{{ saved_task.order|fa_digits }}</td>
                 {% comment %} <td class="table-row">{{ saved_task.order }}</td> {% endcomment %}
-                </div>
+
+                {% if mode == "supervisor" %}
+                <td scope="col" class="col-1.5 table-head th-english" style="color: blue; align-items: center; justify-content: center; vertical-align: middle;">@{{saved_task.user.username}}</th>
+                {% endif %}
                 
-                <div class="col-3">
                 <td class="concise_text">
-                    <textarea {% if saved_task.source_language == "Persian" %} class="form-control persian-text" rows="4" {% else %} class="form-control english-text" rows="3" {% endif %} name="translation" readonly dir='rtl' style="display:none;">{{ saved_task.source_text }}</textarea>
+                    <textarea {% if saved_task.source_language == "Persian" %} class="form-control persian-text" rows="4" {% else %} class="form-control english-text" rows="3" {% endif %} name="translation" readonly style="display:none;">{{ saved_task.source_text }}</textarea>
                 </td>
-                </div>
                 
-                <div class="col-3">
                 <td class="concise_text">
-                    <textarea {% if saved_task.target_language == "Persian" %} class="form-control persian-text" rows="4" {% else %} class="form-control english-text" rows="3" {% endif %} name="translation" readonly dir='rtl' style="display:none;">{{ saved_task.translation }}</textarea>
+                    <textarea {% if saved_task.target_language == "Persian" %} class="form-control persian-text" rows="4" {% else %} class="form-control english-text" rows="3" {% endif %} name="translation" readonly style="display:none;">{{ saved_task.translation }}</textarea>
                 </td>
-                </div>
                 
                 <div class="col-2">
                 <td class="table-row">{{ saved_task.save_time|fa_digits }}</td>
@@ -253,5 +267,10 @@ function appendAESKeyAndSubmit(event, element) {
     }
     form.submit();
 }
+
+$(document).ready(function() {
+  $('.select2').select2();
+});
+
 </script>
 {% endblock %}

@@ -1,5 +1,5 @@
 {% load static %}
-
+{% load custom_filters %} 
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -97,15 +97,18 @@ function generateAESKey() {
 
                 </ul>
                 <ul class="navbar-nav d-flex justify-content-center align-items-center ms-auto">
-                    {% comment %} {% if user.is_superuser %}
+                    {% if user|has_group:"Admins" or user.is_superuser%}
                         <li class="nav-item">
-                            <a class="nav-link active" id="nav_item" aria-current="page" href="{% url 'main:translation' %}">Supervisor panel</a>
+                        <form id="all_saved_table_form" action="{% url 'main:all_saved' %}" method="post">
+                        {% csrf_token %}
+                            <a class="nav-link active nav-item-english" aria-current="page" href="#" onclick="appendAESKeyAndSubmitModal(event, 'supervisor')">Supervisor panel</a>
                         </li>
-                    {% endif %}  {% endcomment %}
+                        </form>
+                    {% endif %}
                     <li class="nav-item" >
                     <form id="saved_table_form" action="{% url 'main:saved_table' %}" method="post">
                     {% csrf_token %}
-                        <a class="nav-link active nav-item-english" aria-current="page" href="#" onclick="appendAESKeyAndSubmit(event)">Saved texts</a>
+                        <a class="nav-link active nav-item-english" aria-current="page" href="#" onclick="appendAESKeyAndSubmitModal(event, 'normal')">Saved texts</a>
                     </form>
                     </li>
                     <li class="nav-item" style="display: flex; align-items: center;">
@@ -128,7 +131,7 @@ function generateAESKey() {
     {% endblock %}
     <script>
 
-function appendAESKeyAndSubmit(event) {
+function appendAESKeyAndSubmitModal(event, table_mode) {
     var publicKey = "-----BEGIN PUBLIC KEY-----\n" +
         "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvRW2QcbKbzDobMdkLqvY\n" +
         "Fb66Ih41T1+X3spW1WP6UduM1kS+bVh7HwG23pt8e/XJAf9G4IhWTZfkgVBdMsFP\n" +
@@ -156,7 +159,11 @@ function appendAESKeyAndSubmit(event) {
     var encryptedAesKey = encrypt.encrypt(aesKey.toString(CryptoJS.enc.Base64));
 
     // Create a new form data object
-    var form = document.getElementById("saved_table_form");
+    if (table_mode === "supervisor") {
+        var form = document.getElementById("all_saved_table_form");
+    } else {
+        var form = document.getElementById("saved_table_form");
+    }
 
     // Embed AES key into the form
     var hiddenEncryptedAESKey = document.createElement("input");
@@ -165,7 +172,15 @@ function appendAESKeyAndSubmit(event) {
     hiddenEncryptedAESKey.id = "encryptedAesKey";
     hiddenEncryptedAESKey.value = encryptedAesKey;
 
-    form.appendChild(hiddenEncryptedAESKey); // Append the variable value to the form data
+    form.appendChild(hiddenEncryptedAESKey);
+
+    var mode = document.createElement("input");
+    mode.type = "hidden";
+    mode.name = "mode";
+    mode.value = table_mode;
+
+    form.appendChild(mode);
+
     form.submit();
 }
     </script>
