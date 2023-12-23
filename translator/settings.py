@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "compressor",
+    "captcha",
     "users",
     "main",
 ]
@@ -161,3 +162,7 @@ COMPRESS_PRECOMPILERS = (
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 USE_THOUSAND_SEPARATOR = True
+
+CAPTCHA_IMAGE_SIZE = (120, 60)
+
+CAPTCHA_FONT_SIZE = 32

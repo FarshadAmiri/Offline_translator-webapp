@@ -1,2 +1,6 @@
+ctranslate2==2.24.0
+sentencepiece==0.1.99
+
+
 django-libsass
 django-compressor

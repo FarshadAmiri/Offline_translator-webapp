@@ -1,6 +1,6 @@
 body {
-  background-image: url("\\static\\bcg\\bcg1.jpg");
-  /* background-image: url('https://wallpapercrafter.com/th800/124985-3D-render-space-satellite-Earth-orbital-view.jpg'); Replace with the path to your background image */
+  /* background-image: url("\\static\\bcg\\bcg1.jpg"); */
+  background-color: rgb(218, 218, 218); 
   background-size: cover;
   background-position: center;
   /* Add other CSS properties as needed */

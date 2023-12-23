@@ -18,6 +18,23 @@
 <div class="container-fluid" style="padding: 7px">
 <div class="row" style="padding: 25px; border-radius: 25px; background-color: #ffffff; margin: 6px">
     <div class="col-12" style="background-color: #ffffff ; padding: 20px; padding-bottom: 10px; border-radius: 25px;">
+    <form id="user_saved_form" action="{% url 'main:supervisor_table' %}" method="post">
+    {% csrf_token %}
+    <div class="dropdown">
+        <select class="select2" id="username" style="width: 150px;">
+        <option value='all_users' {% if selected_user == 'all_users' %} selected {% endif %}>All users</option>
+        {% for user in users_list %}
+        {% if selected_user == user.username %}
+            <option value="{{ user.username }}" selected>{{user.username}}</option>
+            {% else %}
+            <option value="{{ user.username }}">{{user.username}}</option>
+        {% endif %}
+        {% endfor %}
+        </select>
+        <button id="user_saved_btn" type="submit" onclick="appendAESKeyAndSubmit(event, this)">Select</button>
+        <input type="hidden" name="selected_username" id="selected_username">
+    </div>
+    </form>
         <table class="table table-responsive table-hover">
             <thead>
             <tr>
@@ -33,7 +50,6 @@
                 <th scope="col" class="col-3 table-head th-english">Input text</th>
                 <th scope="col" class="col-3 table-head th-english">Translation</th>
                 <th scope="col" class="col-2.5 table-head th-english">Saving date & time</th>
-                <th scope="col" class="col-3 table-head th-english">Options</th>
             </tr>
             </thead>
             <tbody>
@@ -61,34 +77,12 @@
                 </div>
 
                 <div class="col-3">
-                <td class="table-row">
-                <div class="row">
-                <div class="col-2">
-                </div>
-                <div class="col-5">
-                <form class="task-form" action="{% url 'main:edit_saved_text' saved_task.task_id %}" method="post">
-                    {% csrf_token %}
-                    {% comment %} <a class="btn btn-primary opt-persian" href="#" onclick="appendAESKeyAndSubmit(event, this)">بازبینی و ویرایش</a> {% endcomment %}
-                    <a class="btn btn-primary opt-english" href="#" onclick="appendAESKeyAndSubmit(event, this)">View and edit</a>
-                </form>
-                </div>
-                <div class="col-3">
-                <form class="task-form" action="{% url 'main:saved_table' %}?page={{page_objects.number}}" method="post">
-                {% csrf_token %}
-                    {% comment %} <a class="btn btn-danger opt-persian" name="remove-btn" id="{{ saved_task.task_id }}" href="#" onclick="appendAESKeyAndSubmit(event, this)">حذف</a> {% endcomment %}
-                    <a class="btn btn-danger opt-english" name="remove-btn" id="{{ saved_task.task_id }}" href="#" onclick="appendAESKeyAndSubmit(event, this)">Delete</a>
-                </form>
-                </div>
-                <div class="col-2">
-                </div>
-                </div>
-                </td>
                 </div>
                 </div>
             </tr>
             {% endfor %}
             
-            <form id="page-form" action="{% url 'main:saved_table' %}?page={{n_page}}" method="post">
+            <form id="page-form" action="{% url 'main:supervisor_table' %}?page={{n_page}}" method="post">
             {% csrf_token %}
             </form>
             {% comment %} <nav style="text-align: center; background-color: White; padding-top: 10px">
@@ -144,29 +138,29 @@
                 {% if num_pages <= 10 %}
                 {% for n_page in pages_range %}
                     {% if n_page == page_objects.number %}
-                        <li class="page-item active"><a class="page-link" href="{% url 'main:saved_table' %}?page={{n_page}}" onclick="appendAESKeyAndSubmit(event, this)">{{ n_page }}</a></li>
+                        <li class="page-item active"><a class="page-link" href="{% url 'main:supervisor_table' %}?page={{n_page}}" onclick="appendAESKeyAndSubmit(event, this)">{{ n_page }}</a></li>
                     {% else %}
-                        <li class="page-item"><a class="page-link" href="{% url 'main:saved_table' %}?page={{ n_page }}" onclick="appendAESKeyAndSubmit(event, this)">{{ n_page }}</a></li>
+                        <li class="page-item"><a class="page-link" href="{% url 'main:supervisor_table' %}?page={{ n_page }}" onclick="appendAESKeyAndSubmit(event, this)">{{ n_page }}</a></li>
                     {% endif %}
                 {% endfor %}
                 {% else %}
                 {% for n_page in pages_range %}
                     {% if n_page <= 10 %}
                         {% if n_page == page_objects.number %}
-                            <li class="page-item active"><a class="page-link" href="{% url 'main:saved_table' %}?page={{n_page}}" onclick="appendAESKeyAndSubmit(event, this)">{{ n_page }}</a></li>
+                            <li class="page-item active"><a class="page-link" href="{% url 'main:supervisor_table' %}?page={{n_page}}" onclick="appendAESKeyAndSubmit(event, this)">{{ n_page }}</a></li>
                         {% else %}
-                            <li class="page-item"><a class="page-link" href="{% url 'main:saved_table' %}?page={{ n_page }}" onclick="appendAESKeyAndSubmit(event, this)">{{ n_page }}</a></li>
+                            <li class="page-item"><a class="page-link" href="{% url 'main:supervisor_table' %}?page={{ n_page }}" onclick="appendAESKeyAndSubmit(event, this)">{{ n_page }}</a></li>
                         {% endif %}
                     {% endif %}
                     {% endfor %}
                     {% if page_objects.number > 10 %}
-                    <li class="page-item active"><a class="page-link" href="{% url 'main:saved_table' %}?page={{ page_objects.number }}" onclick="appendAESKeyAndSubmit(event, this)">{{ page_objects.number }}</a></li>
+                    <li class="page-item active"><a class="page-link" href="{% url 'main:supervisor_table' %}?page={{ page_objects.number }}" onclick="appendAESKeyAndSubmit(event, this)">{{ page_objects.number }}</a></li>
                     {% endif %}
                     {% if page_objects.has_next %}
-                    <li class="page-item"><a class="page-link" href="{% url 'main:saved_table' %}?page={{page_objects.next_page_number}}" onclick="appendAESKeyAndSubmit(event, this)">Next</a></li>
+                    <li class="page-item"><a class="page-link" href="{% url 'main:supervisor_table' %}?page={{page_objects.next_page_number}}" onclick="appendAESKeyAndSubmit(event, this)">Next</a></li>
                     {% endif %}
                     {% if page_objects.number != num_pages %}
-                    <li class="page-item"><a class="page-link" href="{% url 'main:saved_table' %}?page={{num_pages}}" onclick="appendAESKeyAndSubmit(event, this)">{{num_pages}}</a></li>
+                    <li class="page-item"><a class="page-link" href="{% url 'main:supervisor_table' %}?page={{num_pages}}" onclick="appendAESKeyAndSubmit(event, this)">{{num_pages}}</a></li>
                     {% endif %}
                 {% endif %}
                 </ul>
@@ -185,7 +179,7 @@ window.onload = function() {
 
     elements.forEach(function(element) {
         var elementValue = element.value;
-        var aesRawKey = localStorage.getItem("aesRawKey_translation");
+        var aesRawKey = localStorage.getItem("aesRawKey_translation", aesRawKey);
         var aesKey = CryptoJS.enc.Utf8.parse(aesRawKey);
         var decryptedText = CryptoJS.AES.decrypt(elementValue, aesKey, {mode: CryptoJS.mode.ECB}).toString(CryptoJS.enc.Utf8);
         decryptedText = decryptedText.replace(/[\x00-\x09\x0B-\x1F\x7F-\x9F]/g, '');
@@ -231,12 +225,16 @@ function appendAESKeyAndSubmit(event, element) {
     encrypt.setPublicKey(publicKey);
     var encryptedAesKey = encrypt.encrypt(aesKey.toString(CryptoJS.enc.Base64));
 
-    if (element.className === "page-link") {
+    if (element.id === "user_saved_btn") {
+        var form = document.getElementById("user_saved_form");
+        var selectedOption = document.getElementById("username").value;
+        var selectedUser = document.getElementById("selected_username")
+        selectedUser.value = selectedOption;
+        form.appendChild(selectedUser);
+    } else if (element.className === "page-link") {
         var form = document.getElementById("page-form");
         form.action = element.href;
         form.method = "post";
-    } else {
-        var form = element.closest('.task-form');
     }
 
     // Embed AES key into the form
@@ -248,13 +246,11 @@ function appendAESKeyAndSubmit(event, element) {
 
     form.appendChild(hiddenEncryptedAESKey);
 
-    if (element.name === "remove-btn") {
-        var removingTextID = document.createElement("input");
-        removingTextID.type = "hidden";
-        removingTextID.name = "removingTextID";
-        removingTextID.value = element.id;
-        form.appendChild(removingTextID);
-    }
+    var selectedOption = document.getElementById("username").value;
+    var selectedUser = document.getElementById("selected_username")
+    selectedUser.value = selectedOption;
+    form.appendChild(selectedUser);
+
     form.submit();
 }
 
@@ -262,6 +258,12 @@ function appendAESKeyAndSubmit(event, element) {
 $(document).ready(function() {
   $('.select2').select2();
 });
+
+
+    function handleUsernameChange() {
+    var selectedOption = document.getElementById("username").value;
+    window.location.href = "/Allsaved/?user=" + encodeURIComponent(selectedOption);
+}
 
 </script>
 {% endblock %}

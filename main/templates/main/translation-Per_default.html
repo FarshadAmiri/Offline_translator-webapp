@@ -184,7 +184,7 @@ window.onload = function() {
     var source_text = document.getElementById("source_text");
     var translation_hidden = document.getElementById("translation_hidden").value;
     var source_text_hidden = document.getElementById("source_text_hidden").value;
-    var aesRawKey = localStorage.getItem("aesRawKey_translation", aesRawKey);
+    var aesRawKey = localStorage.getItem("aesRawKey_translation");
     var aesKey = CryptoJS.enc.Utf8.parse(aesRawKey);
     var decryptedSourceText = CryptoJS.AES.decrypt(source_text_hidden, aesKey, {mode: CryptoJS.mode.ECB});
     var decryptedTranslation = CryptoJS.AES.decrypt(translation_hidden, aesKey, {mode: CryptoJS.mode.ECB});
@@ -194,6 +194,7 @@ window.onload = function() {
     decryptedTranslationValue = decryptedTranslationValue.replace(/[\x00-\x09\x0B-\x1F\x7F-\x9F]/g, '');
     source_text.value = decryptedSourceTextValue;
     translation.value = decryptedTranslationValue;
+    localStorage.removeItem("aesRawKey_translation");
 }
 
 function showMessage(message, button) {

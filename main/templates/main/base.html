@@ -99,7 +99,7 @@ function generateAESKey() {
                 <ul class="navbar-nav d-flex justify-content-center align-items-center ms-auto">
                     {% if user|has_group:"Admins" or user.is_superuser%}
                         <li class="nav-item">
-                        <form id="all_saved_table_form" action="{% url 'main:all_saved' %}" method="post">
+                        <form id="all_saved_table_form" action="{% url 'main:supervisor_table' %}" method="post">
                         {% csrf_token %}
                             <a class="nav-link active nav-item-english" aria-current="page" href="#" onclick="appendAESKeyAndSubmitModal(event, 'supervisor')">Supervisor panel</a>
                         </li>

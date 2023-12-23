@@ -6,11 +6,19 @@
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login page</title>
+    <script type="text/javascript" src="{% static 'jquery-3.7.1.min.js' %}"></script>
     <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/users/login.css' %}">
     <script src="{% static 'js/bootstrap.min.js' %}"></script>
 </head>
 <body>
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-warning" role="alert">
+            <h6 dir='ltr'>{{ message }}</h6>
+        </div>
+    {% endfor %}
+{% endif %}
     <section class="vh-100">
     <div class="container py-5 h-100">
         <div class="row d-flex justify-content-center align-items-center h-100">
@@ -21,21 +29,22 @@
                 <div class="form-outline mb-4">
                 <form action="{% url 'users:login' %}" method='post'>
                     {% csrf_token %}
-                    <input type="text" id="username" name="username" class="form-control form-control-lg"/>
                     <label class="form-label" for="username">Username</label>
+                    <input type="text" id="username" name="username" class="form-control form-control-lg" placeholder="Username" value="{{ form.username.value|escape }}"/>
                     </div>
 
                     <div class="form-outline mb-4">
-                    <input type="password" id="Password" name="password" class="form-control form-control-lg" />
                     <label class="form-label" for="Password">Password</label>
+                    <input type="password" id="Password" name="password" class="form-control form-control-lg" placeholder="Password" value="{{ form.password.value|escape }}"/>
                     </div>
+                    {% comment %} {{ form.captcha }} {% endcomment %}
+                        {{ form.captcha }}
 
                     <!-- Checkbox -->
-                    <div class="form-check d-flex justify-content-start mb-4">
+                    <div class="form-check d-flex justify-content-start mb-4" style= "margin-top: 25px;">
                     <input class="form-check-input" type="checkbox" value="" id="form1Example3" checked/>
                     <label class="form-check-label" for="form1Example3">&nbsp Remember password </label>
                     </div>
-
                     <button class="btn btn-primary btn-lg btn-block" type="submit">Login</button>
                 </form>
 
@@ -46,4 +55,21 @@
         </div>
     </div>
     </section>
+    <script type="text/javascript" src="{% static 'jquery-3.7.1.min.js' %}"></script>
+    <script>
+    $('.js-captcha-refresh').click(function(){
+        var $form = $(this).parents('form');
+        var captchaUrl = '/captcha/image/';
+
+        $.getJSON(captchaUrl, {}, function(json) {
+            // Update captcha image source
+            $form.find('.captcha-img').attr('src', json.image_url);
+
+            // Update captcha hidden input value
+            $form.find('.captcha-input').val(json.key);
+        });
+
+        return false;
+    });
+</script>
 </body>

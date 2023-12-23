@@ -8,24 +8,32 @@ from django.contrib.auth import authenticate, login, logout
 from django.views.generic import UpdateView, DetailView, DeleteView
 from django.contrib.auth.models import Group
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
 # from rest_framework.views import APIView
 # from rest_framework.generics import GenericAPIView
 # from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 # from rest_framework.response import Response
 from .models import *
+from .forms import *
 
 def login_view(request, *kwargs):
     if request.method =='GET':
-        return render(request, 'Login_page.html')
+        login_form = LoginForm(initial={"username": "", "password": ""})
+        return render(request, 'Login_page.html', context={"form": login_form})
     elif request.method =='POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect(reverse('main:translation'))
-        message = 'Invalid Credentials!'
-        return render(request, 'Login_page.html', {'message':message})
+        form = LoginForm(request.POST)
+        print(f"\n\nis form valid: {form.is_valid()}")
+        if form.is_valid():
+            print(f"\n\nform.cleaned_data: {form.cleaned_data}\n\n")
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect(reverse('main:translation'))
+        messages.warning(request, 'Invalid input!')
+        login_form = LoginForm(initial={"username": "", "password": ""})
+        return render(request, 'Login_page.html', context={"form": login_form,})
 
 
 def logout_view(request):
