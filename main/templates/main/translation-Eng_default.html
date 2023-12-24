@@ -21,7 +21,7 @@ function generateRandomKey(length) {
       return result;
     }
 
-function encryptText(event, mode) {
+function encryptText(event, query) {
     var publicKey = "-----BEGIN PUBLIC KEY-----\n" +
                 "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvRW2QcbKbzDobMdkLqvY\n" +
                 "Fb66Ih41T1+X3spW1WP6UduM1kS+bVh7HwG23pt8e/XJAf9G4IhWTZfkgVBdMsFP\n" +
@@ -37,25 +37,27 @@ function encryptText(event, mode) {
                 "OYNP74TrWvLmcNmlKfQNfMsCAwEAAQ==\n" +
                 "-----END PUBLIC KEY-----";
     var plainText = document.getElementById('source_text').value;
+    var mode_element = document.getElementById('mode');
 
     if (plainText.length > 20000) {
         alert("Input texts should not exceed 20,000 characters long regarding computational limits. your input text is " + plainText.length + " characters long.");
         event.preventDefault();
         return false;
     }
-
+    
+    if (mode_element.value != "supervisor") {
     var spinner = document.getElementById('spinner');
     spinner.style.display = 'inline-block'; // Show the spinner
+    }
 
     // Generate a random 128-bit (16 bytes) AES key
-    var aesRawKey = generateRandomKey(16)
+    var aesRawKey = generateRandomKey(16);
     var aesKey = CryptoJS.enc.Utf8.parse(aesRawKey);
     localStorage.setItem("aesRawKey_translation", aesRawKey);
-
     // Encrypt the text with the AES key
     var encryptedText = CryptoJS.AES.encrypt(plainText, aesKey, {mode: CryptoJS.mode.ECB}).toString();
     
-    if (mode === "saving") {
+    if (query === "saving") {
         var translation = document.getElementById('translation').value;
         var encryptedTranslation = CryptoJS.AES.encrypt(translation, aesKey, {mode: CryptoJS.mode.ECB}).toString();
     }
@@ -77,12 +79,13 @@ function encryptText(event, mode) {
     hiddenEncryptedAESKey.name = "encryptedAesKey";
     hiddenEncryptedAESKey.id = "encryptedAesKey";
     hiddenEncryptedAESKey.value = encryptedAesKey;
-
     // Append the hidden input to the form
     var form = document.getElementById("translation_form");
+    form.appendChild(mode_element);
     form.appendChild(hiddenEncodedText);
     form.appendChild(hiddenEncryptedAESKey);
-    if (mode === "saving") {
+
+    if (query === "saving") {
         var hiddenEncryptedTranslation = document.createElement("input");
         hiddenEncryptedTranslation.type = "hidden";
         hiddenEncryptedTranslation.name = "encryptedTranslation";
@@ -92,13 +95,9 @@ function encryptText(event, mode) {
         form.appendChild(hiddenEncryptedTranslation);
     }
 
-    if (mode === "back-supervisor") {
-        var supervisor_mode = document.createElement("input");
-        supervisor_mode.type = "hidden";
-        supervisor_mode.name = "supervisor_mode";
-        var selected_user = document.getElementById("selected_user");
-        form.appendChild(supervisor_mode);
-        form.appendChild(selected_user);
+    if (query === "back" && mode.value === "supervisor") {
+    var selected_user = document.getElementById("selected_user");
+    form.appendChild(selected_user);
     }
 
     // Return the encrypted text and encrypted AES key
@@ -116,6 +115,8 @@ function encryptText(event, mode) {
     {{ form.media }}
     {% if edit_mode %}
         <form id="translation_form" action="{% url 'main:edit_saved_text' task_id%}" method="post">
+    {% else %}
+        <form id="translation_form" action="{% url 'main:translation' %}" method="post">
     {% endif %}
         {% csrf_token %}
         <div class="row d-flex justify-content-center" id="main-container">
@@ -134,7 +135,7 @@ function encryptText(event, mode) {
                 <button type="submit" id="edit-btn" name="edit-btn" class="btn btn-success" style="margin-right: 10px" onclick="encryptText(event, 'saving'); showMessage('Edit saved!', this)">Apply edits</button>
                 <button type="submit" id="remove-btn" name="remove-btn" class="btn btn-danger" onclick="encryptText(event, 'deleting')">Delete</button>
                 {% elif mode == "supervisor" %}
-                <button type="submit" id="back-btn" name="back-btn" class="btn btn-warning" style="margin-right: 95%" onclick="encryptText(event, 'back-supervisor')">Back</button>
+                <button type="submit" id="back-btn" name="back-btn" class="btn btn-warning" style="margin-right: 95%" onclick="encryptText(event, 'back')">Back</button>
                 {% endif %}
             {% else %}
                 <button type="submit" id="save-btn" name="save-btn" class="btn btn-success" onclick="encryptText(event, 'saving'); showMessage('Saved!', this)"><img id="save-icon">Save</button>
@@ -176,11 +177,13 @@ function encryptText(event, mode) {
                     <textarea class="form-control" name="translation" id="translation" rows="25" readonly dir='rtl'></textarea>
                     <input type="hidden" id="translation_hidden" value="{{ translation }}">
                     <input type="hidden" id="selected_user" name= "selected_user" value="{{ selected_user }}">
+                    <input type="hidden" id="mode" name= "mode" value="{{ mode }}">
                     <div class="text-center mt-2">
                         <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('translation'); showMessage('Cleared!', this)"><img id="clear-icon"></button>
                         <button type="button" class="btn btn-success copy-btn" onclick="copyText2('translation'); showMessage('Copied!', this)"><img id="copy-icon"></button>
                 </div>
             </div>
+            {% if mode == "user" %}
             <div class="row justify-content-center">
                 <div class="col-12 text-center">
                 <div style="position: relative;">
@@ -191,6 +194,7 @@ function encryptText(event, mode) {
                 </div>
                 </div>
             </div>
+            {% endif %}
         </div>
     </form>
 </div>

@@ -87,6 +87,7 @@
                 </div>
             </tr>
             {% endfor %}
+            <input type="hidden" id="mode" name= "mode" value="{{ mode }}">
             
             <form id="page-form" action="{% url 'main:saved_table' %}?page={{n_page}}" method="post">
             {% csrf_token %}
@@ -220,6 +221,7 @@ function appendAESKeyAndSubmit(event, element) {
         "OYNP74TrWvLmcNmlKfQNfMsCAwEAAQ==\n" +
         "-----END PUBLIC KEY-----";
     event.preventDefault(); // Prevent the default behavior of the link
+    var mode_element = document.getElementById('mode');
 
     // Generate a random 128-bit (16 bytes) AES key
     var aesRawKey = generateRandomKey(16)
@@ -255,6 +257,7 @@ function appendAESKeyAndSubmit(event, element) {
         removingTextID.value = element.id;
         form.appendChild(removingTextID);
     }
+    form.appendChild(mode_element);
     form.submit();
 }
 
