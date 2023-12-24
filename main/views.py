@@ -247,10 +247,19 @@ def EditText(request, task_id):
         if "remove-btn" in request.POST:
             task = TranslationTask.objects.get(task_id=task_id)
             task.delete()
+        if 'back-btn' in request.POST:
+            if "supervisor_mode" in request.POST:
+                mode = "supervisor"
+            else:
+                mode = "user"
+        print(f"\n\nmode: {mode}\n\n")
         encrypted_aes_key = request.POST.get('encryptedAesKey')
         aes_key = decrypt_aes_key(encrypted_aes_key)
         user=request.user
-        saved_tasks = TranslationTask.objects.filter(user=user).order_by('-save_time')
+        if mode == "supervisor":
+            saved_tasks = TranslationTask.objects.all().order_by('-save_time')
+        else:
+            saved_tasks = TranslationTask.objects.filter(user=user).order_by('-save_time')
         n_total_saved = len(saved_tasks)
         encrypted_saved_tasks = saved_tasks
         for idx, task in enumerate(encrypted_saved_tasks):
@@ -275,13 +284,24 @@ def EditText(request, task_id):
             obj.save_time = save_time
 
         for idx, obj in enumerate(page_objects[::-1]):
-            obj.number = idx + 1
+            obj.number = idx + 1 
+
+        if mode == "supervisor":
+            selected_username = "all_users"
+            users_list = User.objects.all()
+            context={'page_objects': page_objects, "n_total_saved": n_total_saved, "num_pages": num_pages, "selected_user": selected_username,
+                    "pages_range": paginator.page_range, "user": user, "mode": "supervisor", "users_list": users_list }
+            return render(request, 'main/supervisor_table.html', context)
         context={'page_objects': page_objects, "n_total_saved": n_total_saved, "num_pages": num_pages, "pages_range": paginator.page_range, "user": user, "mode": "normal",}
         return render(request, 'main/saved_table.html', context)
     
     else: # Show text
+        if "supervisor_mode" in request.POST:
+            mode = "supervisor"
+        else:
+            mode = "user"
         user = request.user
-        task = get_object_or_404(TranslationTask, user=user, task_id=task_id)
+        task = get_object_or_404(TranslationTask, task_id=task_id)
         source_text = task.source_text
         translation = task.translation
         source_lang = task.source_language
@@ -294,10 +314,10 @@ def EditText(request, task_id):
 
         if source_lang == "English":
             return render(request, 'main/translation-Eng_default.html', {'translation': encrypted_translation, "source_text": encrypted_source_text,
-                                                                         "task_id": task_id, "edit_mode":True})
+                                                                         "task_id": task_id, "edit_mode":True, "mode": mode})
         elif source_lang == "Persian":
             return render(request, 'main/translation-Per_default.html', {'translation': encrypted_translation, "source_text": encrypted_source_text,
-                                                                         "task_id": task_id, "edit_mode":True})
+                                                                         "task_id": task_id, "edit_mode":True, "mode": mode})
 
 
 def DeleteText(request, task_id):

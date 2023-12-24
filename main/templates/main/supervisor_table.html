@@ -51,7 +51,8 @@
                 {% endif %}
                 <th scope="col" class="col-3 table-head th-english">Input text</th>
                 <th scope="col" class="col-3 table-head th-english">Translation</th>
-                <th scope="col" class="col-2.5 table-head th-english">Saving date & time</th>
+                <th scope="col" class="col-2 table-head th-english">Saving date & time</th>
+                <th scope="col" class="col-1.5 table-head th-english">Options</th>
             </tr>
             </thead>
             <tbody>
@@ -80,6 +81,14 @@
 
                 <div class="col-3">
                 </div>
+                    <td style="text-align: center; vertical-align: middle;">
+                    <div class="col-12">
+                        <form class="task-form" action="{% url 'main:edit_saved_text' saved_task.task_id %}" method="post">
+                        {% csrf_token %}
+                        <a class="btn btn-primary opt-english" href="#" onclick="appendAESKeyAndSubmit(event, this)">View</a>
+                        </form>
+                    </div>
+                    </td>
                 </div>
             </tr>
             {% endfor %}
@@ -237,6 +246,12 @@ function appendAESKeyAndSubmit(event, element) {
         var form = document.getElementById("page-form");
         form.action = element.href;
         form.method = "post";
+    } else {
+        var form = element.closest('.task-form');
+        var supervisor_mode = document.createElement("input");
+        supervisor_mode.type = "hidden";
+        supervisor_mode.name = "supervisor_mode";
+        form.appendChild(supervisor_mode);
     }
 
     // Embed AES key into the form
