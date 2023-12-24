@@ -252,6 +252,12 @@ function appendAESKeyAndSubmit(event, element) {
         supervisor_mode.type = "hidden";
         supervisor_mode.name = "supervisor_mode";
         form.appendChild(supervisor_mode);
+
+        var selected_user = document.createElement("input");
+        selected_user.type = "hidden";
+        selected_user.name = "selected_user";
+        selected_user.value = document.getElementById("username").value
+        form.appendChild(selected_user);
     }
 
     // Embed AES key into the form
@@ -274,7 +280,7 @@ function appendAESKeyAndSubmit(event, element) {
 
 $(document).ready(function() {
   $('.select2').select2();
-});s
+});
 
 
 </script>

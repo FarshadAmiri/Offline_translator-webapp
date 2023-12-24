@@ -96,7 +96,9 @@ function encryptText(event, mode) {
         var supervisor_mode = document.createElement("input");
         supervisor_mode.type = "hidden";
         supervisor_mode.name = "supervisor_mode";
+        var selected_user = document.getElementById("selected_user");
         form.appendChild(supervisor_mode);
+        form.appendChild(selected_user);
     }
 
     // Return the encrypted text and encrypted AES key
@@ -173,6 +175,7 @@ function encryptText(event, mode) {
                     </div>
                     <textarea class="form-control" name="translation" id="translation" rows="25" readonly dir='rtl'></textarea>
                     <input type="hidden" id="translation_hidden" value="{{ translation }}">
+                    <input type="hidden" id="selected_user" name= "selected_user" value="{{ selected_user }}">
                     <div class="text-center mt-2">
                         <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('translation'); showMessage('Cleared!', this)"><img id="clear-icon"></button>
                         <button type="button" class="btn btn-success copy-btn" onclick="copyText2('translation'); showMessage('Copied!', this)"><img id="copy-icon"></button>

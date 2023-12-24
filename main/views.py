@@ -250,6 +250,7 @@ def EditText(request, task_id):
         if 'back-btn' in request.POST:
             if "supervisor_mode" in request.POST:
                 mode = "supervisor"
+                selected_username = request.POST["selected_user"] if "selected_user" in request.POST else "all_users"
             else:
                 mode = "user"
         print(f"\n\nmode: {mode}\n\n")
@@ -257,7 +258,10 @@ def EditText(request, task_id):
         aes_key = decrypt_aes_key(encrypted_aes_key)
         user=request.user
         if mode == "supervisor":
-            saved_tasks = TranslationTask.objects.all().order_by('-save_time')
+            if selected_username == "all_users":
+                saved_tasks = TranslationTask.objects.all().order_by('-save_time')
+            else:
+                saved_tasks = TranslationTask.objects.filter(user=selected_username).order_by('-save_time')
         else:
             saved_tasks = TranslationTask.objects.filter(user=user).order_by('-save_time')
         n_total_saved = len(saved_tasks)
@@ -287,7 +291,6 @@ def EditText(request, task_id):
             obj.number = idx + 1 
 
         if mode == "supervisor":
-            selected_username = "all_users"
             users_list = User.objects.all()
             context={'page_objects': page_objects, "n_total_saved": n_total_saved, "num_pages": num_pages, "selected_user": selected_username,
                     "pages_range": paginator.page_range, "user": user, "mode": "supervisor", "users_list": users_list }
@@ -312,12 +315,15 @@ def EditText(request, task_id):
         encrypted_translation = encrypt_AES_ECB(translation, aes_key).decode('utf-8')
         encrypted_source_text = encrypt_AES_ECB(source_text, aes_key).decode('utf-8')
 
+        if "selected_user" in request.POST:
+            selected_user = request.POST["selected_user"]
+
         if source_lang == "English":
             return render(request, 'main/translation-Eng_default.html', {'translation': encrypted_translation, "source_text": encrypted_source_text,
-                                                                         "task_id": task_id, "edit_mode":True, "mode": mode})
+                                                                         "task_id": task_id, "edit_mode":True, "mode": mode, "selected_user": selected_user})
         elif source_lang == "Persian":
             return render(request, 'main/translation-Per_default.html', {'translation': encrypted_translation, "source_text": encrypted_source_text,
-                                                                         "task_id": task_id, "edit_mode":True, "mode": mode})
+                                                                         "task_id": task_id, "edit_mode":True, "mode": mode, "selected_user": selected_user})
 
 
 def DeleteText(request, task_id):
