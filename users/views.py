@@ -31,7 +31,10 @@ def login_view(request, *kwargs):
             if user is not None:
                 login(request, user)
                 return redirect(reverse('main:translation'))
-        messages.warning(request, 'Invalid input!')
+            messages.warning(request, 'Invalid username or password!')
+            login_form = LoginForm(initial={"username": username, "password": password})
+            return render(request, 'Login_page.html', context={"form": login_form,})
+        messages.warning(request, 'Wrong captcha!')
         login_form = LoginForm(initial={"username": "", "password": ""})
         return render(request, 'Login_page.html', context={"form": login_form,})
 

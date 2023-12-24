@@ -85,3 +85,35 @@
   .dropdown-menu.show {
     display: block;
   }
+
+  .select-user-btn {
+    background: linear-gradient(to bottom, #dddddd, #c4c4c4);
+    border: none;
+    color: #000000;
+    font-size: 18px;
+    font-weight: normal;
+    font-family: RobotoSlab;
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+
+  #main-container {
+    padding: 25px;
+    border-radius: 25px;
+    background-color: #ffffff;
+    margin: 6px;
+  }
+
+  body {
+    /* background-image: url("..\\..\\bcg\\bcg1.jpg"); */
+    background-color: rgb(223, 223, 223);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    background-size: cover;
+    background-position: center;
+    /* Add other CSS properties as needed */
+  }

@@ -16,13 +16,14 @@
 
 {% block body %}
 <div class="container-fluid" style="padding: 7px">
-<div class="row" style="padding: 25px; border-radius: 25px; background-color: #ffffff; margin: 6px">
+<div id="main-container" class="row">
     <div class="col-12" style="background-color: #ffffff ; padding: 20px; padding-bottom: 10px; border-radius: 25px;">
     <form id="user_saved_form" action="{% url 'main:supervisor_table' %}" method="post">
     {% csrf_token %}
     <div class="dropdown">
         <select class="select2" id="username" style="width: 150px;">
         <option value='all_users' {% if selected_user == 'all_users' %} selected {% endif %}>All users</option>
+        <optgroup label="Users">
         {% for user in users_list %}
         {% if selected_user == user.username %}
             <option value="{{ user.username }}" selected>{{user.username}}</option>
@@ -30,8 +31,9 @@
             <option value="{{ user.username }}">{{user.username}}</option>
         {% endif %}
         {% endfor %}
+        </optgroup>
         </select>
-        <button id="user_saved_btn" type="submit" onclick="appendAESKeyAndSubmit(event, this)">Select</button>
+        <button id="user_saved_btn" class="select-user-btn" type="submit" onclick="appendAESKeyAndSubmit(event, this)">Select</button>
         <input type="hidden" name="selected_username" id="selected_username">
     </div>
     </form>
@@ -257,13 +259,8 @@ function appendAESKeyAndSubmit(event, element) {
 
 $(document).ready(function() {
   $('.select2').select2();
-});
+});s
 
-
-    function handleUsernameChange() {
-    var selectedOption = document.getElementById("username").value;
-    window.location.href = "/Allsaved/?user=" + encodeURIComponent(selectedOption);
-}
 
 </script>
 {% endblock %}
