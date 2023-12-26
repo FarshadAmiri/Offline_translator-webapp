@@ -131,11 +131,11 @@ function encryptText(event, query) {
             <div class="d-flex justify-content-end" style="position: top: 0; right: 0; padding: 0px;">
             {% if edit_mode %}
                 {% if mode == "user" %}
-                <button type="submit" id="back-btn" name="back-btn" class="btn btn-warning" style="margin-right: 85%" onclick="encryptText(event, 'back')">Back</button>
+                <button type="submit" id="back-btn" name="back-btn" style="margin-right: 85%" onclick="encryptText(event, 'back')">Back</button>
                 <button type="submit" id="edit-btn" name="edit-btn" class="btn btn-success" style="margin-right: 10px" onclick="encryptText(event, 'saving'); showMessage('Edit saved!', this)">Apply edits</button>
                 <button type="submit" id="remove-btn" name="remove-btn" class="btn btn-danger" onclick="encryptText(event, 'deleting')">Delete</button>
                 {% elif mode == "supervisor" %}
-                <button type="submit" id="back-btn" name="back-btn" class="btn btn-warning" style="margin-right: 95%" onclick="encryptText(event, 'back')">Back</button>
+                <button type="submit" id="back-btn" name="back-btn" style="margin-right: 95%" onclick="encryptText(event, 'back')">Back</button>
                 {% endif %}
             {% else %}
                 <button type="submit" id="save-btn" name="save-btn" class="btn btn-success" onclick="encryptText(event, 'saving'); showMessage('Saved!', this)"><img id="save-icon">Save</button>
@@ -144,13 +144,16 @@ function encryptText(event, query) {
                 <div class="col-md-6">
                 <div class="btn-group-lg d-flex justify-content-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px; margin-top: 0px;">
                     <div>
-                        <input type="radio" class="btn-check" name="btnradio_left" id="btnradio1" autocomplete="off" value="English" checked>
-                        <label class="btn btn-outline-primary english-btn" for="btnradio1">English</label>
+                        <input type="radio" class="btn-check" name="btnradio_left" id="btnradio1-en" autocomplete="off" value="English" onclick="disableCorrespondingRadio(this)" checked>
+                        <label class="btn btn-outline-primary english-btn" for="btnradio1-en">English</label>
                     </div>
-
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnradio_left" id="btnradio2" autocomplete="off" value="Persian">
-                        <label class="btn btn-outline-primary persian-btn" for="btnradio2">فارسی</label>
+                        <input type="radio" class="btn-check" name="btnradio_left" id="btnradio1-ar" autocomplete="off" value="Arabic" onclick="disableCorrespondingRadio(this)">
+                        <label class="btn btn-outline-primary arabic-btn" for="btnradio1-ar">عربی</label>
+                    </div>
+                    <div style="margin-left: 7px;">
+                        <input type="radio" class="btn-check" name="btnradio_left" id="btnradio1-fa" autocomplete="off" value="Persian" onclick="disableCorrespondingRadio(this)">
+                        <label class="btn btn-outline-primary persian-btn" for="btnradio1-fa">فارسی</label>
                     </div>
                     </div>
                     <div style="position: relative;">
@@ -160,18 +163,22 @@ function encryptText(event, query) {
                     </div>
                     <div class="text-center mt-2">
                         <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('source_text'); showMessage('Cleared!', this); updateCharacterCount()"><img id="clear-icon"></button>
-                        <button type="button" class="btn btn-success copy-btn" onclick="copyText2('source_text'); showMessage('Copied!', this)"><img id="copy-icon"></button>
+                        <button type="button" class="btn btn-success copy-btn" onclick="copyText('source_text'); showMessage('Copied!', this)"><img id="copy-icon"></button>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="btn-group-lg d-flex justify-content-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px">
-                    <div>
-                        <input type="radio" class="btn-check" name="btnradio_right" id="btnradio4" value="Persian" autocomplete="off" checked disabled>
-                        <label class="btn btn-outline-primary persian-btn" for="btnradio4">فارسی</label>
+                    <div style="margin-left: 7px;">
+                        <input type="radio" class="btn-check" name="btnradio_right" id="btnradio2-en" value="English" autocomplete="off" onclick="disableCorrespondingRadio(this)">
+                        <label class="btn btn-outline-primary english-btn" for="btnradio2-en">English</label>
                     </div>
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnradio_right" id="btnradio3" value="English" autocomplete="off" disabled>
-                        <label class="btn btn-outline-primary english-btn" for="btnradio3">English</label>
+                        <input type="radio" class="btn-check" name="btnradio_right" id="btnradio2-ar" value="Arabic" autocomplete="off" onclick="disableCorrespondingRadio(this)">
+                        <label class="btn btn-outline-primary arabic-btn" for="btnradio2-ar">عربی</label>
+                    </div>
+                    <div>
+                        <input type="radio" class="btn-check" name="btnradio_right" id="btnradio2-fa" value="Persian" autocomplete="off" onclick="disableCorrespondingRadio(this)" checked>
+                        <label class="btn btn-outline-primary persian-btn" for="btnradio2-fa">فارسی</label>
                     </div>
                     </div>
                     <textarea class="form-control" name="translation" id="translation" rows="25" readonly dir='rtl'></textarea>
@@ -180,7 +187,7 @@ function encryptText(event, query) {
                     <input type="hidden" id="mode" name= "mode" value="{{ mode }}">
                     <div class="text-center mt-2">
                         <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('translation'); showMessage('Cleared!', this)"><img id="clear-icon"></button>
-                        <button type="button" class="btn btn-success copy-btn" onclick="copyText2('translation'); showMessage('Copied!', this)"><img id="copy-icon"></button>
+                        <button type="button" class="btn btn-success copy-btn" onclick="copyText('translation'); showMessage('Copied!', this)"><img id="copy-icon"></button>
                 </div>
             </div>
             {% if mode == "user" %}

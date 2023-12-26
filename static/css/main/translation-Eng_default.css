@@ -67,6 +67,12 @@
   font-weight: normal;
 }
 
+.arabic-btn {
+  font-family: IranSans;
+  font-size: 18px;
+  font-weight: normal;
+}
+
 #translate-btn {
   font-family: RobotoSlab;
   font-size: 20px;
@@ -125,11 +131,14 @@
 
   #back-btn {
     font-family: RobotoSlab ;
+    background: linear-gradient(to bottom, #9e9e9e, #474747);
     font-size: 17px;
-    font-weight: bold;
-    color: #000000;
+    font-weight: normal;
+    color: #ffffff;
     text-align: left;
-    padding: 5px;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 15px;
   }
 
 #remove-btn {

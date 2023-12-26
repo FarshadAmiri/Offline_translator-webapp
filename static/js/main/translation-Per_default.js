@@ -2,7 +2,7 @@ function clearText(textboxId) {
     document.getElementById(textboxId).value = "";
 }
 
-function copyText2(textboxId) {
+function copyText(textboxId) {
     var textbox = document.getElementById(textboxId);
     var text = textbox.value;
   
@@ -15,20 +15,41 @@ function copyText2(textboxId) {
       });
   }
 
-  var radioButtons = document.querySelectorAll('input[name="btnradio_right"], input[name="btnradio_left"]');
-  radioButtons.forEach(function(radioButton) {
-    radioButton.addEventListener('change', function() {
-      if (this.id === 'btnradio1') {
-        // If the first radio button is selected, select the corresponding disabled radio button
-        document.getElementById('btnradio1').checked = true;
-        document.getElementById('btnradio4').checked = true;
-      } else if (this.id === 'btnradio2') {
-        // If the second disabled radio button is selected, select the first radio button
-        document.getElementById('btnradio2').checked = true;
-        document.getElementById('btnradio3').checked = true;
+  // var radioButtons = document.querySelectorAll('input[name="btnradio_right"], input[name="btnradio_left"]');
+  // radioButtons.forEach(function(radioButton) {
+  //   radioButton.addEventListener('change', function() {
+  //     if (this.id === 'btnradio1') {
+  //       // If the first radio button is selected, select the corresponding disabled radio button
+  //       document.getElementById('btnradio1').checked = true;
+  //       document.getElementById('btnradio4').checked = true;
+  //     } else if (this.id === 'btnradio2') {
+  //       // If the second disabled radio button is selected, select the first radio button
+  //       document.getElementById('btnradio2').checked = true;
+  //       document.getElementById('btnradio3').checked = true;
+  //     }
+  //   });
+  // });
+
+
+  function disableCorrespondingRadio() {
+    var radio1 = document.getElementsByName("btnradio_left");
+    var radio2 = document.getElementsByName("btnradio_right");
+  
+    for (var i = 0; i < radio1.length; i++) {
+      if (radio1[i].checked) {
+        var lang = radio1[i].value;
+  
+        for (var j = 0; j < radio2.length; j++) {
+          if (radio2[j].value === lang) {
+            radio2[j].disabled = true;
+          } else {
+            radio2[j].disabled = false;
+          }
+        }
+        break;
       }
-    });
-  });
+    }
+  }
 
 
 // Add an event listener for the radio buttons
