@@ -32,8 +32,6 @@ def Translation(request):
     elif (request.method == 'POST') and "translate-btn" in request.POST:
         source_lang = request.POST.get('source_lang')
         target_lang = request.POST.get('target_lang')
-        print(f"source_lang: {source_lang}")
-        print(f"target_lang: {target_lang}")
         encoded_text = request.POST.get('encryptedText')
         encrypted_aes_key = request.POST.get('encryptedAesKey')
         aes_key = decrypt_aes_key(encrypted_aes_key)
@@ -128,7 +126,6 @@ def SupervisorTable(request):
     aes_key = decrypt_aes_key(encrypted_aes_key)
     selected_username = request.POST.get("selected_username", None)
     selected_username = "all_users" if selected_username == None else selected_username
-    print("\n\nselected_username: ", selected_username, "\n\n")
     if selected_username == "all_users":
         saved_tasks = TranslationTask.objects.all().order_by('-save_time')
     else:
@@ -264,13 +261,11 @@ def EditText(request, task_id):
 
         for idx, obj in enumerate(page_objects[::-1]):
             obj.number = idx + 1 
-        print("\n555\n")
         if mode == "supervisor":
             users_list = User.objects.all()
             context={'page_objects': page_objects, "n_total_saved": n_total_saved, "num_pages": num_pages, "selected_user": selected_username,
                     "pages_range": paginator.page_range, "user": user, "mode": "supervisor", "users_list": users_list }
             return render(request, 'main/supervisor_table.html', context)
-        print("\n666\n")
         context={'page_objects': page_objects, "n_total_saved": n_total_saved, "num_pages": num_pages, "pages_range": paginator.page_range, "user": user, "mode": "user",}
         return render(request, 'main/saved_table.html', context)
     
