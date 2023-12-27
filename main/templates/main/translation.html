@@ -1,11 +1,15 @@
 {% extends "main\base.html" %}
 {% load static %}
+{% comment %} {% load js %} {% endcomment %}
 
 {% block head-static %}
-{% comment %} <script type="text/javascript" src="{% static 'js/main/translation-Per_default.js' %}"></script> {% endcomment %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/main/translation-Per_default.css' %}">
+{% comment %} <script type="text/javascript" src="{% static 'js/main/translation-Eng_default.js' %}"></script> {% endcomment %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/main/translation.css' %}">
 <script type="text/javascript" src="{% static 'jquery-3.7.1.min.js' %}"></script>
+{% comment %} <script src="{% static 'index.min.js' %}"></script> {% endcomment %}
 <script src="{% static 'jsencrypt.js' %}"></script>
+{% comment %} <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script> {% endcomenmt %}
+{% comment %} <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.2.1/jsencrypt.min.js"></script> {% endcomment %}
 <script src="{% static 'crypto-js.js' %}"></script>
 <script>
 function generateRandomKey(length) {
@@ -34,14 +38,13 @@ function encryptText(event, query) {
                 "-----END PUBLIC KEY-----";
     var plainText = document.getElementById('source_text').value;
     var mode_element = document.getElementById('mode');
-    
 
     if (plainText.length > 20000) {
         alert("Input texts should not exceed 20,000 characters long regarding computational limits. your input text is " + plainText.length + " characters long.");
         event.preventDefault();
         return false;
     }
-
+    
     if (mode_element.value != "supervisor") {
     var spinner = document.getElementById('spinner');
     spinner.style.display = 'inline-block'; // Show the spinner
@@ -51,7 +54,6 @@ function encryptText(event, query) {
     var aesRawKey = generateRandomKey(16);
     var aesKey = CryptoJS.enc.Utf8.parse(aesRawKey);
     localStorage.setItem("aesRawKey_translation", aesRawKey);
-
     // Encrypt the text with the AES key
     var encryptedText = CryptoJS.AES.encrypt(plainText, aesKey, {mode: CryptoJS.mode.ECB}).toString();
     
@@ -71,33 +73,37 @@ function encryptText(event, query) {
     hiddenEncodedText.name = "encryptedText";
     hiddenEncodedText.id = "encryptedText";
     hiddenEncodedText.value = encryptedText;
-
+    
     var hiddenEncryptedAESKey = document.createElement("input");
     hiddenEncryptedAESKey.type = "hidden";
     hiddenEncryptedAESKey.name = "encryptedAesKey";
     hiddenEncryptedAESKey.id = "encryptedAesKey";
     hiddenEncryptedAESKey.value = encryptedAesKey;
-
     // Append the hidden input to the form
     var form = document.getElementById("translation_form");
     form.appendChild(mode_element);
     form.appendChild(hiddenEncodedText);
     form.appendChild(hiddenEncryptedAESKey);
+
     if (query === "saving") {
-    var hiddenEncryptedTranslation = document.createElement("input");
-    hiddenEncryptedTranslation.type = "hidden";
-    hiddenEncryptedTranslation.name = "encryptedTranslation";
-    hiddenEncryptedTranslation.id = "encryptedTranslation";
-    hiddenEncryptedTranslation.value = encryptedTranslation;
+        var hiddenEncryptedTranslation = document.createElement("input");
+        hiddenEncryptedTranslation.type = "hidden";
+        hiddenEncryptedTranslation.name = "encryptedTranslation";
+        hiddenEncryptedTranslation.id = "encryptedTranslation";
+        hiddenEncryptedTranslation.value = encryptedTranslation;
 
-    form.appendChild(hiddenEncryptedTranslation);
+        form.appendChild(hiddenEncryptedTranslation);
     }
-
 
     if (query === "back" && mode.value === "supervisor") {
     var selected_user = document.getElementById("selected_user");
     form.appendChild(selected_user);
     }
+    
+    var source_lang = document.getElementById("source_lang");
+    form.appendChild(source_lang);
+    var target_lang = document.getElementById("target_lang");
+    form.appendChild(target_lang);
 
     // Return the encrypted text and encrypted AES key
     return {
@@ -141,19 +147,22 @@ function encryptText(event, query) {
             {% endif %}
             </div>
                 <div class="col-md-6">
-                <div class="btn-group-lg d-flex justify-content-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px">
-                    <div>
-                        <input type="radio" class="btn-check" name="btnradio_left" id="btnradio1" autocomplete="off" value="English">
-                        <label class="btn btn-outline-primary english-btn" for="btnradio1">English</label>
-                    </div>
-
+                <div class="btn-group-lg d-flex justify-content-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px; margin-top: 0px;">
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnradio_left" id="btnradio2" autocomplete="off" value="Persian" checked>
-                        <label class="btn btn-outline-primary persian-btn" for="btnradio2">فارسی</label>
+                        <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-en" autocomplete="off" value="en" onclick="disableCorrespondingRadio(this)" checked>
+                        <label class="btn btn-outline-primary english-btn" for="btnInput-en">English</label>
+                    </div>
+                    <div style="margin-left: 7px;">
+                        <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-ar" autocomplete="off" value="ar" onclick="disableCorrespondingRadio(this)">
+                        <label class="btn btn-outline-primary arabic-btn" for="btnInput-ar">عربی</label>
+                    </div>
+                    <div style="margin-left: 7px;">
+                        <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-fa" autocomplete="off" value="fa" onclick="disableCorrespondingRadio(this)">
+                        <label class="btn btn-outline-primary persian-btn" for="btnInput-fa">فارسی</label>
                     </div>
                     </div>
                     <div style="position: relative;">
-                    <textarea class="form-control" name="source_text" id="source_text" rows="25" placeholder="متن را وارد کنید" dir='rtl'></textarea>
+                    <textarea class="form-control" name="source_text" id="source_text" rows="20" placeholder="Enter text" oninput="updateCharacterCount()"></textarea>
                     <span id="charCount" style="position: absolute; bottom: -25px; right: 0px; padding: 0; margin: 0; font-weight: bold;"></span>
                     <input type="hidden" id="source_text_hidden" value="{{ source_text }}">
                     </div>
@@ -163,20 +172,26 @@ function encryptText(event, query) {
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="btn-group-lg d-flex justify-content-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px">
-                    <div>
-                        <input type="radio" class="btn-check" name="btnradio_right" id="btnradio4" value="Persian" autocomplete="off" disabled>
-                        <label class="btn btn-outline-primary persian-btn" for="btnradio2">فارسی</label>
+                    <div class="btn-group-lg d-flex justify-content-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px; margin-top: 0px;">
+                    <div style="margin-left: 7px;">
+                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-en" value="en" autocomplete="off" onclick="disableCorrespondingRadio(this)">
+                        <label class="btn btn-outline-primary english-btn" for="btnOutput-en">English</label>
                     </div>
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnradio_right" id="btnradio3" value="English" autocomplete="off" checked disabled>
-                        <label class="btn btn-outline-primary english-btn" for="btnradio1">English</label>
+                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-ar" value="ar" autocomplete="off" onclick="disableCorrespondingRadio(this)">
+                        <label class="btn btn-outline-primary arabic-btn" for="btnOutput-ar">عربی</label>
+                    </div>
+                    <div style="margin-left: 7px;">
+                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-fa" value="fa" autocomplete="off" onclick="disableCorrespondingRadio(this)" checked>
+                        <label class="btn btn-outline-primary persian-btn" for="btnOutput-fa">فارسی</label>
                     </div>
                     </div>
-                    <textarea class="form-control" id="translation" name="translation" rows="20" readonly></textarea>
+                    <textarea class="form-control" name="translation" id="translation" rows="25" readonly dir='rtl'></textarea>
                     <input type="hidden" id="translation_hidden" value="{{ translation }}">
                     <input type="hidden" id="selected_user" name= "selected_user" value="{{ selected_user }}">
                     <input type="hidden" id="mode" name= "mode" value="{{ mode }}">
+                    <input type="hidden" id="source_lang" name= "source_lang" value="{{ source_lang }}">
+                    <input type="hidden" id="target_lang" name= "target_lang" value="{{ target_lang }}">
                     <div class="text-center mt-2">
                         <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('translation'); showMessage('Cleared!', this)"><img id="clear-icon"></button>
                         <button type="button" class="btn btn-success copy-btn" onclick="copyText('translation'); showMessage('Copied!', this)"><img id="copy-icon"></button>
@@ -185,17 +200,19 @@ function encryptText(event, query) {
             {% if mode == "user" %}
             <div class="row justify-content-center">
                 <div class="col-12 text-center">
+                <div style="position: relative;">
                     <button type="submit" id="translate-btn" name="translate-btn" class="btn" onclick="encryptText(event, 'translating')">Translate!</button>
                     <div class="spinner-border" id="spinner" role="status" style="display: none; position: relative; top: 8px; left: 30px; padding: 0; margin: 0;">
                     <span class="sr-only"></span>
                     </div>
+                </div>
                 </div>
             </div>
             {% endif %}
         </div>
     </form>
 </div>
-<script type="text/javascript" src="{% static 'js/main/translation-Per_default.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/main/translation.js' %}"></script>
 <script>
 window.onload = function() {
     var translation = document.getElementById("translation");
@@ -213,7 +230,53 @@ window.onload = function() {
     source_text.value = decryptedSourceTextValue;
     translation.value = decryptedTranslationValue;
     localStorage.removeItem("aesRawKey_translation");
-}
+
+    var sourceLangElement = document.getElementById('source_lang');
+    var targetLangElement = document.getElementById('target_lang');
+    var textArea1 = document.getElementById('source_text');
+    var textArea2 = document.getElementById('translation');
+
+    var radioInput = document.getElementsByName("btnRadio_input");
+    var radioOutput = document.getElementsByName("btnRadio_output");
+
+    if (sourceLangElement.value === "en") {
+    applyLanguageSettings (textArea1, "en", "input")
+    for (var i = 0; i < radioInput.length; i++) {
+      if (radioInput[i].id === "btnInput-en") {radioInput[i].checked = true;} else {radioInput[i].checked = false};        
+    }
+  };
+  if (sourceLangElement.value === "ar") {
+    applyLanguageSettings (textArea1, "ar", "input")
+    for (var i = 0; i < radioInput.length; i++) {
+      if (radioInput[i].id === "btnInput-ar") {radioInput[i].checked = true;} else {radioInput[i].checked = false};        
+    }
+  };
+  if (sourceLangElement.value === "fa") {
+    applyLanguageSettings (textArea1, "fa", "input")
+    for (var i = 0; i < radioInput.length; i++) {
+      if (radioInput[i].id === "btnInput-fa") {radioInput[i].checked = true;} else {radioInput[i].checked = false};        
+    }
+  };
+  if (targetLangElement.value === "en") {
+    applyLanguageSettings (textArea2, "en", "output")
+    for (var i = 0; i < radioOutput.length; i++) {
+      if (radioOutput[i].id === "btnOutput-en") {radioOutput[i].checked = true;} else {radioOutput[i].checked = false};        
+    }
+  };
+  if (targetLangElement.value === "ar") {
+    applyLanguageSettings (textArea2, "ar", "output")
+    for (var i = 0; i < radioOutput.length; i++) {
+      if (radioOutput[i].id === "btnOutput-ar") {radioOutput[i].checked = true;} else {radioOutput[i].checked = false};        
+    }
+  };
+  if (targetLangElement.value === "fa") {
+    applyLanguageSettings (textArea2, "fa", "output")
+    for (var i = 0; i < radioOutput.length; i++) {
+      if (radioOutput[i].id === "btnOutput-fa") {radioOutput[i].checked = true;} else {radioOutput[i].checked = false};        
+    }
+  };
+
+    }
 
 function showMessage(message, button) {
   const messageBox = document.createElement('div');
@@ -232,6 +295,21 @@ function showMessage(message, button) {
   setTimeout(function() {
     messageBox.remove();
   }, 500);
+}
+
+function updateCharacterCount() {
+  var textarea = document.getElementById('source_text');
+  var charCount = document.getElementById('charCount');
+  var maxLength = 20000;
+  var currentLength = textarea.value.length;
+  if (currentLength > maxLength) {
+    charCount.textContent = currentLength + '/' + maxLength + ' characters';
+    charCount.style.color = 'red';
+  } else {
+    charCount.textContent = currentLength + '/' + "20,000" + ' characters';
+    charCount.style.color = 'black';
+  }
+
 }
 </script>
 {% endblock %}

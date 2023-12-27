@@ -14,7 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib import auth, messages
 from jdatetime import datetime as jdatetime, timedelta
 from .decorators import admins_only
-from main.utilities.argos import translate_en_fa, translate_fa_en
+from main.utilities.argos import translate
 from main.utilities.lang import detect_language
 from main.utilities.encryption import *
 # from datetime import datetime, timedelta
@@ -27,51 +27,46 @@ import base64
 @login_required(login_url='users:login')
 def Translation(request):
     if request.method == 'GET':
-        return render(request, 'main/translation-Eng_default.html', {"eng_source": True, "mode": "user"})
+        return render(request, 'main/translation.html', {"mode": "user", "source_lang": "English", "target_lang": "Persian",})
     
     elif (request.method == 'POST') and "translate-btn" in request.POST:
-        source_lang = request.POST.get('btnradio_left')
-        target_lang = 'Persian' if source_lang == 'English' else 'English'
+        source_lang = request.POST.get('source_lang')
+        target_lang = request.POST.get('target_lang')
+        print(f"source_lang: {source_lang}")
+        print(f"target_lang: {target_lang}")
         encoded_text = request.POST.get('encryptedText')
         encrypted_aes_key = request.POST.get('encryptedAesKey')
         aes_key = decrypt_aes_key(encrypted_aes_key)
         source_text = decrypt_AES_ECB(encoded_text, aes_key)
-        detected_lang = detect_language(source_text)
 
-        if detected_lang not in [None, source_lang]:
-            # detect_lang_fa = "فارسی" if detected_lang == "Persian" else "انگلیسی"
-            # target_lang_fa = "فارسی" if detect_lang_fa == "انگلیسی" else "انگلیسی"
-            # messages.info(request, f'زبان ورودی {detect_lang_fa} شناسایی شد، در صورتیکه شما زبان ورودی را {target_lang_fa} انتخاب کردید. ترجمه بر اساس زبان ورودی {detect_lang_fa} و زبان مقصد {target_lang_fa} انجام شد.')
-            messages.info(request, f"Detected language is {detected_lang}, and you probably chose wrong input language! Translation performed based on {detected_lang} input.")
-            source_lang = detected_lang
+        # if detected_lang not in [None, source_lang]:
+        #     # detect_lang_fa = "فارسی" if detected_lang == "Persian" else "انگلیسی"
+        #     # target_lang_fa = "فارسی" if detect_lang_fa == "انگلیسی" else "انگلیسی"
+        #     # messages.info(request, f'زبان ورودی {detect_lang_fa} شناسایی شد، در صورتیکه شما زبان ورودی را {target_lang_fa} انتخاب کردید. ترجمه بر اساس زبان ورودی {detect_lang_fa} و زبان مقصد {target_lang_fa} انجام شد.')
+        #     messages.info(request, f"Detected language is {detected_lang}, and you probably chose wrong input language! Translation performed based on {detected_lang} input.")
+        #     source_lang = detected_lang
             
-        if source_lang == "English":
-            translation = translate_en_fa(source_text)
-        elif source_lang == "Persian":
-            translation = translate_fa_en(source_text)
+        translation = translate(source_text, source_lang, target_lang)
 
         encrypted_translation = encrypt_AES_ECB(translation, aes_key).decode('utf-8')
         encrypted_source_text = encrypt_AES_ECB(source_text, aes_key).decode('utf-8')
 
-        if source_lang == "English":
-            return render(request, 'main/translation-Eng_default.html', {'translation': encrypted_translation, "source_text": encrypted_source_text, "mode": "user",
-                                                                         })
-        elif source_lang == "Persian":
-            return render(request, 'main/translation-Per_default.html', {'translation': encrypted_translation, "source_text": encrypted_source_text, "mode": "user",
-                                                                         })
-    
+        
+        return render(request, 'main/translation.html', {'translation': encrypted_translation, "source_text": encrypted_source_text,
+                                                         "mode": "user", "source_lang": source_lang, "target_lang": target_lang, })
+                                                                     
+
     elif (request.method == 'POST') and "save-btn" in request.POST:
-        source_lang = request.POST.get('btnradio_left')
-        target_lang = 'Persian' if source_lang == 'English' else 'English'
+        source_lang = request.POST.get('source_lang')
+        target_lang = request.POST.get('target_lang')
         encoded_text = request.POST.get('encryptedText')
         encoded_translation = request.POST.get('encryptedTranslation')
         encrypted_aes_key = request.POST.get('encryptedAesKey')
         aes_key = decrypt_aes_key(encrypted_aes_key)
         source_text = decrypt_AES_ECB(encoded_text, aes_key)
         translation = decrypt_AES_ECB(encoded_translation, aes_key)
-        detected_lang = detect_language(source_text)
         
-        if source_text.strip() != "" or translation.strip() != "" :
+        if not ((source_text.strip() == "") and (translation.strip() == "")):
             task = TranslationTask.objects.create(user=request.user, source_text=source_text, translation=translation,
                                                 source_language=source_lang, target_language=target_lang)
             task.save()
@@ -79,12 +74,8 @@ def Translation(request):
         encrypted_translation = encrypt_AES_ECB(translation, aes_key).decode('utf-8')
         encrypted_source_text = encrypt_AES_ECB(source_text, aes_key).decode('utf-8')
 
-        context = {'translation': encrypted_translation, "source_text": encrypted_source_text, "aes_key": aes_key, "mode": "user"}
-
-        if source_lang == "English":
-            return render(request, 'main/translation-Eng_default.html', context = context)
-        elif source_lang == "Persian":
-            return render(request, 'main/translation-Per_default.html', context = context)
+        return render(request, 'main/translation.html', {'translation': encrypted_translation, "source_text": encrypted_source_text,
+                                                         "mode": "user", "source_lang": source_lang, "target_lang": target_lang, })
 
 
 @login_required(login_url='users:login')
@@ -178,28 +169,15 @@ def SupervisorTable(request):
 @login_required(login_url='users:login')
 def EditText(request, task_id):
     if (request.method == 'POST') and "translate-btn" in request.POST: # Translation
-        print("\n\n\nTranslation mode in edit page\n\n\n\n")
         mode = request.POST["mode"]
-        source_lang = request.POST.get('btnradio_left')
-        target_lang = 'Persian' if source_lang == 'English' else 'English'
+        source_lang = request.POST.get('source_lang')
+        target_lang = request.POST.get('target_lang')
         encrypted_aes_key = request.POST.get('encryptedAesKey')
         aes_key = decrypt_aes_key(encrypted_aes_key)
         encrypted_source_text = request.POST.get('encryptedText')
         source_text = decrypt_AES_ECB(encrypted_source_text, aes_key)
-        detected_lang = detect_language(source_text)
-
-        if detected_lang not in [None, source_lang]:
-            # print(f"\n\n\ndetected_lang: {detected_lang}\n\n\n")
-            # detect_lang_fa = "فارسی" if detected_lang == "Persian" else "انگلیسی"
-            # target_lang_fa = "فارسی" if detect_lang_fa == "انگلیسی" else "انگلیسی"
-            # messages.info(request, f'زبان ورودی {detect_lang_fa} شناسایی شد، در صورتیکه شما زبان ورودی را {target_lang_fa} انتخاب کردید. ترجمه بر اساس زبان ورودی {detect_lang_fa} و زبان مقصد {target_lang_fa} انجام شد.')
-            messages.info(request, f"Detected language is {detected_lang}, and you probably chose wrong input language! Translation performed based on {detected_lang} input.")
-            source_lang = detected_lang
-            
-        if source_lang == "English":
-            translation = translate_en_fa(source_text)
-        elif source_lang == "Persian":
-            translation = translate_fa_en(source_text)
+        
+        translation = translate(source_text, source_lang, target_lang)
 
         encrypted_translation = encrypt_AES_ECB(translation, aes_key).decode('utf-8')
         encrypted_source_text = encrypt_AES_ECB(source_text, aes_key).decode('utf-8')
@@ -207,28 +185,23 @@ def EditText(request, task_id):
         context = {'translation': encrypted_translation, "source_text": encrypted_source_text, "task_id": task_id, "edit_mode":True,
                    "mode": mode}
         
-        if source_lang == "English":
-            return render(request, 'main/translation-Eng_default.html', context = context)
-        elif source_lang == "Persian":
-            return render(request, 'main/translation-Per_default.html', context = context)
+        return render(request, 'main/translation.html', {'translation': encrypted_translation, "source_text": encrypted_source_text,
+                                                         "task_id": task_id, "edit_mode":True, "mode": mode, "source_lang": source_lang,
+                                                         "target_lang": target_lang, })
         
 
     elif (request.method == 'POST') and "edit-btn" in request.POST:  # Edit
         mode = "user"
-        source_lang = request.POST.get('btnradio_left')
-        target_lang = 'Persian' if source_lang == 'English' else 'English'
+        source_lang = request.POST.get('source_lang')
+        target_lang = request.POST.get('target_lang')
         encrypted_aes_key = request.POST.get('encryptedAesKey')
         aes_key = decrypt_aes_key(encrypted_aes_key)
         encrypted_source_text = request.POST.get('encryptedText')
         encrypted_translation = request.POST.get('encryptedTranslation')
         source_text = decrypt_AES_ECB(encrypted_source_text, aes_key)
         translation = decrypt_AES_ECB(encrypted_translation, aes_key)
-        detected_lang = detect_language(source_text)
 
-        if detected_lang not in [None, source_lang]:
-            source_lang = detected_lang
-
-        if source_text.strip() != "" or translation.strip() != "" :
+        if not ((source_text.strip() == "") and (translation.strip() == "")):
             task = TranslationTask.objects.get(task_id=task_id)
             task.source_text = source_text
             task.translation = translation
@@ -238,11 +211,10 @@ def EditText(request, task_id):
             
             encrypted_translation = encrypt_AES_ECB(translation, aes_key).decode('utf-8')
             encrypted_source_text = encrypt_AES_ECB(source_text, aes_key).decode('utf-8')
-            context = {'translation': encrypted_translation, "source_text": encrypted_source_text, "task_id": task_id, "edit_mode":True, "mode": mode, }
-            if source_lang == "English":
-                return render(request, 'main/translation-Eng_default.html', context = context)
-            elif source_lang == "Persian":
-                return render(request, 'main/translation-Per_default.html', context = context)
+
+            return render(request, 'main/translation.html', {'translation': encrypted_translation, "source_text": encrypted_source_text,
+                                                    "task_id": task_id, "edit_mode":True, "mode": mode, "source_lang": source_lang,
+                                                    "target_lang": target_lang, })
         else:
             task = TranslationTask.objects.get(task_id=task_id)
             task.delete()
@@ -250,7 +222,6 @@ def EditText(request, task_id):
     
 
     elif (request.method == 'POST') and (('remove-btn' in request.POST) or ('back-btn' in request.POST)): # Remove text or back
-        print("\n111\n")
         if "remove-btn" in request.POST:
             task = TranslationTask.objects.get(task_id=task_id)
             task.delete()
@@ -258,10 +229,7 @@ def EditText(request, task_id):
         mode = request.POST['mode']
         if  mode == "supervisor":
             selected_username = request.POST["selected_user"] if "selected_user" in request.POST else "all_users"
-        print("\n222\n")
-        print(f"\n\nmode: {mode}\n\n")
         encrypted_aes_key = request.POST.get('encryptedAesKey')
-        print("\nencrypted_aes_key: ", encrypted_aes_key, "\n")
         aes_key = decrypt_aes_key(encrypted_aes_key)
         user=request.user
         if mode == "supervisor":
@@ -271,7 +239,6 @@ def EditText(request, task_id):
                 saved_tasks = TranslationTask.objects.filter(user=selected_username).order_by('-save_time')
         else:
             saved_tasks = TranslationTask.objects.filter(user=user).order_by('-save_time')
-        print("\n333\n")
         n_total_saved = len(saved_tasks)
         encrypted_saved_tasks = saved_tasks
         for idx, task in enumerate(encrypted_saved_tasks):
@@ -282,7 +249,6 @@ def EditText(request, task_id):
         paginator = Paginator(encrypted_saved_tasks, 5)
         num_pages = paginator.num_pages
         page_number = request.GET.get('page')
-        print("\n444\n")
         try:
             page_objects = paginator.get_page(page_number)  # returns the desired page object
         except PageNotAnInteger:   # if page_number is not an integer then assign the first page
@@ -323,16 +289,13 @@ def EditText(request, task_id):
         encrypted_source_text = encrypt_AES_ECB(source_text, aes_key).decode('utf-8')
 
         context = {'translation': encrypted_translation, "source_text": encrypted_source_text, "task_id": task_id,
-                   "edit_mode":True, "mode": mode, }
+                   "edit_mode":True, "mode": mode, "source_lang": source_lang, "target_lang": target_lang, }
         
         if (mode == "supervisor") and "selected_user" in request.POST:
             selected_user = request.POST["selected_user"]
             context["selected_user"] = selected_user
         
-        if source_lang == "English":
-            return render(request, 'main/translation-Eng_default.html', context = context)
-        elif source_lang == "Persian":
-            return render(request, 'main/translation-Per_default.html', context = context)
+        return render(request, 'main/translation.html', context = context)
 
 
 def DeleteText(request, task_id):

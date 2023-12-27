@@ -30,3 +30,20 @@ def translate_ar_fa(article_ar):
     article_en = argostranslate.translate.translate(article_ar, 'ar', 'en',)
     result = argostranslate.translate.translate(article_en, 'en', 'fa',)
     return result
+
+
+def translate(article, source_lang, target_lang):
+    if source_lang == 'en' and target_lang == 'fa':
+        return translate_en_fa(article)
+    elif source_lang == 'fa' and target_lang == 'en':
+        return translate_fa_en(article)
+    elif source_lang == 'ar' and target_lang == 'en':
+        return translate_ar_en(article)
+    elif source_lang == 'en' and target_lang == 'ar':
+        return translate_en_ar(article)
+    elif source_lang == 'fa' and target_lang == 'ar':
+        return translate_fa_ar(article)
+    elif source_lang == 'ar' and target_lang == 'fa':
+        return translate_ar_fa(article)
+    else:
+        return "Invalid input"
