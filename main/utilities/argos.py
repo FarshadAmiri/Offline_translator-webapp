@@ -16,19 +16,22 @@ def translate_ar_en(article_ar):
 
 
 def translate_en_ar(article_en):
+    article_en = article_en.replace('(', '')
+    article_en = article_en.replace(')', '')
     result = argostranslate.translate.translate(article_en, 'en', 'ar',)
+    result =result.replace('&quot;', '"')
     return result
 
 
 def translate_fa_ar(article_fa):
-    article_en = argostranslate.translate.translate(article_fa, 'fa', 'en',)
-    result = argostranslate.translate.translate(article_en, 'en', 'ar',)
+    article_en = translate_fa_en(article_fa)
+    result = translate_en_ar(article_en)
     return result
 
 
 def translate_ar_fa(article_ar):
-    article_en = argostranslate.translate.translate(article_ar, 'ar', 'en',)
-    result = argostranslate.translate.translate(article_en, 'en', 'fa',)
+    article_en = translate_ar_en(article_ar)
+    result = translate_en_fa(article_en)
     return result
 
 

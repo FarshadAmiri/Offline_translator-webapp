@@ -27,7 +27,7 @@ import base64
 @login_required(login_url='users:login')
 def Translation(request):
     if request.method == 'GET':
-        return render(request, 'main/translation.html', {"mode": "user", "source_lang": "English", "target_lang": "Persian",})
+        return render(request, 'main/translation.html', {"mode": "user", "source_lang": "en", "target_lang": "fa",})
     
     elif (request.method == 'POST') and "translate-btn" in request.POST:
         source_lang = request.POST.get('source_lang')
