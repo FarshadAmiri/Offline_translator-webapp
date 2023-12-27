@@ -49,11 +49,11 @@
                 {% endif %}
                 
                 <td class="concise_text">
-                    <textarea {% if saved_task.source_language == "Persian" %} class="form-control persian-text" rows="4" {% else %} class="form-control english-text" rows="3" {% endif %} name="translation" readonly style="display:none;">{{ saved_task.source_text }}</textarea>
+                    <textarea {% if saved_task.source_language == "fa" or saved_task.source_language == "ar" %} class="form-control persian-text" rows="4" {% else %} class="form-control english-text" rows="3" {% endif %} name="translation" readonly style="display:none;">{{ saved_task.source_text }}</textarea>
                 </td>
                 
                 <td class="concise_text">
-                    <textarea {% if saved_task.target_language == "Persian" %} class="form-control persian-text" rows="4" {% else %} class="form-control english-text" rows="3" {% endif %} name="translation" readonly style="display:none;">{{ saved_task.translation }}</textarea>
+                    <textarea {% if saved_task.target_language == "fa" or saved_task.target_language == "ar" %} class="form-control persian-text" rows="4" {% else %} class="form-control english-text" rows="3" {% endif %} name="translation" readonly style="display:none;">{{ saved_task.translation }}</textarea>
                 </td>
                 
                 <div class="col-2">
