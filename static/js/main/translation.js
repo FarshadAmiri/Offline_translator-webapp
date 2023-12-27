@@ -90,49 +90,6 @@ var targetLangElement = document.getElementById('target_lang');
 var textArea1 = document.getElementById('source_text');
 var textArea2 = document.getElementById('translation');
 
-window.onload = function() {
-  var radioInput = document.getElementsByName("btnRadio_input");
-  var radioOutput = document.getElementsByName("btnRadio_output");
-
-  if (sourceLangElement.value === "en") {
-    applyLanguageSettings (textArea1, "en", "input")
-    for (var i = 0; i < radioInput.length; i++) {
-      if (radioInput[i].id === "btnInput-en") {radioInput[i].checked = true;} else {radioInput[i].checked = false};        
-    }
-  };
-  if (sourceLangElement.value === "ar") {
-    applyLanguageSettings (textArea1, "ar", "input")
-    for (var i = 0; i < radioInput.length; i++) {
-      if (radioInput[i].id === "btnInput-ar") {radioInput[i].checked = true;} else {radioInput[i].checked = false};        
-    }
-  };
-  if (sourceLangElement.value === "fa") {
-    applyLanguageSettings (textArea1, "fa", "input")
-    for (var i = 0; i < radioInput.length; i++) {
-      if (radioInput[i].id === "btnInput-fa") {radioInput[i].checked = true;} else {radioInput[i].checked = false};        
-    }
-  };
-  if (targetLangElement.value === "en") {
-    applyLanguageSettings (textArea2, "en", "output")
-    for (var i = 0; i < radioOutput.length; i++) {
-      if (radioOutput[i].id === "btnOutput-en") {radioOutput[i].checked = true;} else {radioOutput[i].checked = false};        
-    }
-  };
-  if (targetLangElement.value === "ar") {
-    applyLanguageSettings (textArea2, "ar", "output")
-    for (var i = 0; i < radioOutput.length; i++) {
-      if (radioOutput[i].id === "btnOutput-ar") {radioOutput[i].checked = true;} else {radioOutput[i].checked = false};        
-    }
-  };
-  if (targetLangElement.value === "fa") {
-    applyLanguageSettings (textArea2, "fa", "output")
-    for (var i = 0; i < radioOutput.length; i++) {
-      if (radioOutput[i].id === "btnOutput-fa") {radioOutput[i].checked = true;} else {radioOutput[i].checked = false};        
-    }
-  };
-}
-
-
 
 var radioButtons = document.querySelectorAll('input[name="btnRadio_output"], input[name="btnRadio_input"]');
 
