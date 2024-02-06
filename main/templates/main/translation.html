@@ -154,7 +154,7 @@ function encryptText(event, query) {
                     </div>
                     <div style="margin-left: 7px;">
                         <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-ar" autocomplete="off" value="ar" onclick="disableCorrespondingRadio(this)">
-                        <label class="btn btn-outline-primary arabic-btn" for="btnInput-ar">عربی</label>
+                        <label class="btn btn-outline-primary arabic-btn" for="btnInput-ar">العربي</label>
                     </div>
                     <div style="margin-left: 7px;">
                         <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-fa" autocomplete="off" value="fa" onclick="disableCorrespondingRadio(this)">
@@ -162,7 +162,7 @@ function encryptText(event, query) {
                     </div>
                     </div>
                     <div style="position: relative;">
-                    <textarea class="form-control" name="source_text" id="source_text" rows="20" placeholder="Enter text" oninput="updateCharacterCount()"></textarea>
+                    <textarea class="form-control" name="source_text" id="source_text" rows="20" placeholder="Enter English text" oninput="updateCharacterCount()"></textarea>
                     <span id="charCount" style="position: absolute; bottom: -25px; right: 0px; padding: 0; margin: 0; font-weight: bold;"></span>
                     <input type="hidden" id="source_text_hidden" value="{{ source_text }}">
                     </div>
@@ -179,7 +179,7 @@ function encryptText(event, query) {
                     </div>
                     <div style="margin-left: 7px;">
                         <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-ar" value="ar" autocomplete="off" onclick="disableCorrespondingRadio(this)">
-                        <label class="btn btn-outline-primary arabic-btn" for="btnOutput-ar">عربی</label>
+                        <label class="btn btn-outline-primary arabic-btn" for="btnOutput-ar">العربي</label>
                     </div>
                     <div style="margin-left: 7px;">
                         <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-fa" value="fa" autocomplete="off" onclick="disableCorrespondingRadio(this)" checked>

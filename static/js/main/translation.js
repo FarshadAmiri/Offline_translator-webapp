@@ -128,7 +128,7 @@ function applyLanguageSettings (textArea, lang, mode) {
     textArea.dir = 'rtl';
   };
   if (lang === "ar") {
-    if ( mode === "input") {textArea.placeholder = "متن عربی را وارد کنید"}
+    if ( mode === "input") {textArea.placeholder = "أدخل النص العربي"}
     textArea.style.fontFamily = "IranSans";
     textArea.style.fontSize = '16px';
     textArea.style.fontWeight = 'bold';
@@ -137,7 +137,7 @@ function applyLanguageSettings (textArea, lang, mode) {
     textArea.dir = 'rtl';
   };
   if (lang === "en") {
-    if ( mode === "input") {textArea.placeholder = "Enter text"}
+    if ( mode === "input") {textArea.placeholder = "Enter English text"}
     textArea.style.fontFamily = "RobotoSlab";
     textArea.style.fontSize = '20px';
     textArea.style.fontWeight = 'normal';

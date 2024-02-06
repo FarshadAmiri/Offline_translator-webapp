@@ -49,7 +49,6 @@ def Translation(request):
         encrypted_translation = encrypt_AES_ECB(translation, aes_key).decode('utf-8')
         encrypted_source_text = encrypt_AES_ECB(source_text, aes_key).decode('utf-8')
 
-        
         return render(request, 'main/translation.html', {'translation': encrypted_translation, "source_text": encrypted_source_text,
                                                          "mode": "user", "source_lang": source_lang, "target_lang": target_lang, })
                                                                      
