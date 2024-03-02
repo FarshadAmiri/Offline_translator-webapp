@@ -79,14 +79,27 @@
                 <td class="table-row">{{ saved_task.save_time|fa_digits }}</td>
                 </div>
 
-                <div class="col-3">
+                <div class="col-1">
                 </div>
                     <td style="text-align: center; vertical-align: middle;">
-                    <div class="col-12">
+                    <div class="row">
+                    <div class="col-3">
+                    </div>
+                    <div class="col-3">
                         <form class="task-form" action="{% url 'main:edit_saved_text' saved_task.task_id %}" method="post">
                         {% csrf_token %}
                         <a class="btn btn-primary opt-english" href="#" onclick="appendAESKeyAndSubmit(event, this)">View</a>
                         </form>
+                    </div>
+                    <div class="col-3">
+                        <form class="task-form" action="{% url 'main:supervisor_table' %}?page={{page_objects.number}}" method="post">
+                        {% csrf_token %}
+                        {% comment %} <a class="btn btn-danger opt-persian" name="remove-btn" id="{{ saved_task.task_id }}" href="#" onclick="appendAESKeyAndSubmit(event, this)">حذف</a> {% endcomment %}
+                        <a class="btn btn-danger opt-english" name="remove-btn" id="{{ saved_task.task_id }}" href="#" onclick="appendAESKeyAndSubmit(event, this)">Delete</a>
+                        </form>
+                    </div>
+                    <div class="col-3">
+                    </div>
                     </div>
                     </td>
                 </div>
@@ -276,6 +289,14 @@ function appendAESKeyAndSubmit(event, element) {
     selectedUser.value = selectedOption;
     form.appendChild(selectedUser);
     form.appendChild(mode_element);
+
+    if (element.name === "remove-btn") {
+        var removingTextID = document.createElement("input");
+        removingTextID.type = "hidden";
+        removingTextID.name = "removingTextID";
+        removingTextID.value = element.id;
+        form.appendChild(removingTextID);
+    }
 
     form.submit();
 }

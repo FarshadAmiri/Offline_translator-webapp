@@ -12,6 +12,12 @@
 {% comment %} <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.2.1/jsencrypt.min.js"></script> {% endcomment %}
 <script src="{% static 'crypto-js.js' %}"></script>
 <script>
+var sourceText_English = ""
+var sourceText_Persian = ""
+var sourceText_Arabic = ""
+var transText_English = ""
+var transText_Persian = ""
+var transText_Arabic = ""
 function generateRandomKey(length) {
       var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
       var result = "";
@@ -22,6 +28,15 @@ function generateRandomKey(length) {
     }
 
 function encryptText(event, query) {
+    if (query === "translating") {
+      var inputLang = document.querySelector('input[name="btnRadio_input"]:checked').value;
+      var outputLang = document.querySelector('input[name="btnRadio_output"]:checked').value;
+      if (inputLang === outputLang) {
+        alert("Input and output languages should not be same!");
+        event.preventDefault();
+        return false;
+      }
+    }
     var publicKey = "-----BEGIN PUBLIC KEY-----\n" +
                 "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvRW2QcbKbzDobMdkLqvY\n" +
                 "Fb66Ih41T1+X3spW1WP6UduM1kS+bVh7HwG23pt8e/XJAf9G4IhWTZfkgVBdMsFP\n" +
@@ -117,6 +132,9 @@ function encryptText(event, query) {
 
 {% block body %}
 <div class="container-fluid">
+    <div style="position: absolute; top: 11.5%; left: 48.5%; padding: 0; margin: 0;">
+    <img id="arrow-icon"></span>
+    </div>
     {{ form.media }}
     {% if edit_mode %}
         <form id="translation_form" action="{% url 'main:edit_saved_text' task_id%}" method="post">
@@ -149,20 +167,20 @@ function encryptText(event, query) {
                 <div class="col-md-6">
                 <div class="btn-group-lg d-flex justify-content-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px; margin-top: 0px;">
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-en" autocomplete="off" value="en" onclick="disableCorrespondingRadio(this)" checked>
+                        <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-en" autocomplete="off" value="en" onclick="disableCorrespondingRadio('input', this); changeText(this)" checked>
                         <label class="btn btn-outline-primary english-btn" for="btnInput-en">English</label>
                     </div>
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-ar" autocomplete="off" value="ar" onclick="disableCorrespondingRadio(this)">
+                        <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-ar" autocomplete="off" value="ar" onclick="disableCorrespondingRadio('input', this); changeText(this)">
                         <label class="btn btn-outline-primary arabic-btn" for="btnInput-ar">العربي</label>
                     </div>
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-fa" autocomplete="off" value="fa" onclick="disableCorrespondingRadio(this)">
+                        <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-fa" autocomplete="off" value="fa" onclick="disableCorrespondingRadio('input', this); changeText(this)">
                         <label class="btn btn-outline-primary persian-btn" for="btnInput-fa">فارسی</label>
                     </div>
                     </div>
                     <div style="position: relative;">
-                    <textarea class="form-control" name="source_text" id="source_text" rows="20" placeholder="Enter English text" oninput="updateCharacterCount()"></textarea>
+                    <textarea class="form-control" name="source_text" id="source_text" rows="20" placeholder="Enter English text" oninput="updateCharacterCount();"></textarea>
                     <span id="charCount" style="position: absolute; bottom: -25px; right: 0px; padding: 0; margin: 0; font-weight: bold;"></span>
                     <input type="hidden" id="source_text_hidden" value="{{ source_text }}">
                     </div>
@@ -174,15 +192,15 @@ function encryptText(event, query) {
                 <div class="col-md-6">
                     <div class="btn-group-lg d-flex justify-content-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px; margin-top: 0px;">
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-en" value="en" autocomplete="off" onclick="disableCorrespondingRadio(this)">
+                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-en" value="en" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText(this)">
                         <label class="btn btn-outline-primary english-btn" for="btnOutput-en">English</label>
                     </div>
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-ar" value="ar" autocomplete="off" onclick="disableCorrespondingRadio(this)">
+                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-ar" value="ar" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText(this)">
                         <label class="btn btn-outline-primary arabic-btn" for="btnOutput-ar">العربي</label>
                     </div>
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-fa" value="fa" autocomplete="off" onclick="disableCorrespondingRadio(this)" checked>
+                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-fa" value="fa" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText(this)" checked>
                         <label class="btn btn-outline-primary persian-btn" for="btnOutput-fa">فارسی</label>
                     </div>
                     </div>
@@ -192,6 +210,7 @@ function encryptText(event, query) {
                     <input type="hidden" id="mode" name= "mode" value="{{ mode }}">
                     <input type="hidden" id="source_lang" name= "source_lang" value="{{ source_lang }}">
                     <input type="hidden" id="target_lang" name= "target_lang" value="{{ target_lang }}">
+                    <input type="hidden" id="current_state" value="{{ source_lang }}">
                     <div class="text-center mt-2">
                         <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('translation'); showMessage('Cleared!', this)"><img id="clear-icon"></button>
                         <button type="button" class="btn btn-success copy-btn" onclick="copyText('translation'); showMessage('Copied!', this)"><img id="copy-icon"></button>
@@ -217,6 +236,8 @@ function encryptText(event, query) {
 window.onload = function() {
     var translation = document.getElementById("translation");
     var source_text = document.getElementById("source_text");
+    var sourceLang = document.getElementById('source_lang').value; 
+    var targetLang = document.getElementById('target_lang').value;
     var translation_hidden = document.getElementById("translation_hidden").value;
     var source_text_hidden = document.getElementById("source_text_hidden").value;
     var aesRawKey = localStorage.getItem("aesRawKey_translation");
@@ -229,10 +250,23 @@ window.onload = function() {
     decryptedTranslationValue = decryptedTranslationValue.replace(/[\x00-\x09\x0B-\x1F\x7F-\x9F]/g, '');
     source_text.value = decryptedSourceTextValue;
     translation.value = decryptedTranslationValue;
+    if (sourceLang === "en" ) {
+      sourceText_English = decryptedSourceTextValue;
+    } else if (sourceLang === "ar" ){
+      sourceText_Arabic = decryptedSourceTextValue;
+    } else if (sourceLang === "fa" ){
+      sourceText_Persian = decryptedSourceTextValue;
+    };
+    if (targetLang === "en" ) {
+      transText_English = decryptedTranslationValue;
+    } else if (targetLang === "ar" ){
+      transText_Arabic = decryptedTranslationValue;
+    } else if (targetLang === "fa" ){
+      transText_Persian = decryptedTranslationValue;
+    };
     localStorage.removeItem("aesRawKey_translation");
 
-    var sourceLangElement = document.getElementById('source_lang');
-    var targetLangElement = document.getElementById('target_lang');
+
     var textArea1 = document.getElementById('source_text');
     var textArea2 = document.getElementById('translation');
 

@@ -27,7 +27,7 @@ import base64
 @login_required(login_url='users:login')
 def Translation(request):
     if request.method == 'GET':
-        return render(request, 'main/translation.html', {"mode": "user", "source_lang": "en", "target_lang": "fa",})
+        return render(request, 'main/translation.html', {"mode": "user", "source_lang": "en", "target_lang": "fa", "main_page": True,})
     
     elif (request.method == 'POST') and "translate-btn" in request.POST:
         source_lang = request.POST.get('source_lang')
@@ -50,7 +50,7 @@ def Translation(request):
         encrypted_source_text = encrypt_AES_ECB(source_text, aes_key).decode('utf-8')
 
         return render(request, 'main/translation.html', {'translation': encrypted_translation, "source_text": encrypted_source_text,
-                                                         "mode": "user", "source_lang": source_lang, "target_lang": target_lang, })
+                                                         "mode": "user", "source_lang": source_lang, "target_lang": target_lang, "main_page": True,})
                                                                      
 
     elif (request.method == 'POST') and "save-btn" in request.POST:
@@ -121,6 +121,12 @@ def SavedTable(request):
 @admins_only
 def SupervisorTable(request):
     user=request.user
+    if request.method == 'POST':
+        if "removingTextID" in request.POST:
+            removing_text_id = int(request.POST.get('removingTextID'))
+            print("\n\ndelete task id: ", removing_text_id, "\n\n")
+            task = get_object_or_404(TranslationTask, task_id=removing_text_id)
+            task.delete()
     encrypted_aes_key = request.POST.get('encryptedAesKey')
     aes_key = decrypt_aes_key(encrypted_aes_key)
     selected_username = request.POST.get("selected_username", None)

@@ -26,7 +26,10 @@ SECRET_KEY = "django-insecure--8dp@*zkji1fr-f7n0#-&^^=uh)9f2ji6x)*#s02!8xf_#+)4%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*',
+                 '192.168.0.100',
+                 'localhost',
+                 ]
 
 
 # Application definition
@@ -85,7 +88,7 @@ DATABASES = {
         "HOST": "127.0.0.1",
         "PORT": "3306",
         "USER": "root",
-        "PASSWORD": "mysql123",
+        # "PASSWORD": "mysql123",
         "OPTIONS": {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES', innodb_strict_mode=1",
             'charset': 'utf8mb4',
@@ -155,7 +158,6 @@ COMPRESS_PRECOMPILERS = (
     ('text/x-scss', 'django_libsass.SassCompiler'),
 )
 
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -166,3 +168,5 @@ USE_THOUSAND_SEPARATOR = True
 CAPTCHA_IMAGE_SIZE = (120, 60)
 
 CAPTCHA_FONT_SIZE = 34
+
+SESSION_COOKIE_NAME = 'trans_session'
