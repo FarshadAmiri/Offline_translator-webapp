@@ -132,9 +132,6 @@ function encryptText(event, query) {
 
 {% block body %}
 <div class="container-fluid">
-    <div style="position: absolute; top: 11.5%; left: 48.5%; padding: 0; margin: 0;">
-    <img id="arrow-icon"></span>
-    </div>
     {{ form.media }}
     {% if edit_mode %}
         <form id="translation_form" action="{% url 'main:edit_saved_text' task_id%}" method="post">
@@ -152,6 +149,7 @@ function encryptText(event, query) {
             {% endif %}
             <div class="row">
             <div class="d-flex justify-content-end" style="position: top: 0; right: 0; padding: 0px;">
+            <img id="arrow-icon" style="position: relative; top: 2.5%; right: 44%; padding: 0; margin: 0; border: 0;">
             {% if edit_mode %}
                 {% if mode == "user" %}
                 <button type="submit" id="back-btn" name="back-btn" style="margin-right: 85%" onclick="encryptText(event, 'back')">Back</button>
