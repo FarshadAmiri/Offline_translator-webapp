@@ -35,8 +35,8 @@ function encryptText(event, query) {
         alert("Input and output languages should not be same!");
         event.preventDefault();
         return false;
-      }
-    }
+      }}
+      
     var publicKey = "-----BEGIN PUBLIC KEY-----\n" +
                 "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvRW2QcbKbzDobMdkLqvY\n" +
                 "Fb66Ih41T1+X3spW1WP6UduM1kS+bVh7HwG23pt8e/XJAf9G4IhWTZfkgVBdMsFP\n" +
@@ -307,8 +307,7 @@ window.onload = function() {
       if (radioOutput[i].id === "btnOutput-fa") {radioOutput[i].checked = true;} else {radioOutput[i].checked = false};        
     }
   };
-
-    }
+  }
 
 function showMessage(message, button) {
   const messageBox = document.createElement('div');
