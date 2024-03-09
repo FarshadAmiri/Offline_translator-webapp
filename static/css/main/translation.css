@@ -111,14 +111,7 @@
     font-size: 17px;
   }
 
-#save-btn {
-    font-family: RobotoSlab ;
-    font-size: 17px;
-    font-weight: normal;
-    color: #ffffff;
-    text-align: left;
-    padding: 5px;
-  }
+
 
 #edit-btn {
     font-family: RobotoSlab ;
@@ -162,12 +155,16 @@
   }
 
   #arrow-icon {
-    content: url("..\\..\\icons\\arrow-2.png");
+    content: url("..\\..\\icons\\arrow-4.svg");
     width: 60px;
-    height: 40px;
+    /* height: 40px; */
     display: inline-flex;
     align-items: center;
     justify-content: center;
+  }
+
+  #arrow-icon:hover {
+    content: url("..\\..\\icons\\arrow-5.svg");
   }
 
 .clear-btn {
@@ -201,10 +198,21 @@
     justify-content: center;
   }
 
+#save-btn {
+    font-family: RobotoSlab ;
+    font-size: 17px;
+    font-weight: normal;
+    color: #ffffff;
+    text-align: left;
+    padding: 5px;
+    width: 70px;
+    height: 35px;
+}
+
 #save-icon {
     content: url("..\\..\\icons\\save-2.png");
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     display: inline-flex;
     align-items: center;
     justify-content: center;

@@ -60,10 +60,8 @@ function encryptText(event, query) {
         return false;
     }
     
-    if (mode_element.value != "supervisor") {
     var spinner = document.getElementById('spinner');
     spinner.style.display = 'inline-block'; // Show the spinner
-    }
 
     // Generate a random 128-bit (16 bytes) AES key
     var aesRawKey = generateRandomKey(16);
@@ -149,7 +147,13 @@ function encryptText(event, query) {
             {% endif %}
             <div class="row">
             <div class="d-flex justify-content-end" style="position: top: 0; right: 0; padding: 0px;">
-            <img id="arrow-icon" style="position: relative; top: 2.5%; right: 44%; padding: 0; margin: 0; border: 0;">
+            <div class="row justify-content-center" style="position: absolute; top: 10%; right: 47.5%; padding: 0; margin: 0; border: 0;">
+                <button type="submit" id="arrow-btn" name="translate-btn" class="btn" onclick="encryptText(event, 'translating')"><img id="arrow-icon" ></button>
+                <div class="spinner-border text-primary" id="spinner" role="status" style="display: none; position: relative; top: -55px; left: 60px; padding: 0; margin: 0;">
+                <span class="sr-only"></span>
+                </div>
+            </div>
+            {% comment %} <img id="arrow-icon" style="position: relative; top: 2.5%; right: 44%; padding: 0; margin: 0; border: 0;"> {% endcomment %}
             {% if edit_mode %}
                 {% if mode == "user" %}
                 <button type="submit" id="back-btn" name="back-btn" style="margin-right: 85%" onclick="encryptText(event, 'back')">Back</button>
@@ -178,7 +182,7 @@ function encryptText(event, query) {
                     </div>
                     </div>
                     <div style="position: relative;">
-                    <textarea class="form-control" name="source_text" id="source_text" rows="20" placeholder="Enter English text" oninput="updateCharacterCount();"></textarea>
+                    <textarea class="form-control" name="source_text" id="source_text" rows="21" placeholder="Enter English text" oninput="updateCharacterCount();"></textarea>
                     <span id="charCount" style="position: absolute; bottom: -25px; right: 0px; padding: 0; margin: 0; font-weight: bold;"></span>
                     <input type="hidden" id="source_text_hidden" value="{{ source_text }}">
                     </div>
@@ -202,7 +206,7 @@ function encryptText(event, query) {
                         <label class="btn btn-outline-primary persian-btn" for="btnOutput-fa">فارسی</label>
                     </div>
                     </div>
-                    <textarea class="form-control" name="translation" id="translation" rows="25" readonly dir='rtl'></textarea>
+                    <textarea class="form-control" name="translation" id="translation" rows="26" readonly dir='rtl'></textarea>
                     <input type="hidden" id="translation_hidden" value="{{ translation }}">
                     <input type="hidden" id="selected_user" name= "selected_user" value="{{ selected_user }}">
                     <input type="hidden" id="mode" name= "mode" value="{{ mode }}">
@@ -215,7 +219,7 @@ function encryptText(event, query) {
                 </div>
             </div>
             {% if mode == "user" %}
-            <div class="row justify-content-center">
+            {% comment %} <div class="row justify-content-center">
                 <div class="col-12 text-center">
                 <div style="position: relative;">
                     <button type="submit" id="translate-btn" name="translate-btn" class="btn" onclick="encryptText(event, 'translating')">Translate!</button>
@@ -224,7 +228,7 @@ function encryptText(event, query) {
                     </div>
                 </div>
                 </div>
-            </div>
+            </div> {% endcomment %}
             {% endif %}
         </div>
     </form>

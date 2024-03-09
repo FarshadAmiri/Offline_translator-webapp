@@ -166,7 +166,7 @@ function applyLanguageSettings (textArea, lang, mode) {
     textArea.style.fontSize = '16px';
     textArea.style.fontWeight = 'bold';
     textArea.style.textAlign = 'right';
-    textArea.rows = 25 ;
+    textArea.rows = 26 ;
     textArea.dir = 'rtl';
   };
   if (lang === "ar") {
@@ -175,7 +175,7 @@ function applyLanguageSettings (textArea, lang, mode) {
     textArea.style.fontSize = '16px';
     textArea.style.fontWeight = 'bold';
     textArea.style.textAlign = 'right';
-    textArea.rows = 25 ;
+    textArea.rows = 26 ;
     textArea.dir = 'rtl';
   };
   if (lang === "en") {
@@ -185,6 +185,6 @@ function applyLanguageSettings (textArea, lang, mode) {
     textArea.style.fontWeight = 'normal';
     textArea.style.textAlign = 'left';
     textArea.dir = 'ltr';
-    textArea.rows = 20 ;
+    textArea.rows = 21 ;
   };
 }
