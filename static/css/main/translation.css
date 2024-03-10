@@ -1,19 +1,4 @@
 @font-face {
-  font-family: B_Nazanin_Bold;
-  src: url("..\\..\\fonts\\B_Nazanin_Bold.ttf");
-}
-
-@font-face {
-  font-family: B_Titr_Bold;
-  src: url("..\\..\\fonts\\B_Titr_Bold.ttf");
-}
-
-@font-face {
-  font-family: B_Nazanin;
-  src: url("..\\..\\fonts\\B_Nazanin.ttf");
-}
-
-@font-face {
   font-family: IranSans;
   src: url("..\\..\\fonts\\IranSans.ttf");
 }
@@ -142,30 +127,47 @@
     text-align: left;
     padding: 5px;
   }
-
-.copy-btn {
-    font-family: RobotoSlab ;
-    font-size: 16px;
-    font-weight: normal;
-    color: #ffffff;
-    text-align: right;
-    /* display: flex; */
-    align-items: center;
-    justify-content: center;
-  }
-
+  
   #arrow-icon {
-    content: url("..\\..\\icons\\arrow-4.svg");
-    width: 60px;
+    content: url("..\\..\\icons\\arrow-4_1.png");
+    background-color: transparent;
+    width: 70px;
     /* height: 40px; */
-    display: inline-flex;
+    /* display: inline-flex; */
     align-items: center;
     justify-content: center;
   }
 
   #arrow-icon:hover {
-    content: url("..\\..\\icons\\arrow-5.svg");
+    content: url("..\\..\\icons\\arrow-5_1.png");
+    padding: 0;
+    margin: 0;
+    border: 0;
   }
+
+  #arrow-btn {
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 70px;
+    border: 0;
+  }
+
+.position-relative {
+  position: relative;
+}
+
+.spinner-border {
+  display: none;
+  position: absolute;
+  top: 40%;
+  left: 47%;
+  width: 6rem; /* Adjust the width as needed */
+  height: 6rem; /* Adjust the height as needed */
+  border-width: 0.6em;
+}
+
 
 .clear-btn {
     font-family: RobotoSlab ;
@@ -177,12 +179,26 @@
     /* display: flex; */
     align-items: center;
     justify-content: center;
+    padding: 4px;
+    
+  }
+
+  .copy-btn {
+    font-family: RobotoSlab ;
+    font-size: 16px;
+    font-weight: normal;
+    color: #ffffff;
+    text-align: right;
+    /* display: flex; */
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
   }
 
 #copy-icon {
     content: url("..\\..\\icons\\copy-1.png");
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -191,8 +207,8 @@
   
 #clear-icon {
     content: url("..\\..\\icons\\clear-2.png");
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -200,19 +216,20 @@
 
 #save-btn {
     font-family: RobotoSlab ;
-    font-size: 17px;
+    font-size: 16px;
     font-weight: normal;
     color: #ffffff;
     text-align: left;
-    padding: 5px;
-    width: 70px;
+    padding: 3px;
     height: 35px;
+    align-items: center;
+    justify-content: center;
 }
 
 #save-icon {
     content: url("..\\..\\icons\\save-2.png");
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -226,4 +243,17 @@
     border: 1px solid #ccc;
     border-radius: 5px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  textarea {
+    height: calc(92vh - 170px);
+  }
+
+  #d1 {
+    position: absolute;
+    top: 100px;
+    right: calc(50vw - 40px);
+    padding: 0;
+    margin: 0;
+    border: 0;
   }

@@ -52,6 +52,7 @@ function encryptText(event, query) {
                 "OYNP74TrWvLmcNmlKfQNfMsCAwEAAQ==\n" +
                 "-----END PUBLIC KEY-----";
     var plainText = document.getElementById('source_text').value;
+    var translationTextArea = document.getElementById('translation');
     var mode_element = document.getElementById('mode');
 
     if (plainText.length > 20000) {
@@ -60,8 +61,11 @@ function encryptText(event, query) {
         return false;
     }
     
+    if (query === "translating") {
     var spinner = document.getElementById('spinner');
     spinner.style.display = 'inline-block'; // Show the spinner
+    translationTextArea.style.color = '#B5B5B5 ';
+    };
 
     // Generate a random 128-bit (16 bytes) AES key
     var aesRawKey = generateRandomKey(16);
@@ -145,15 +149,11 @@ function encryptText(event, query) {
                     </div>
                 {% endfor %}
             {% endif %}
-            <div class="row">
+            <div class="row justify-content-end">
             <div class="d-flex justify-content-end" style="position: top: 0; right: 0; padding: 0px;">
-            <div class="row justify-content-center" style="position: absolute; top: 10%; right: 47.5%; padding: 0; margin: 0; border: 0;">
-                <button type="submit" id="arrow-btn" name="translate-btn" class="btn" onclick="encryptText(event, 'translating')"><img id="arrow-icon" ></button>
-                <div class="spinner-border text-primary" id="spinner" role="status" style="display: none; position: relative; top: -55px; left: 60px; padding: 0; margin: 0;">
-                <span class="sr-only"></span>
-                </div>
+            <div class="row justify-content-center" id="d1">
+                <button type="submit" id="arrow-btn" name="translate-btn" onclick="encryptText(event, 'translating')"><img id="arrow-icon"></button>
             </div>
-            {% comment %} <img id="arrow-icon" style="position: relative; top: 2.5%; right: 44%; padding: 0; margin: 0; border: 0;"> {% endcomment %}
             {% if edit_mode %}
                 {% if mode == "user" %}
                 <button type="submit" id="back-btn" name="back-btn" style="margin-right: 85%" onclick="encryptText(event, 'back')">Back</button>
@@ -206,7 +206,12 @@ function encryptText(event, query) {
                         <label class="btn btn-outline-primary persian-btn" for="btnOutput-fa">فارسی</label>
                     </div>
                     </div>
-                    <textarea class="form-control" name="translation" id="translation" rows="26" readonly dir='rtl'></textarea>
+                    <div class="position-relative">
+                      <textarea class="form-control" name="translation" id="translation" rows="26" readonly dir='rtl'></textarea>
+                      <div class="spinner-border text-primary" id="spinner" role="status">
+                        <span class="sr-only"></span>
+                      </div>
+                    </div>
                     <input type="hidden" id="translation_hidden" value="{{ translation }}">
                     <input type="hidden" id="selected_user" name= "selected_user" value="{{ selected_user }}">
                     <input type="hidden" id="mode" name= "mode" value="{{ mode }}">
@@ -346,5 +351,12 @@ function updateCharacterCount() {
   }
 
 }
+
+document.addEventListener('keydown', function(event) {
+  if (event.ctrlKey && event.key === 'Enter') {
+    var arrowBtn = document.getElementById('arrow-btn');
+    arrowBtn.click();
+  }
+});
 </script>
 {% endblock %}

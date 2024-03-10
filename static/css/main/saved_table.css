@@ -1,18 +1,3 @@
-@font-face {
-    font-family: B_Nazanin_Bold;
-    src: url("..\\..\\fonts\\B_Nazanin_Bold.ttf");
-  }
-  
-  @font-face {
-    font-family: B_Titr_Bold;
-    src: url("..\\..\\fonts\\B_Titr_Bold.ttf");
-  }
-  
-  @font-face {
-    font-family: B_Nazanin;
-    src: url("..\\..\\fonts\\B_Nazanin.ttf");
-  }
-  
   @font-face {
     font-family: IranSans;
     src: url("..\\..\\fonts\\IranSans.ttf");
