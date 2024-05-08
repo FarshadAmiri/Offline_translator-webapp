@@ -15,6 +15,7 @@ from django.contrib import auth, messages
 from jdatetime import datetime as jdatetime, timedelta
 from .decorators import admins_only
 from main.utilities.argos import translate
+from main.utilities.pre_post_text_processing import modify_translation, preprocess_text
 from main.utilities.lang import detect_language
 from main.utilities.encryption import *
 # from datetime import datetime, timedelta
@@ -43,8 +44,12 @@ def Translation(request):
         #     # messages.info(request, f'زبان ورودی {detect_lang_fa} شناسایی شد، در صورتیکه شما زبان ورودی را {target_lang_fa} انتخاب کردید. ترجمه بر اساس زبان ورودی {detect_lang_fa} و زبان مقصد {target_lang_fa} انجام شد.')
         #     messages.info(request, f"Detected language is {detected_lang}, and you probably chose wrong input language! Translation performed based on {detected_lang} input.")
         #     source_lang = detected_lang
-            
-        translation = translate(source_text, source_lang, target_lang)
+        
+        source_text_preprocessed = preprocess_text(source_text)
+        translation = translate(source_text_preprocessed, source_lang, target_lang)
+        for i in range(5):
+            translation = modify_translation(translation)
+
 
         encrypted_translation = encrypt_AES_ECB(translation, aes_key).decode('utf-8')
         encrypted_source_text = encrypt_AES_ECB(source_text, aes_key).decode('utf-8')

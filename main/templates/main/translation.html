@@ -152,57 +152,57 @@ function encryptText(event, query) {
             <div class="row justify-content-end">
             <div class="d-flex justify-content-end" style="position: top: 0; right: 0; padding: 0px;">
             <div class="row justify-content-center" id="d1">
-                <button type="submit" id="arrow-btn" name="translate-btn" onclick="encryptText(event, 'translating')"><img id="arrow-icon"></button>
+                <button type="submit" id="arrow-btn" name="translate-btn" onclick="encryptText(event, 'translating')" data-toggle="tooltip" data-placement="right" title="Translate! (Ctrl + Enter)"><img id="arrow-icon"></button>
             </div>
             {% if edit_mode %}
                 {% if mode == "user" %}
                 <button type="submit" id="back-btn" name="back-btn" style="margin-right: 85%" onclick="encryptText(event, 'back')">Back</button>
-                <button type="submit" id="edit-btn" name="edit-btn" class="btn btn-success" style="margin-right: 10px" onclick="encryptText(event, 'saving'); showMessage('Edit saved!', this)">Apply edits</button>
+                <button type="submit" id="edit-btn" name="edit-btn" class="btn" style="margin-right: 10px" onclick="encryptText(event, 'saving'); showMessage('Edit saved!', this)">Apply edits</button>
                 <button type="submit" id="remove-btn" name="remove-btn" class="btn btn-danger" onclick="encryptText(event, 'deleting')">Delete</button>
                 {% elif mode == "supervisor" %}
                 <button type="submit" id="back-btn" name="back-btn" style="margin-right: 95%" onclick="encryptText(event, 'back')">Back</button>
                 {% endif %}
             {% else %}
-                <button type="submit" id="save-btn" name="save-btn" class="btn btn-success" onclick="encryptText(event, 'saving'); showMessage('Saved!', this)"><img id="save-icon">Save</button>
+                <button type="submit" id="save-btn" name="save-btn" class="btn" onclick="encryptText(event, 'saving'); showMessage('Saved!', this)"><img id="save-icon">&nbspSave</button>
             {% endif %}
             </div>
                 <div class="col-md-6">
                 <div class="btn-group-lg d-flex justify-content-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px; margin-top: 0px;">
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-en" autocomplete="off" value="en" onclick="disableCorrespondingRadio('input', this); changeText(this)" checked>
+                        <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-en" autocomplete="off" value="en" onclick="disableCorrespondingRadio('input', this); changeText()" checked>
                         <label class="btn btn-outline-primary english-btn" for="btnInput-en">English</label>
                     </div>
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-ar" autocomplete="off" value="ar" onclick="disableCorrespondingRadio('input', this); changeText(this)">
+                        <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-ar" autocomplete="off" value="ar" onclick="disableCorrespondingRadio('input', this); changeText()">
                         <label class="btn btn-outline-primary arabic-btn" for="btnInput-ar">العربي</label>
                     </div>
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-fa" autocomplete="off" value="fa" onclick="disableCorrespondingRadio('input', this); changeText(this)">
+                        <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-fa" autocomplete="off" value="fa" onclick="disableCorrespondingRadio('input', this); changeText()">
                         <label class="btn btn-outline-primary persian-btn" for="btnInput-fa">فارسی</label>
                     </div>
                     </div>
                     <div style="position: relative;">
                     <textarea class="form-control" name="source_text" id="source_text" rows="21" placeholder="Enter English text" oninput="updateCharacterCount();"></textarea>
-                    <span id="charCount" style="position: absolute; bottom: -25px; right: 0px; padding: 0; margin: 0; font-weight: bold;"></span>
+                    <span id="charCount" style="position: absolute; bottom: -28px; right: 20px; padding: 0; margin: 0; font-weight: bold;"></span>
                     <input type="hidden" id="source_text_hidden" value="{{ source_text }}">
                     </div>
                     <div class="text-center mt-2">
-                        <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('source_text'); showMessage('Cleared!', this); updateCharacterCount()"><img id="clear-icon"></button>
-                        <button type="button" class="btn btn-success copy-btn" onclick="copyText('source_text'); showMessage('Copied!', this)"><img id="copy-icon"></button>
+                        <button type="button" class="btn clear-btn" onclick="clearText('source_text'); showMessage('Cleared!', this); updateCharacterCount()" data-toggle="tooltip" title="Clear text"><img id="clear-icon"></button>
+                        <button type="button" class="btn copy-btn" onclick="copyText('source_text'); showMessage('Copied!', this)" data-toggle="tooltip" title="Copy to clipboard"><img id="copy-icon"></button>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="btn-group-lg d-flex justify-content-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px; margin-top: 0px;">
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-en" value="en" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText(this)">
+                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-en" value="en" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()">
                         <label class="btn btn-outline-primary english-btn" for="btnOutput-en">English</label>
                     </div>
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-ar" value="ar" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText(this)">
+                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-ar" value="ar" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()">
                         <label class="btn btn-outline-primary arabic-btn" for="btnOutput-ar">العربي</label>
                     </div>
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-fa" value="fa" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText(this)" checked>
+                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-fa" value="fa" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()" checked>
                         <label class="btn btn-outline-primary persian-btn" for="btnOutput-fa">فارسی</label>
                     </div>
                     </div>
@@ -219,10 +219,18 @@ function encryptText(event, query) {
                     <input type="hidden" id="target_lang" name= "target_lang" value="{{ target_lang }}">
                     <input type="hidden" id="current_state" value="{{ source_lang }}">
                     <div class="text-center mt-2">
-                        <button type="button" class="btn btn-secondary clear-btn" onclick="clearText('translation'); showMessage('Cleared!', this)"><img id="clear-icon"></button>
-                        <button type="button" class="btn btn-success copy-btn" onclick="copyText('translation'); showMessage('Copied!', this)"><img id="copy-icon"></button>
+                        <button type="button" class="btn clear-btn" onclick="clearText('translation'); showMessage('Cleared!', this)" data-toggle="tooltip" title="Clear text"><img id="clear-icon"></button>
+                        <button type="button" class="btn copy-btn" onclick="copyText('translation'); showMessage('Copied!', this)" data-toggle="tooltip" title="Copy to clipboard"><img id="copy-icon"></button>
+                    </div>
                 </div>
-            </div>
+                {% comment %} <div class="col-md-6 position-relative" style="top: -30px; right: 440px; margin: 0px; padding: 0px; border: 0px;">
+                    <div class="text-center" style="margin: 0px; padding: 0px; border: 0px;">
+                        <button type="button" class="btn btn-primary">Your Button</button>
+                    </div>
+                </div> {% endcomment %}
+                  <div class="col-md-6 justify-content-center text-center" >
+                      <button type="button" id="swap-btn" onclick="swapTexts();" data-toggle="tooltip" data-placement="right" title="Swap languages (Ctrl + Shift + S)"><img id="swap-icon"></button>
+                  </div>
             {% if mode == "user" %}
             {% comment %} <div class="row justify-content-center">
                 <div class="col-12 text-center">
@@ -237,6 +245,7 @@ function encryptText(event, query) {
             {% endif %}
         </div>
     </form>
+</div>
 </div>
 <script type="text/javascript" src="{% static 'js/main/translation.js' %}"></script>
 <script>
@@ -343,7 +352,7 @@ function updateCharacterCount() {
   var maxLength = 20000;
   var currentLength = textarea.value.length;
   if (currentLength > maxLength) {
-    charCount.textContent = currentLength + '/' + maxLength + ' characters';
+    charCount.textContent = currentLength + '/' + "20,000" + ' characters';
     charCount.style.color = 'red';
   } else {
     charCount.textContent = currentLength + '/' + "20,000" + ' characters';
@@ -355,6 +364,14 @@ function updateCharacterCount() {
 document.addEventListener('keydown', function(event) {
   if (event.ctrlKey && event.key === 'Enter') {
     var arrowBtn = document.getElementById('arrow-btn');
+    arrowBtn.click();
+  }
+});
+
+
+document.addEventListener('keydown', function(event) {
+  if (event.ctrlKey && event.shiftKey && event.key === 'S') {
+    var arrowBtn = document.getElementById('swap-btn');
     arrowBtn.click();
   }
 });

@@ -3,11 +3,6 @@
   src: url("..\\..\\fonts\\IranSans.ttf");
 }
 
-@font-face {
-  font-family: RobotoSlab;
-  src: url("..\\..\\fonts\\RobotoSlab.ttf");
-}
-
 
 #main-container {
   /* background-color: rgb(255, 255, 255); */
@@ -24,7 +19,7 @@
 }
 
 #source_text {
-  font-family: RobotoSlab ;
+  font-family: Tahoma ;
   font-size: 20px;
   font-weight: normal;
   color: #000000;
@@ -59,7 +54,7 @@
 }
 
 #translate-btn {
-  font-family: RobotoSlab;
+  font-family: Tahoma;
   font-size: 20px;
   font-weight: normal;
   padding: 8px;
@@ -96,19 +91,8 @@
     font-size: 17px;
   }
 
-
-
-#edit-btn {
-    font-family: RobotoSlab ;
-    font-size: 17px;
-    font-weight: normal;
-    color: #ffffff;
-    text-align: left;
-    padding: 5px;
-  }
-
   #back-btn {
-    font-family: RobotoSlab ;
+    font-family: Tahoma ;
     background: linear-gradient(to bottom, #9e9e9e, #474747);
     font-size: 17px;
     font-weight: normal;
@@ -120,7 +104,7 @@
   }
 
 #remove-btn {
-    font-family: RobotoSlab ;
+    font-family: Tahoma ;
     font-size: 17px;
     font-weight: normal;
     color: #ffffff;
@@ -129,7 +113,7 @@
   }
   
   #arrow-icon {
-    content: url("..\\..\\icons\\arrow-4_1.png");
+    content: url("..\\..\\icons\\arrow-6_1.png");
     background-color: transparent;
     width: 70px;
     /* height: 40px; */
@@ -139,7 +123,7 @@
   }
 
   #arrow-icon:hover {
-    content: url("..\\..\\icons\\arrow-5_1.png");
+    content: url("..\\..\\icons\\arrow-4_1.png");
     padding: 0;
     margin: 0;
     border: 0;
@@ -170,7 +154,7 @@
 
 
 .clear-btn {
-    font-family: RobotoSlab ;
+    font-family: Tahoma ;
     font-size: 16px;
     font-weight: normal;
     color: #ffffff;
@@ -180,11 +164,16 @@
     align-items: center;
     justify-content: center;
     padding: 4px;
-    
+    border: 0px;
+    background: linear-gradient(to bottom, #9e9e9e, #727272);
+  }
+
+  .clear-btn:hover {
+    background: linear-gradient(to bottom, #b8b8b8, #929292);
   }
 
   .copy-btn {
-    font-family: RobotoSlab ;
+    font-family: Tahoma ;
     font-size: 16px;
     font-weight: normal;
     color: #ffffff;
@@ -193,6 +182,12 @@
     align-items: center;
     justify-content: center;
     padding: 4px;
+    border: 0px;
+    background: linear-gradient(to bottom, #00767a, rgb(0, 99, 90));
+  }
+
+  .copy-btn:hover {
+    background: linear-gradient(to bottom, #009499, rgb(0, 134, 123));
   }
 
 #copy-icon {
@@ -214,16 +209,28 @@
     justify-content: center;
   }
 
-#save-btn {
-    font-family: RobotoSlab ;
-    font-size: 16px;
+#save-btn, #edit-btn, #remove-btn {
+    font-family: Tahoma ;
+    font-size: 15px;
     font-weight: normal;
     color: #ffffff;
     text-align: left;
     padding: 3px;
+    padding-left:  6px;
+    padding-right: 6px;
     height: 35px;
     align-items: center;
     justify-content: center;
+    border: 0px;
+    background: linear-gradient(to bottom, #59a769, #1e720e);
+}
+
+#save-btn:hover,  #edit-btn:hover{
+  background: linear-gradient(to bottom, #71bb80, #3f922e);
+}
+
+#remove-btn {
+  background: linear-gradient(to bottom, #a75959, #720e0e);
 }
 
 #save-icon {
@@ -257,3 +264,30 @@
     margin: 0;
     border: 0;
   }
+
+  #swap-btn {
+    position: absolute;
+    top: calc(92vh + 8px);
+    right: calc(50vw - 17px);
+    padding: 0;
+    margin: 0;
+    border: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+  }
+
+
+  #swap-icon{
+    content: url("..\\..\\icons\\swap.png");
+    width: 36px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+
+  #swap-icon:hover {
+    content: url("..\\..\\icons\\swap-hover.png");
+}

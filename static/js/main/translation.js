@@ -1,18 +1,50 @@
-function clearText(textboxId) {
-    document.getElementById(textboxId).value = "";
+function clearText(textBoxId) {
+  const checkedInputValue = document.querySelector('input[name="btnRadio_input"]:checked').value;
+  const checkedOutputValue = document.querySelector('input[name="btnRadio_output"]:checked').value;
+  document.getElementById(textBoxId).value = "";
+
+  if (textBoxId == "source_text") {
+    if (checkedInputValue === "en") {
+      sourceText_English = "";
+    } else if (checkedInputValue === "ar") {
+      sourceText_Arabic = "" ;
+    } else if (checkedInputValue === "fa") {
+      sourceText_Persian = "" ;
+    }
+  } else if (textBoxId == "translation") {
+    if (checkedOutputValue === "en") {
+      transText_English = "" ;
+    } else if (checkedOutputValue === "ar") {
+      transText_Arabic = "" ;
+    } else if (checkedOutputValue === "fa") {
+      transText_Persian = "" ;
+    };
+  }
 }
+
+
+function copyTextToClipboard(text) {
+  var textarea = document.createElement("textarea");
+  textarea.value = text;
+  // Make the textarea non-editable to avoid focus and move outside of view
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "absolute";
+  textarea.style.left = "-9999px";
+  // Add the textarea to the HTML document
+  document.body.appendChild(textarea);
+  // Select and copy the text inside the textarea
+  textarea.select();
+  document.execCommand("copy");
+  // Remove the textarea from the document
+  document.body.removeChild(textarea);
+};
+
 
 function copyText(textboxId) {
     var textbox = document.getElementById(textboxId);
     var text = textbox.value;
   
-    navigator.clipboard.writeText(text)
-      .then(function() {
-        console.log("Text copied to clipboard");
-      })
-      .catch(function(error) {
-        console.error("Error copying text to clipboard:", error);
-      });
+    copyTextToClipboard(text);
   }
 
 
@@ -75,7 +107,7 @@ function copyText(textboxId) {
   }
 
   
-  function changeText(element) {
+  function changeText() {
     const checkedInputValue = document.querySelector('input[name="btnRadio_input"]:checked').value;
     const checkedOutputValue = document.querySelector('input[name="btnRadio_output"]:checked').value;
     var sourceTextElement = document.getElementById("source_text");
@@ -102,7 +134,7 @@ function copyText(textboxId) {
     } else if (checkedOutputValue === "fa") {
       targetTextElement.value = transText_Persian;
     }
-  }
+  };
 
 
   function getCheckedRadioButtonsId() {
@@ -180,7 +212,7 @@ function applyLanguageSettings (textArea, lang, mode) {
   };
   if (lang === "en") {
     if ( mode === "input") {textArea.placeholder = "Enter English text"}
-    textArea.style.fontFamily = "RobotoSlab";
+    textArea.style.fontFamily = "Tahoma";
     textArea.style.fontSize = '20px';
     textArea.style.fontWeight = 'normal';
     textArea.style.textAlign = 'left';
@@ -188,3 +220,32 @@ function applyLanguageSettings (textArea, lang, mode) {
     textArea.rows = 21 ;
   };
 }
+
+
+function swapTexts() {
+  const checkedInputValue = document.querySelector('input[name="btnRadio_input"]:checked').value;
+  const checkedOutputValue = document.querySelector('input[name="btnRadio_output"]:checked').value;
+  var sourceTextElement = document.getElementById("source_text");
+  var targetTextElement = document.getElementById("translation");
+
+  var sourceTextTemp = document.getElementById("source_text").value;
+  var targetTextTemp = document.getElementById("translation").value;
+  
+  if (checkedInputValue === "en") {
+    document.getElementById('btnOutput-en').click();
+  } else if (checkedInputValue === "ar") {
+    document.getElementById('btnOutput-ar').click();
+  } else if (checkedInputValue === "fa") {
+    document.getElementById('btnOutput-fa').click();
+  };
+  if (checkedOutputValue === "en") {
+    document.getElementById('btnInput-en').click();
+  } else if (checkedOutputValue === "ar") {
+    document.getElementById('btnInput-ar').click();
+  } else if (checkedOutputValue === "fa") {
+    document.getElementById('btnInput-fa').click();
+  };
+
+  targetTextElement.value = sourceTextTemp;
+  sourceTextElement.value = targetTextTemp;
+};
