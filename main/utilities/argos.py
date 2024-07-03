@@ -7,11 +7,16 @@ def translate_en_fa(article_en):
 
 def translate_fa_en(article_fa):
     result = argostranslate.translate.translate(article_fa, 'fa', 'en',)
+    result = result.replace('&quot; ', '')
+    result = result.replace(' &apos; ', "'")
     return result
 
 
 def translate_ar_en(article_ar):
     result = argostranslate.translate.translate(article_ar, 'ar', 'en',)
+    result = result.replace('&quot; ', '')
+    result = result.replace(' &apos; ', "'")
+
     return result
 
 
@@ -19,7 +24,8 @@ def translate_en_ar(article_en):
     article_en = article_en.replace('(', '')
     article_en = article_en.replace(')', '')
     result = argostranslate.translate.translate(article_en, 'en', 'ar',)
-    result =result.replace('&quot;', '"')
+    result = result.replace('&quot; ', '')
+
     return result
 
 
