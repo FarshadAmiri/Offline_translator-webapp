@@ -167,20 +167,27 @@ function encryptText(event, query) {
             {% endif %}
             </div>
                 <div class="col-md-6">
-                <div class="btn-group-lg d-flex justify-content-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px; margin-top: 0px;">
-                    <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-en" autocomplete="off" value="en" onclick="disableCorrespondingRadio('input', this); changeText()" checked>
-                        <label class="btn btn-outline-primary english-btn" for="btnInput-en">English</label>
-                    </div>
-                    <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-ar" autocomplete="off" value="ar" onclick="disableCorrespondingRadio('input', this); changeText()">
-                        <label class="btn btn-outline-primary arabic-btn" for="btnInput-ar">العربي</label>
-                    </div>
-                    <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-fa" autocomplete="off" value="fa" onclick="disableCorrespondingRadio('input', this); changeText()">
-                        <label class="btn btn-outline-primary persian-btn" for="btnInput-fa">فارسی</label>
-                    </div>
-                    </div>
+                  <div class="btn-group-lg d-flex justify-content-center align-items-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px; margin-top: 0px;">
+                      <div style="margin-left: 7px;">
+                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-en" autocomplete="off" value="en" onclick="disableCorrespondingRadio('input', this); changeText()" checked>
+                          <label class="btn btn-outline-primary english-btn" for="btnInput-en">English</label>
+                      </div>
+                      <div style="margin-left: 7px;">
+                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-ar" autocomplete="off" value="ar" onclick="disableCorrespondingRadio('input', this); changeText()">
+                          <label class="btn btn-outline-primary arabic-btn" for="btnInput-ar">العربي</label>
+                      </div>
+                      <div style="margin-left: 7px;">
+                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-fa" autocomplete="off" value="fa" onclick="disableCorrespondingRadio('input', this); changeText()">
+                          <label class="btn btn-outline-primary persian-btn" for="btnInput-fa">فارسی</label>
+                      </div>
+                      <div style="margin-left: 7px;">
+                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-he" autocomplete="off" value="he" onclick="disableCorrespondingRadio('input', this); changeText()">
+                          <label class="btn btn-outline-primary hebrew-btn" for="btnInput-he">עִברִית</label>
+                      </div>
+                      <div style="margin-left: 25px;"> 
+                        <button type="button" class="btn btn-secondary" id="documentModalBtn" data-bs-toggle="modal" data-bs-target="#docModal" style="font-size: 18px;">Document</button>
+                      </div>
+                  </div>
                     <div style="position: relative;">
                     <textarea class="form-control" name="source_text" id="source_text" rows="21" placeholder="Enter English text" oninput="updateCharacterCount();"></textarea>
                     <span id="charCount" style="position: absolute; bottom: -28px; right: 20px; padding: 0; margin: 0; font-weight: bold;"></span>
@@ -204,6 +211,10 @@ function encryptText(event, query) {
                     <div style="margin-left: 7px;">
                         <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-fa" value="fa" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()" checked>
                         <label class="btn btn-outline-primary persian-btn" for="btnOutput-fa">فارسی</label>
+                    </div>
+                    <div style="margin-left: 7px;">
+                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-he" value="he" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()" checked>
+                        <label class="btn btn-outline-primary hebrew-btn" for="btnOutput-he">עִברִית</label>
                     </div>
                     </div>
                     <div class="position-relative">
@@ -247,6 +258,206 @@ function encryptText(event, query) {
     </form>
 </div>
 </div>
+<!-- Modal Structure -->
+<div class="modal fade" id="docModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="translationForm" enctype="multipart/form-data">
+        <div class="modal-header">
+          <h5 class="modal-title" id="myModalLabel">Document translation</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Input Language Section -->
+          <div class="text-center mb-3">
+            <p style="font-size: 17px; color: gray; margin-bottom: 5px;">Input Language</p>
+            <hr style="border-top: 1px solid #6b6b6b; margin: 0 auto; width: 70%;">
+          </div>
+          <div class="btn-group-lg d-flex justify-content-center align-items-center mb-4" role="group" aria-label="Basic radio toggle button group">
+            <div style="margin-left: 7px;">
+              <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-en" autocomplete="off" value="en" checked>
+              <label class="btn btn-outline-primary english-btn" for="modal_btnInput-en">English</label>
+            </div>
+            <div style="margin-left: 7px;">
+              <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-ar" autocomplete="off" value="ar">
+              <label class="btn btn-outline-primary arabic-btn" for="modal_btnInput-ar">العربي</label>
+            </div>
+            <div style="margin-left: 7px;">
+              <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-fa" autocomplete="off" value="fa">
+              <label class="btn btn-outline-primary persian-btn" for="modal_btnInput-fa">فارسی</label>
+            </div>
+            <div style="margin-left: 7px;">
+              <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-he" autocomplete="off" value="he">
+              <label class="btn btn-outline-primary hebrew-btn" for="modal_btnInput-he">עִברִית</label>
+            </div>
+          </div>
+
+          <!-- Output Language Section -->
+          <div class="text-center mb-3">
+            <p style="font-size: 17px; color: gray; margin-bottom: 5px;">Output Language</p>
+            <hr style="border-top: 1px solid #6b6b6b; margin: 0 auto; width: 70%;">
+          </div>
+          <div class="btn-group-lg d-flex justify-content-center align-items-center mb-4" role="group" aria-label="Basic radio toggle button group">
+            <div style="margin-left: 7px;">
+              <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-en" autocomplete="off" value="en">
+              <label class="btn btn-outline-primary english-btn" for="modal_btnOutput-en">English</label>
+            </div>
+            <div style="margin-left: 7px;">
+              <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-ar" autocomplete="off" value="ar">
+              <label class="btn btn-outline-primary arabic-btn" for="modal_btnOutput-ar">العربي</label>
+            </div>
+            <div style="margin-left: 7px;">
+              <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-fa" autocomplete="off" value="fa" checked>
+              <label class="btn btn-outline-primary persian-btn" for="modal_btnOutput-fa">فارسی</label>
+            </div>
+            <div style="margin-left: 7px;">
+              <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-he" autocomplete="off" value="he" checked>
+              <label class="btn btn-outline-primary hebrew-btn" for="modal_btnOutput-he">עִברִית</label>
+            </div>
+          </div>
+
+          <!-- File Upload Section -->
+          <div class="text-center">
+            <label for="fileUpload" class="form-label" style="font-size: 17px; color: gray;">Upload your document</label>
+            <input class="form-control" type="file" id="fileUpload" name="document" style="max-width: 70%; margin: 0 auto;">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" id="translateButton" type="submit">
+            <span class="spinner-border spinner-border-sm" id="translateSpinner" role="status" aria-hidden="true" style="display: none;"></span>
+            Translate
+          </button>
+        </div>
+      </form>
+      <div id="progressContainer">
+        <p id="progressText">Progress: 0%</p>
+        <div class="progress">
+            <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0"
+                aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+    </div>
+    </div>
+  </div>
+</div>
+<input type="hidden" id="translationTaskId" name="translation_task_id">
+
+<script>
+var translationTaskIdInput = document.getElementById('translationTaskId');
+
+document.getElementById('translationForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    // Get button and spinner elements
+    const translateButton = document.getElementById('translateButton');
+    const translateSpinner = document.getElementById('translateSpinner');
+
+    // Show spinner and disable button
+    translateSpinner.style.display = 'inline-block';
+    translateButton.disabled = true;
+
+    // Create FormData object to collect form data
+    let formData = new FormData(this);
+
+    fetch("{% url 'main:create_translation_task' %}", {
+      method: 'POST',
+      body: new URLSearchParams({
+          input_language: formData.get('input_language'),
+          output_language: formData.get('output_language'),
+      }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+          var translationTaskId = data.translation_task_id;
+          translationTaskIdInput.value = data.translation_task_id;
+          formData.append('translation_task_id', translationTaskId);
+
+    // AJAX request to the backend
+    fetch("{% url 'main:document_translation' %}", {
+        method: 'POST',
+        body: formData,
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to translate the document.');
+            }
+
+            // Get the filename from the response headers
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let filename = 'translated_document.docx'; // Default filename
+
+            if (contentDisposition && contentDisposition.indexOf('filename=') !== -1) {
+                filename = contentDisposition.split('filename=')[1].replace(/['"]/g, '');
+            }
+
+            return response.blob().then(blob => ({ blob, filename })); // Return both blob and filename
+        })
+        .then(({ blob, filename }) => {
+            // Hide spinner and re-enable button after successful response
+            translateSpinner.style.display = 'none';
+            translateButton.disabled = false;
+
+            // Handle document download
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', filename); // Use the filename extracted from response
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        })
+        .catch(error => {
+            // Hide spinner and re-enable button on error
+            translateSpinner.style.display = 'none';
+            translateButton.disabled = false;
+
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
+      } else {
+        console.error('Failed to create translation task:', data.error);
+      }
+    })
+});
+
+
+function updateProgress() {
+    // Function to fetch and update progress
+    const progressText = document.getElementById('progressText');
+    const progressBar = document.getElementById('progressBar');
+
+    const intervalId = setInterval(() => {
+        fetch(`/check_translation_progress/?translation_task_id=${document.getElementById('translationTaskId').value}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const progress = data.translated_percentage;
+
+                    // Update progress text and bar
+                    progressText.textContent = `Progress: ${progress}%`;
+                    progressBar.style.width = `${progress}%`;
+                    progressBar.setAttribute('aria-valuenow', progress);
+
+                    // If translation is complete, clear interval and close modal
+                    if (progress >= 100) {
+                        clearInterval(intervalId);
+                        progressText.textContent = 'Translation Complete!';
+                        progressBar.style.width = '100%';
+                    }
+                } else {
+                    console.error('Failed to get translation progress:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }, 3000); // Check progress every 3 seconds
+}
+
+
+</script>
+<!-- END of Modal Structure -->
+
 <script type="text/javascript" src="{% static 'js/main/translation.js' %}"></script>
 <script>
 window.onload = function() {
@@ -272,6 +483,8 @@ window.onload = function() {
       sourceText_Arabic = decryptedSourceTextValue;
     } else if (sourceLang === "fa" ){
       sourceText_Persian = decryptedSourceTextValue;
+    } else if (sourceLang === "he" ){
+      sourceText_Hebrew = decryptedSourceTextValue;
     };
     if (targetLang === "en" ) {
       transText_English = decryptedTranslationValue;
@@ -279,6 +492,8 @@ window.onload = function() {
       transText_Arabic = decryptedTranslationValue;
     } else if (targetLang === "fa" ){
       transText_Persian = decryptedTranslationValue;
+    } else if (targetLang === "he" ){
+      transText_Hebrew = decryptedTranslationValue;
     };
     localStorage.removeItem("aesRawKey_translation");
 
@@ -289,7 +504,7 @@ window.onload = function() {
     var radioInput = document.getElementsByName("btnRadio_input");
     var radioOutput = document.getElementsByName("btnRadio_output");
 
-    if (sourceLangElement.value === "en") {
+  if (sourceLangElement.value === "en") {
     applyLanguageSettings (textArea1, "en", "input")
     for (var i = 0; i < radioInput.length; i++) {
       if (radioInput[i].id === "btnInput-en") {radioInput[i].checked = true;} else {radioInput[i].checked = false};        
@@ -305,6 +520,12 @@ window.onload = function() {
     applyLanguageSettings (textArea1, "fa", "input")
     for (var i = 0; i < radioInput.length; i++) {
       if (radioInput[i].id === "btnInput-fa") {radioInput[i].checked = true;} else {radioInput[i].checked = false};        
+    }
+  };
+  if (sourceLangElement.value === "he") {
+    applyLanguageSettings (textArea1, "he", "input")
+    for (var i = 0; i < radioInput.length; i++) {
+      if (radioInput[i].id === "btnInput-he") {radioInput[i].checked = true;} else {radioInput[i].checked = false};        
     }
   };
   if (targetLangElement.value === "en") {
@@ -325,6 +546,14 @@ window.onload = function() {
       if (radioOutput[i].id === "btnOutput-fa") {radioOutput[i].checked = true;} else {radioOutput[i].checked = false};        
     }
   };
+  if (targetLangElement.value === "he") {
+    applyLanguageSettings (textArea2, "he", "output")
+    for (var i = 0; i < radioOutput.length; i++) {
+      if (radioOutput[i].id === "btnOutput-he") {radioOutput[i].checked = true;} else {radioOutput[i].checked = false};        
+    }
+  };
+  
+  updateProgress();
   }
 
 function showMessage(message, button) {

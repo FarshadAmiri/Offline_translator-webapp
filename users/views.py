@@ -22,9 +22,9 @@ def login_view(request, *kwargs):
         return render(request, 'Login_page.html', context={"form": login_form})
     elif request.method =='POST':
         form = LoginForm(request.POST)
-        print(f"\n\nis form valid: {form.is_valid()}")
+        # print(f"\n\nis form valid: {form.is_valid()}")
         if form.is_valid():
-            print(f"\n\nform.cleaned_data: {form.cleaned_data}\n\n")
+            # print(f"\n\nform.cleaned_data: {form.cleaned_data}\n\n")
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
             user = authenticate(request, username=username, password=password)

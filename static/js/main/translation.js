@@ -10,6 +10,8 @@ function clearText(textBoxId) {
       sourceText_Arabic = "" ;
     } else if (checkedInputValue === "fa") {
       sourceText_Persian = "" ;
+    } else if (checkedInputValue === "he") {
+      sourceText_Hebrew = "" ;
     }
   } else if (textBoxId == "translation") {
     if (checkedOutputValue === "en") {
@@ -18,6 +20,8 @@ function clearText(textBoxId) {
       transText_Arabic = "" ;
     } else if (checkedOutputValue === "fa") {
       transText_Persian = "" ;
+    } else if (checkedOutputValue === "he") {
+      transText_Hebrew = "" ;
     };
   }
 }
@@ -58,6 +62,8 @@ function copyText(textboxId) {
       sourceText_Arabic = sourceTextElement.value;
     } else if (previousSourceLangElement.value=== 'fa') {
       sourceText_Persian = sourceTextElement.value;
+    } else if (previousSourceLangElement.value=== 'he') {
+      sourceText_Hebrew = sourceTextElement.value;
     }
     element.checked = true;
     // var radioInput = document.getElementsByName("btnRadio_input");
@@ -126,6 +132,8 @@ function copyText(textboxId) {
       sourceTextElement.value = sourceText_Arabic;
     } else if (checkedInputValue === "fa") {
       sourceTextElement.value = sourceText_Persian;
+    } else if (checkedInputValue === "he") {
+      sourceTextElement.value = sourceText_Hebrew;
     }
     if (checkedOutputValue === "en") {
       targetTextElement.value = transText_English;
@@ -133,6 +141,8 @@ function copyText(textboxId) {
       targetTextElement.value = transText_Arabic;
     } else if (checkedOutputValue === "fa") {
       targetTextElement.value = transText_Persian;
+    } else if (checkedOutputValue === "he") {
+      targetTextElement.value = transText_Hebrew;
     }
   };
 
@@ -179,6 +189,8 @@ radioButtons.forEach(function(radioButton) {
       applyLanguageSettings (textArea1, "ar", "input")
     } else if (btnInput.id === "btnInput-fa") {
       applyLanguageSettings (textArea1, "fa", "input")
+    } else if (btnInput.id === "btnInput-he") {
+      applyLanguageSettings (textArea1, "he", "input")
     };
     if (btnOutput.id === "btnOutput-en") {
       applyLanguageSettings (textArea2, "en", "output")
@@ -186,6 +198,8 @@ radioButtons.forEach(function(radioButton) {
       applyLanguageSettings (textArea2, "ar", "output")
     } else if (btnOutput.id === "btnOutput-fa") {
       applyLanguageSettings (textArea2, "fa", "output")
+    } else if (btnOutput.id === "btnOutput-he") {
+      applyLanguageSettings (textArea2, "he", "output")
     };
   });
 });
@@ -219,6 +233,15 @@ function applyLanguageSettings (textArea, lang, mode) {
     textArea.dir = 'ltr';
     textArea.rows = 21 ;
   };
+  if (lang === "he") {
+    if ( mode === "input") {textArea.placeholder = "הזן טקסט בעברית"}
+    textArea.style.fontFamily = "Arial";
+    textArea.style.fontSize = '20px';
+    textArea.style.fontWeight = 'normal';
+    textArea.style.textAlign = 'right';
+    textArea.dir = 'rtl';
+    textArea.rows = 21 ;
+  };
 }
 
 
@@ -237,6 +260,8 @@ function swapTexts() {
     document.getElementById('btnOutput-ar').click();
   } else if (checkedInputValue === "fa") {
     document.getElementById('btnOutput-fa').click();
+  } else if (checkedInputValue === "he") {
+    document.getElementById('btnOutput-he').click();
   };
   if (checkedOutputValue === "en") {
     document.getElementById('btnInput-en').click();
@@ -244,8 +269,13 @@ function swapTexts() {
     document.getElementById('btnInput-ar').click();
   } else if (checkedOutputValue === "fa") {
     document.getElementById('btnInput-fa').click();
+  } else if (checkedOutputValue === "he") {
+    document.getElementById('btnInput-he').click();
   };
 
   targetTextElement.value = sourceTextTemp;
   sourceTextElement.value = targetTextTemp;
 };
+
+
+

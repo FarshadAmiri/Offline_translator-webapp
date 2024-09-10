@@ -1,12 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.views.generic import CreateView, DetailView
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.views.decorators.csrf import csrf_exempt
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -23,7 +26,12 @@ from .models import *
 from users.models import User
 import logging
 import base64
+from main.utilities.file_translation import file_translation_handler
+import os
+from datetime import datetime
 
+
+documents_repo = r"documents_repo"
 
 @login_required(login_url='users:login')
 def Translation(request):
@@ -310,3 +318,86 @@ def DeleteText(request, task_id):
         task = get_object_or_404(TranslationTask, user=user, task_id=task_id)
         task.delete()
         return HttpResponseRedirect(reverse('main:saved_table',))
+    
+
+@csrf_exempt
+def file_translation(request):
+    if request.method == 'POST':
+        user = request.user
+        input_language = request.POST.get('input_language')
+        output_language = request.POST.get('output_language')
+        translation_task_id = request.POST.get('translation_task_id')
+        document = request.FILES.get('document')
+
+        if not document:
+            return JsonResponse({'success': False, 'error': 'No file uploaded.'})
+
+        # Input file naming
+        doc_name, doc_suffix = os.path.splitext(document.name)
+        formatted_datetime = datetime.now().strftime('%Y-%m-%d--%H-%M')
+        doc_save_name = f"{user.username}_{doc_name}_{formatted_datetime}{doc_suffix}"
+
+        # Save document to the specified repository
+        doc_path = os.path.join(documents_repo, doc_save_name)
+        doc_path = default_storage.get_available_name(doc_path)
+        default_storage.save(doc_path, ContentFile(document.read()))
+
+        # Define the output path for the translated file
+        output_path = os.path.splitext(doc_path)[0] + "_translation" + ".docx"
+
+        # Handle file translation (this function should perform the actual translation)
+        file_translation_handler(doc_path, output_path, input_language, output_language, translation_task_id)
+
+        # Ensure the file is properly handled and returned with correct headers
+        try:
+            with open(output_path, 'rb') as file:
+                response = HttpResponse(file.read(), content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+                response['Content-Disposition'] = f'attachment; filename="{os.path.basename(output_path)}"'
+                response['X-File-Name'] = os.path.basename(output_path)  # Adding file name to header
+                return response
+        except FileNotFoundError:
+            return JsonResponse({'success': False, 'error': 'Translated file not found.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@csrf_exempt
+def create_translation_task(request):
+    if request.method == 'POST':
+        input_language = request.POST.get('input_language')
+        output_language = request.POST.get('output_language')
+
+        if not input_language or not output_language:
+            return JsonResponse({'success': False, 'error': 'Missing language parameters.'})
+
+        user = request.user
+        translation_task = FileTranslationTask.objects.create(
+            user=user,
+            source_language=input_language,
+            target_language=output_language,
+            translated_percentage=0
+        )
+        return JsonResponse({'success': True, 'translation_task_id': translation_task.task_id})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@csrf_exempt
+def check_translation_progress(request):
+    if request.method == 'GET':
+        translation_task_id = request.GET.get('translation_task_id')
+        print(f"translation_task_id: {translation_task_id}")
+
+        if not translation_task_id:
+            return JsonResponse({'success': False, 'error': 'Missing translation_task_id.'})
+
+        try:
+            task = FileTranslationTask.objects.get(task_id=translation_task_id)
+            return JsonResponse({'success': True, 'translated_percentage': task.translated_percentage})
+
+        except FileTranslationTask.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Translation task not found.'})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})

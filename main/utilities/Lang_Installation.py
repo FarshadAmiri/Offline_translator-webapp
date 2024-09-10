@@ -1,8 +1,8 @@
 import argostranslate.package
 import argostranslate.translate
 
-from_code = "fa"
-to_code = "ar"
+from_code = "en"
+to_code = "de"
 
 # Download and install Argos Translate package
 argostranslate.package.update_package_index()

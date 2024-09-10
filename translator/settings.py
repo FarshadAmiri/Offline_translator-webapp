@@ -148,12 +148,12 @@ STATIC_URL = "/static/"
 #     os.path.join(BASE_DIR, "static"),
 # ]
 
-
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/') 
-STATICFILES_FINDERS =( 'django.contrib.staticfiles.finders.FileSystemFinder',
+STATICFILES_FINDERS =('django.contrib.staticfiles.finders.FileSystemFinder',
                       'django.contrib.staticfiles.finders.AppDirectoriesFinder',
                       'compressor.finders.CompressorFinder',
-) 
+)
+
 COMPRESS_PRECOMPILERS = (    
     ('text/x-scss', 'django_libsass.SassCompiler'),
 )
@@ -169,4 +169,4 @@ CAPTCHA_IMAGE_SIZE = (120, 60)
 
 CAPTCHA_FONT_SIZE = 34
 
-SESSION_COOKIE_NAME = 'trans_session'
+SESSION_COOKIE_NAME = 'trans_session'     

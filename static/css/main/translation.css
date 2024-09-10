@@ -53,6 +53,12 @@
   font-weight: normal;
 }
 
+.hebrew-btn {
+  font-family: sans-serif;
+  font-size: 18px;
+  font-weight: normal;
+}
+
 #translate-btn {
   font-family: Tahoma;
   font-size: 20px;
@@ -142,7 +148,7 @@
   position: relative;
 }
 
-.spinner-border {
+#spinner {
   display: none;
   position: absolute;
   top: 40%;
