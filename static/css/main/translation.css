@@ -297,3 +297,47 @@
   #swap-icon:hover {
     content: url("..\\..\\icons\\swap-hover.png");
 }
+
+#translateSpinner {
+  width: 1.3rem;
+  height: 1.3rem;
+  border-width: 0.35rem;
+  font-size: 1.6rem; /* Adjust the font size as needed */
+}
+  
+#translateButton {
+  background-image: linear-gradient(to right, #00c6ff 0%, #0072ff  51%, #00c6ff  100%);
+  border-color: #ffffff;
+  font-size: 22px;
+  font-weight: bold;
+  padding: 10px 15px;
+  text-align: center;
+  transition: 0.5s;
+  background-size: 200% auto;
+  color: white;            
+  box-shadow: 0 0 20px #eee;
+  border-radius: 12px;
+  display: block;
+}
+
+#translateButton:hover {
+  background-position: right center; /* change the direction of the change here */
+  color: #fff;
+}
+
+#documentModalBtn {
+  background-image: linear-gradient(to right, #1e3c72 0%, #2a5298  51%, #1e3c72  100%);
+  border-color: rgb(224, 230, 233);
+  /* padding: 15px 45px; */
+  text-align: center;
+  transition: 0.5s;
+  background-size: 200% auto;
+  color: white;            
+  border-radius: 8px;
+  display: block;
+}
+
+#documentModalBtn:hover {
+  background-position: right center; /* change the direction of the change here */
+  color: #ffffff;
+}

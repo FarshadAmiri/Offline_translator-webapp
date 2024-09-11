@@ -322,10 +322,10 @@ function encryptText(event, query) {
             <input class="form-control" type="file" id="fileUpload" name="document" style="max-width: 70%; margin: 0 auto;">
           </div>
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-primary" id="translateButton" type="submit">
+        <div class="modal-footer d-flex justify-content-center">
+          <button class="btn btn-primary w-100" id="translateButton" type="submit">
             <span class="spinner-border spinner-border-sm" id="translateSpinner" role="status" aria-hidden="true" style="display: none;"></span>
-            Translate
+            <span id="translateTextModalBtn">Translate</span>
           </button>
         </div>
       </form>
@@ -352,16 +352,33 @@ document.getElementById('translationForm').addEventListener('submit', function (
     // Get button and spinner elements
     const translateButton = document.getElementById('translateButton');
     const translateSpinner = document.getElementById('translateSpinner');
+    const translateTextModalBtn = document.getElementById('translateTextModalBtn');
+
+    // Create FormData object to collect form data
+    let formData = new FormData(this);
+
+    // Check if languages are the same
+    if (formData.get('input_language') === formData.get('output_language')) {
+      alert('Error: Input and output languages cannot be the same. Please choose different languages.');
+      return; // Prevent form submission if languages are the same
+    };
+
+    console.log("formData.get('document'): " + formData.get('document'))
+
+    // Check if a file has been selected
+    const fileInput = document.getElementById('fileUpload');
+    if (!fileInput.files.length) {
+      alert('Please select a file to translate.');
+      return;
+    }
 
     var haveDoneFileTranslation = document.getElementById('haveDoneFileTranslation');
     haveDoneFileTranslation.value = "True";
 
     // Show spinner and disable button
     translateSpinner.style.display = 'inline-block';
+    translateTextModalBtn.innerText = "Translating..."
     translateButton.disabled = true;
-
-    // Create FormData object to collect form data
-    let formData = new FormData(this);
 
     fetch("{% url 'main:create_translation_task' %}", {
       method: 'POST',
@@ -401,6 +418,7 @@ document.getElementById('translationForm').addEventListener('submit', function (
             // Hide spinner and re-enable button after successful response
             translateSpinner.style.display = 'none';
             translateButton.disabled = false;
+            translateTextModalBtn.innerText = "Translate";
 
             // Handle document download
             const url = window.URL.createObjectURL(blob);
@@ -456,15 +474,17 @@ if (document.getElementById('haveDoneFileTranslation').value === "True") {
                 if (progressBar.classList.contains('bg-info')) {
                     progressBar.classList.remove('bg-info');
                   };
+                  progressBar.classList.add('bg-success');
                   progressBar.innerText = "Translation completed"
                   progressBar.style.width = '100%';
                   setTimeout(() => {
                     document.getElementById('haveDoneFileTranslation').value = "False";
                     document.getElementById('fileUpload').value = '';
-                    progressBar.classList.remove('bg-info');
                     progressBar.style.width = '0%';
                     progressBar.innerText = "0%";
-                  }, 2000);
+                    progressBar.classList.remove('bg-success');
+                    progressBar.classList.remove('bg-info');
+                  }, 2500);
                 } else {
                 if (progressBar.classList.contains('bg-info')) {
                     progressBar.classList.remove('bg-info');

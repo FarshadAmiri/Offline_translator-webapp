@@ -26,7 +26,8 @@ body {
   }
   
   #navigation-bar {
-    background: linear-gradient(to bottom, rgb(104, 104, 104), rgb(87, 87, 87));
+    /* background: linear-gradient(to bottom, rgb(104, 104, 104), rgb(87, 87, 87)); */
+    background-image: radial-gradient(circle at center, #5f78aa 0%, #6394aa 51%, #596153 100%);
   }
 
   #page_title {
@@ -34,6 +35,7 @@ body {
     font-weight: bolder;
     font-size: 42px;
     color: rgb(255, 153, 0);
+    color: rgb(255, 255, 255);
     position: absolute;
     left: 50%;
     margin-left: -115px !important;
@@ -49,7 +51,8 @@ body {
   #page_title:hover {
     background-color: rgba(0, 0, 0, 0.0);
     border-radius: 30px;
-    color: rgb(80, 219, 238);
+    /* color: rgb(80, 219, 238); */
+    color: rgb(255, 153, 0);
   }
 
   #nav_item,
@@ -63,7 +66,7 @@ body {
   .nav-item-persian {
     font-family: IranSans;
     font-weight: bolder;
-    font-size: 16px;
+    font-size: 16spx;
     color: rgb(255, 255, 255);
   }
 
@@ -72,7 +75,7 @@ body {
     color: white;
     font-family: Lato;
     font-weight: normal;
-    font-size: 19px;
+    font-size: 20px;
   }
   
   .navbar-light .navbar-nav .nav-link {
@@ -80,9 +83,9 @@ body {
   }
   
   .navbar-light .navbar-nav .nav-link:hover {
-    background-color: rgb(105, 105, 105);
+    /* background-color: rgb(105, 105, 105); */
     border-radius: 30px;
-    color: rgb(80, 219, 238);
+    color: rgb(105, 252, 183);
   }
 
   .logo {
@@ -98,7 +101,7 @@ body {
 
   .shortcut-guide {
     font-family: Lato;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: normal;
     color: white;
     margin: 0px;
@@ -109,7 +112,7 @@ body {
 
   .shortcut-guide-highlight {
     font-family: Lato;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: normal;
     color: rgb(255, 153, 0); 
     margin: 0px;
