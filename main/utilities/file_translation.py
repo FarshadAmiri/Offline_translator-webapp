@@ -125,8 +125,12 @@ def doc_translator(input_path, output_path, source_lang, target_lang, translatio
             else:
                 paragraph.Format.HorizontalAlignment = HorizontalAlignment.Left
             paragraph.Format.HorizontalAlignment = HorizontalAlignment.Justify
-        translation_object.progress = int((i + 1) * 100 / n_sections)
-        translation_object.save()
+            if n_sections == 1:
+                translation_object.progress = int((j + 1) * 100 / len(section.Paragraphs))
+                translation_object.save()
+        if n_sections > 1:
+            translation_object.progress = int((i + 1) * 100 / n_sections)
+            translation_object.save()
 
     # Step 3: Reinsert images at their original positions
     for idx, (sec_idx, para_idx, child_idx) in enumerate(image_positions):
