@@ -88,6 +88,9 @@ def adjust_ltr(input_path, output_path):
 def doc_translator(input_path, output_path, source_lang, target_lang, translation_object_id):
     # Load the Word document
     translation_object = FileTranslationTask.objects.get(task_id=translation_object_id)
+    
+    translation_object.progress = "preprocessing"
+    translation_object.save()
 
     document = SpireDoc()
     document.LoadFromFile(input_path)
@@ -122,7 +125,7 @@ def doc_translator(input_path, output_path, source_lang, target_lang, translatio
             else:
                 paragraph.Format.HorizontalAlignment = HorizontalAlignment.Left
             paragraph.Format.HorizontalAlignment = HorizontalAlignment.Justify
-        translation_object.translated_percentage = int((i + 1) * 100 / n_sections)
+        translation_object.progress = int((i + 1) * 100 / n_sections)
         translation_object.save()
 
     # Step 3: Reinsert images at their original positions

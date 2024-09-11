@@ -330,19 +330,21 @@ function encryptText(event, query) {
         </div>
       </form>
       <div id="progressContainer">
-        <p id="progressText">Progress: 0%</p>
+        {% comment %} <p id="progressText">Progress: 0%</p> {% endcomment %}
         <div class="progress">
-            <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0"
-                aria-valuemin="0" aria-valuemax="100"></div>
+            <div id="progressBar" class="progress-bar progress-bar-striped" role="progressbar" style="width: 0%;" aria-valuenow="0"
+                aria-valuemin="0" aria-valuemax="100" style="height: 60px; font-size: 16px;"></div>
         </div>
     </div>
     </div>
   </div>
 </div>
 <input type="hidden" id="translationTaskId" name="translation_task_id">
+<input type="hidden" id="haveDoneFileTranslation" name="haveDoneFileTranslation">
 
 <script>
 var translationTaskIdInput = document.getElementById('translationTaskId');
+const progressBar = document.getElementById('progressBar');
 
 document.getElementById('translationForm').addEventListener('submit', function (event) {
     event.preventDefault();
@@ -350,6 +352,9 @@ document.getElementById('translationForm').addEventListener('submit', function (
     // Get button and spinner elements
     const translateButton = document.getElementById('translateButton');
     const translateSpinner = document.getElementById('translateSpinner');
+
+    var haveDoneFileTranslation = document.getElementById('haveDoneFileTranslation');
+    haveDoneFileTranslation.value = "True";
 
     // Show spinner and disable button
     translateSpinner.style.display = 'inline-block';
@@ -422,36 +427,61 @@ document.getElementById('translationForm').addEventListener('submit', function (
 
 
 function updateProgress() {
+if (document.getElementById('haveDoneFileTranslation').value === "True") {
     // Function to fetch and update progress
-    const progressText = document.getElementById('progressText');
+    //const progressText = document.getElementById('progressText');
     const progressBar = document.getElementById('progressBar');
 
-    const intervalId = setInterval(() => {
-        fetch(`/check_translation_progress/?translation_task_id=${document.getElementById('translationTaskId').value}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const progress = data.translated_percentage;
+    fetch(`/check_translation_progress/?translation_task_id=${document.getElementById('translationTaskId').value}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const progress = data.progress;
+                console.log(progress)
 
-                    // Update progress text and bar
-                    progressText.textContent = `Progress: ${progress}%`;
-                    progressBar.style.width = `${progress}%`;
-                    progressBar.setAttribute('aria-valuenow', progress);
-
-                    // If translation is complete, clear interval and close modal
-                    if (progress >= 100) {
-                        clearInterval(intervalId);
-                        progressText.textContent = 'Translation Complete!';
-                        progressBar.style.width = '100%';
-                    }
+                // Update progress text and bar
+                //progressText.textContent = `Progress: ${progress}%`;
+                console.log(progress)
+                if (progress === "uploading") {
+                  progressBar.classList.add('bg-info');
+                  progressBar.classList.remove('progress-bar-animated');
+                  progressBar.style.width = "100%";
+                  progressBar.innerText = "Uploading...";
+                } else if (progress === "preprocessing") {
+                  progressBar.classList.add('bg-info');
+                  progressBar.classList.remove('progress-bar-animated');
+                  progressBar.style.width = "100%";
+                  progressBar.innerText = "Extracting contents...";
+                } else if (progress >= 100) {
+                if (progressBar.classList.contains('bg-info')) {
+                    progressBar.classList.remove('bg-info');
+                  };
+                  progressBar.innerText = "Translation completed"
+                  progressBar.style.width = '100%';
+                  setTimeout(() => {
+                    document.getElementById('haveDoneFileTranslation').value = "False";
+                    document.getElementById('fileUpload').value = '';
+                    progressBar.classList.remove('bg-info');
+                    progressBar.style.width = '0%';
+                    progressBar.innerText = "0%";
+                  }, 2000);
                 } else {
-                    console.error('Failed to get translation progress:', data.error);
+                if (progressBar.classList.contains('bg-info')) {
+                    progressBar.classList.remove('bg-info');
+                };
+                progressBar.classList.add('progress-bar-animated');
+                progressBar.style.width = `${progress}%`;
+                progressBar.setAttribute('aria-valuenow', progress);
+                progressBar.innerText = progress + "%"
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-    }, 3000); // Check progress every 3 seconds
+            } else {
+                console.error('Failed to get translation progress:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+};
 }
 
 
@@ -552,9 +582,16 @@ window.onload = function() {
       if (radioOutput[i].id === "btnOutput-he") {radioOutput[i].checked = true;} else {radioOutput[i].checked = false};        
     }
   };
-  
-  updateProgress();
   }
+
+
+function updateProgressRepeater() {
+  updateProgress();
+  setTimeout(updateProgressRepeater, 1000);
+}
+
+updateProgressRepeater();
+
 
 function showMessage(message, button) {
   const messageBox = document.createElement('div');

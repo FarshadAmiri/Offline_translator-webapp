@@ -19,4 +19,4 @@ class FileTranslationTask(models.Model):
     source_language = models.CharField(max_length=255, null=False, default="English")
     target_language = models.CharField(max_length=255, null=False, default="Persian")
     save_time = models.DateTimeField(auto_now_add=True)
-    translated_percentage = models.IntegerField(null=True)
+    progress = models.CharField(max_length=32, null=True)

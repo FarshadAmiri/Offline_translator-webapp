@@ -377,7 +377,7 @@ def create_translation_task(request):
             user=user,
             source_language=input_language,
             target_language=output_language,
-            translated_percentage=0
+            progress="uploading"
         )
         return JsonResponse({'success': True, 'translation_task_id': translation_task.task_id})
 
@@ -395,7 +395,7 @@ def check_translation_progress(request):
 
         try:
             task = FileTranslationTask.objects.get(task_id=translation_task_id)
-            return JsonResponse({'success': True, 'translated_percentage': task.translated_percentage})
+            return JsonResponse({'success': True, 'progress': task.progress})
 
         except FileTranslationTask.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Translation task not found.'})
