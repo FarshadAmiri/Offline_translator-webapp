@@ -52,7 +52,8 @@ body {
   #page_title:hover {
     background-color: rgba(0, 0, 0, 0.0);
     border-radius: 30px;
-    color: rgb(255, 153, 0);
+    /* color: rgb(255, 153, 0); */
+    color: rgb(140, 247, 255);
   }
 
   #nav_item,
