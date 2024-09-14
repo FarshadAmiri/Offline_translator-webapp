@@ -27,7 +27,8 @@ body {
   
   #navigation-bar {
     /* background: linear-gradient(to bottom, rgb(104, 104, 104), rgb(87, 87, 87)); */
-    background-image: radial-gradient(circle at center, #5f78aa 0%, #6394aa 51%, #596153 100%);
+    background-image: radial-gradient(circle at center, #7b92bd 0%, #6394aa 51%, #536161 100%);
+    /* background-image: radial-gradient(circle at center, #d5dff1 0%, #6394aa 51%, #596153 100%); */
   }
 
   #page_title {
@@ -51,7 +52,6 @@ body {
   #page_title:hover {
     background-color: rgba(0, 0, 0, 0.0);
     border-radius: 30px;
-    /* color: rgb(80, 219, 238); */
     color: rgb(255, 153, 0);
   }
 
@@ -99,6 +99,16 @@ body {
     height: 40px;
   }
 
+  #logo-AI {
+    /* background-image: linear-gradient(to bottom, #91f569, #7dffee, #c1caf0, #d58cff, #ff93ff);  */
+    /* background: linear-gradient(145.8deg, rgb(77, 252, 208) 0%, rgb(119, 196, 252) 47.6%, rgb(249, 183, 255) 87.8%); */
+    background: linear-gradient(25deg, rgb(237, 197, 255) 15%, rgb(192, 188, 255) 40.6%, rgb(150, 208, 255) 65.8%, rgb(154, 226, 255) 85.8%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 44px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+  }
+
   .shortcut-guide {
     font-family: Lato;
     font-size: 18px;
@@ -112,7 +122,7 @@ body {
 
   .shortcut-guide-highlight {
     font-family: Lato;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: normal;
     color: rgb(255, 153, 0); 
     margin: 0px;
