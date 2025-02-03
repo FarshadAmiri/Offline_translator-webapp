@@ -1,0 +1,96 @@
+<script>
+document.getElementById('translationForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    // Get button and spinner elements
+    const translateButton = document.getElementById('translateButton');
+    const translateSpinner = document.getElementById('translateSpinner');
+    const translateTextModalBtn = document.getElementById('translateTextModalBtn');
+
+    // Create FormData object to collect form data
+    let formData = new FormData(this);
+
+    // Check if languages are the same
+    if (formData.get('input_language') === formData.get('output_language')) {
+      alert('Error: Input and output languages cannot be the same. Please choose different languages.');
+      return; // Prevent form submission if languages are the same
+    };
+
+    // Check if a file has been selected
+    const fileInput = document.getElementById('fileUpload');
+    if (!fileInput.files.length) {
+      alert('Please select a file to translate.');
+      return;
+    }
+
+    var haveDoneFileTranslation = document.getElementById('haveDoneFileTranslation');
+    haveDoneFileTranslation.value = "True";
+
+    // Show spinner and disable button
+    translateSpinner.style.display = 'inline-block';
+    translateTextModalBtn.innerText = "Translating..."
+    translateButton.disabled = true;
+
+    fetch("{% url 'main:create_translation_task' %}", {
+      method: 'POST',
+      body: new URLSearchParams({
+          input_language: formData.get('input_language'),
+          output_language: formData.get('output_language'),
+      }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+          var translationTaskId = data.translation_task_id;
+          translationTaskIdInput.value = data.translation_task_id;
+          formData.append('translation_task_id', translationTaskId);
+
+    // AJAX request to the backend
+    fetch("{% url 'main:document_translation' %}", {
+        method: 'POST',
+        body: formData,
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to translate the document.');
+            }
+
+            // Get the filename from the response headers
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let filename = 'translated_document.docx'; // Default filename
+
+            if (contentDisposition && contentDisposition.indexOf('filename=') !== -1) {
+                filename = contentDisposition.split('filename=')[1].replace(/['"]/g, '');
+            }
+
+            return response.blob().then(blob => ({ blob, filename })); // Return both blob and filename
+        })
+        .then(({ blob, filename }) => {
+            // Hide spinner and re-enable button after successful response
+            translateSpinner.style.display = 'none';
+            translateButton.disabled = false;
+            translateTextModalBtn.innerText = "Translate";
+
+            // Handle document download
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', filename); // Use the filename extracted from response
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        })
+        .catch(error => {
+            // Hide spinner and re-enable button on error
+            translateSpinner.style.display = 'none';
+            translateButton.disabled = false;
+
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
+      } else {
+        console.error('Failed to create translation task:', data.error);
+      }
+    })
+});
+</script>

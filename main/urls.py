@@ -14,4 +14,7 @@ urlpatterns = [
     path('create_translation_task/', create_translation_task, name='create_translation_task'),
     path('file_translation/', file_translation, name='file_translation'),
     path('check_translation_progress/', check_translation_progress, name='check_translation_progress'),
+    path('users_table/', users_table, name='users_table'),
+    path('edit-user/<str:user_id>/', edit_user, name='edit_user'),
+    path('create-user/', create_user, name='create_user'),
 ]

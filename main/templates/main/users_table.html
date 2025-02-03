@@ -1,0 +1,88 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block head-title %}
+    <title>Users Table</title>
+{% endblock %}
+
+{% block head-static %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/main/users_table.css' %}">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="header-section">
+        <!-- Search box (DataTables will place its search input here) -->
+        <div id="search-container"></div>
+        
+        <!-- Create New User button -->
+        <a href="{% url 'main:create_user' %}" class="add-user-btn">+ Create New User</a>
+    </div>
+
+    <div class="table-container">
+        <table id="usersTable" class="display">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Name</th>
+                    <th>User Level</th>
+                    <th>Allowed Languages</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td><a href="{% url 'main:edit_user' user.pk %}">{{ user.username }}</a></td>
+                    <td>{{ user.get_full_name }}</td>
+                    <td>
+                        {% if user.is_superuser %}
+                            Superuser
+                        {% elif user.groups.all %}
+                            {{ user.groups.first.name }}
+                        {% else %}
+                            Regular User
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user.allowed_langs.all %}
+                            {{ user.allowed_langs.all|join:", " }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        let table = $('#usersTable').DataTable({
+            "scrollY": "64vh",  // Increase height to occupy more space
+            "scrollCollapse": true,
+            "paging": true,
+            "pageLength": 14,  // Always show 15 users per page
+            "searching": true,
+            "ordering": true,
+            "dom": '<"top"f>rt<"bottom"p><"clear">', // Places search box at top left, removes "Show N entries"
+            "language": {
+            "search": "", // Remove the "Search:" label
+            "searchPlaceholder": "Search by name or username" // Add placeholder text
+            }
+        });
+
+        // Move search input to the designated container
+        $("#search-container").html($("#usersTable_filter"));
+
+        // Set the placeholder text for the search input
+        $('#usersTable_filter input').attr('placeholder', 'Search by name or username');
+    });
+</script>
+{% endblock %}

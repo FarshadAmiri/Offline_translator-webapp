@@ -53,7 +53,10 @@ body {
     background-color: rgba(0, 0, 0, 0.0);
     border-radius: 30px;
     /* color: rgb(255, 153, 0); */
-    color: rgb(140, 247, 255);
+    /* color: rgb(140, 247, 255); */
+    background: linear-gradient(10deg, rgb(250, 213, 255) 8%, rgb(213, 198, 255) 20%, rgb(182, 232, 255) 45%, rgb(176, 255, 251) 55%, rgb(180, 255, 224) 65%, rgb(237, 255, 170) 75%, rgb(245, 255, 158) 85%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   #nav_item,
@@ -131,7 +134,6 @@ body {
     border: 0px;
     padding-left: 10px;
   }
-
 
   .login-btn {
     font-family: Lato ;

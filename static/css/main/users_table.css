@@ -1,0 +1,105 @@
+/* Add any custom styles here */
+table {
+    width: 100%;
+    margin-top: 20px;
+}
+
+table th, table td {
+    padding: 12px;
+    text-align: left;
+}
+
+table th {
+    background-color: #f8f9fa;
+}
+
+.btn-primary {
+    margin-bottom: 20px;
+}
+
+/* Main container */
+.container {
+    max-width: 90%;
+    margin: 20px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Header section */
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+/* Button styling */
+.add-user-btn {
+    padding: 10px 15px;
+    background: #007bff;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.add-user-btn:hover {
+    background: #0056b3;
+}
+
+/* Scrollable table */
+.table-container {
+    max-height: calc(100vh - 90px); /* Adjusting the height based on screen size */
+    overflow-y: auto;
+}
+
+/* Hide "Show N Entries" dropdown */
+.dataTables_length {
+    display: none;
+}
+
+#usersTable_filter input {
+width: 250px;
+padding: 5px;
+border: 1px solid #ccc;
+border-radius: 4px;
+margin-left: 10px; /* Adjust spacing as needed */
+}
+
+.add-user-btn {
+    padding: 5px 12px; /* Slimmer button */
+    background: #007bff;
+    color: #fff; /* Ensure text is visible */
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 16px;
+    line-height: 1.2;
+    border: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.add-user-btn:hover {
+    background: #0056b3;
+    color: #fff; /* Ensures text remains visible */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container {
+        max-width: 100%;
+        padding: 10px;
+    }
+    .table-container {
+        max-height: calc(100vh - 200px);
+    }
+    .header-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .add-user-btn {
+        margin-top: 4px;
+        text-align: center;
+    }
+}

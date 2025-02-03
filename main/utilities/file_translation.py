@@ -85,6 +85,14 @@ def adjust_ltr(input_path, output_path):
     doc.save(output_path)
 
 
+from docx import Document
+def remove_first_line_from_docx(docx_path):
+    doc = Document(docx_path)
+    if len(doc.paragraphs) > 0:
+        doc._element.body.remove(doc.paragraphs[0]._element)  # Remove the first paragraph
+    doc.save(docx_path)
+
+
 def doc_translator(input_path, output_path, source_lang, target_lang, translation_object_id):
     # Load the Word document
     translation_object = FileTranslationTask.objects.get(task_id=translation_object_id)
@@ -140,6 +148,7 @@ def doc_translator(input_path, output_path, source_lang, target_lang, translatio
 
     # Save the translated and RTL formatted document
     document.SaveToFile(output_path, FileFormat.Docx2019)
+    remove_first_line_from_docx(output_path)
 
     # Optional: Adjust for RTL-specific formatting if needed
     if target_lang in ['fa', 'ar', 'he']:

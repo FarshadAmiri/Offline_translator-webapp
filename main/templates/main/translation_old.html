@@ -1,0 +1,771 @@
+{% extends "main\base.html" %}
+{% load static %}
+
+{% block head-static %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/main/translation.css' %}">
+<script type="text/javascript" src="{% static 'jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'jsencrypt.js' %}"></script>
+<script src="{% static 'crypto-js.js' %}"></script>
+<script>
+var publicKey = "-----BEGIN PUBLIC KEY-----\n" +
+            "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvRW2QcbKbzDobMdkLqvY\n" +
+            "Fb66Ih41T1+X3spW1WP6UduM1kS+bVh7HwG23pt8e/XJAf9G4IhWTZfkgVBdMsFP\n" +
+            "UfCJDiP/9cbQBgNDtT85jlFHjB1dBlJ51Hh8kDkx/1/dgy2b/ZjJ0YwAFLpk2k8W\n" +
+            "ZO8wtIOEHMSdLryVh8Jkpk1qSYZPZZuW+QEE/G+TJcF286mLEpTfZ/RQN4mg/nCS\n" +
+            "FhW4Rv9wnF8dhgU43kTiLwV8wVgOTKxAseDxMyvbjKiiH+u5YByZNN1hPVFSYQNx\n" +
+            "06IK0Ea7wk0UTRhCwLFu2AOPGL3AylFnjlHCd+/vbDrW3WDj3KRTbZFxtysYqn3B\n" +
+            "SnNZy6D1xPn79nsgWfKrgQo9KTgP9gpSoebBZwFIRmBD5Q2BpwZvbZj5lJgEYJpe\n" +
+            "xH5LW6Rfv2GZjU+S5SEPNXMlSf6kmfbJAEhsyqKj+tWZtri3AfEBhG7hkmmz51zA\n" +
+            "32JwSGV/IFqblOHsONsZizOl4OxzSytgfhCyOkAg6zcb5Hcd3Zod0SHscgkYPAeO\n" +
+            "9ZZvD6pneRrcB1tgBPz3CSp6UOe9ktK0Lo5ZlapNUmpIR1Av/immdBnfRfB6m+ax\n" +
+            "efNjY6Myl8/aepuND/E1MJviOMCm3cyrmOsNj5rwg2AIGO4vw4hdjXqOLez87t/X\n" +
+            "OYNP74TrWvLmcNmlKfQNfMsCAwEAAQ==\n" +
+            "-----END PUBLIC KEY-----";
+var sourceText_English = ""
+var sourceText_Persian = ""
+var sourceText_Arabic = ""
+var sourceText_Hebrew = ""
+var transText_English = ""
+var transText_Persian = ""
+var transText_Arabic = ""
+var transText_Hebrew = ""
+function generateRandomKey(length) {
+      var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      var result = "";
+      for (var i = 0; i < length; i++) {
+        result += charset.charAt(Math.floor(Math.random() * charset.length));
+      }
+      return result;
+    }
+
+function encryptText(event, query) {
+    if (query === "translating") {
+      var inputLang = document.querySelector('input[name="btnRadio_input"]:checked').value;
+      var outputLang = document.querySelector('input[name="btnRadio_output"]:checked').value;
+      if (inputLang === outputLang) {
+        alert("Input and output languages should not be same!");
+        event.preventDefault();
+        return false;
+      }}
+      
+    var plainText = document.getElementById('source_text').value;
+    var translationTextArea = document.getElementById('translation');
+    var mode_element = document.getElementById('mode');
+
+    if (plainText.length > 20000) {
+        alert("Input texts should not exceed 20,000 characters long regarding computational limits. your input text is " + plainText.length + " characters long.");
+        event.preventDefault();
+        return false;
+    }
+    
+    if (query === "translating") {
+    var spinner = document.getElementById('spinner');
+    spinner.style.display = 'inline-block'; // Show the spinner
+    translationTextArea.style.color = '#B5B5B5';
+    };
+
+    // Generate a random 128-bit (16 bytes) AES key
+    var aesRawKey = generateRandomKey(16);
+    var aesKey = CryptoJS.enc.Utf8.parse(aesRawKey);
+    localStorage.setItem("aesRawKey_translation", aesRawKey);
+    // Encrypt the text with the AES key
+    var encryptedText = CryptoJS.AES.encrypt(plainText, aesKey, {mode: CryptoJS.mode.ECB}).toString();
+    
+    if (query === "saving") {
+        var translation = document.getElementById('translation').value;
+        var encryptedTranslation = CryptoJS.AES.encrypt(translation, aesKey, {mode: CryptoJS.mode.ECB}).toString();
+    }
+
+    // RSA Encryption on AES key using RSA public key
+    var encrypt = new JSEncrypt();
+    encrypt.setPublicKey(publicKey);
+    var encryptedAesKey = encrypt.encrypt(aesKey.toString(CryptoJS.enc.Base64));
+
+    // Embed AES key and encrypted text into the form
+    var hiddenEncodedText = document.createElement("input");
+    hiddenEncodedText.type = "hidden";
+    hiddenEncodedText.name = "encryptedText";
+    hiddenEncodedText.id = "encryptedText";
+    hiddenEncodedText.value = encryptedText;
+    
+    var hiddenEncryptedAESKey = document.createElement("input");
+    hiddenEncryptedAESKey.type = "hidden";
+    hiddenEncryptedAESKey.name = "encryptedAesKey";
+    hiddenEncryptedAESKey.id = "encryptedAesKey";
+    hiddenEncryptedAESKey.value = encryptedAesKey;
+    // Append the hidden input to the form
+    var form = document.getElementById("translation_form");
+    form.appendChild(mode_element);
+    form.appendChild(hiddenEncodedText);
+    form.appendChild(hiddenEncryptedAESKey);
+
+    if (query === "saving") {
+        var hiddenEncryptedTranslation = document.createElement("input");
+        hiddenEncryptedTranslation.type = "hidden";
+        hiddenEncryptedTranslation.name = "encryptedTranslation";
+        hiddenEncryptedTranslation.id = "encryptedTranslation";
+        hiddenEncryptedTranslation.value = encryptedTranslation;
+
+        form.appendChild(hiddenEncryptedTranslation);
+    }
+
+    if (query === "back" && mode.value === "supervisor") {
+    var selected_user = document.getElementById("selected_user");
+    form.appendChild(selected_user);
+    }
+    
+    var source_lang = document.getElementById("source_lang");
+    form.appendChild(source_lang);
+    var target_lang = document.getElementById("target_lang");
+    form.appendChild(target_lang);
+
+    // Return the encrypted text and encrypted AES key
+    return {
+    encryptedText: encryptedText,
+    encryptedAesKey: encryptedAesKey
+    };
+}
+
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    {{ form.media }}
+    {% if edit_mode %}
+        <form id="translation_form" action="{% url 'main:edit_saved_text' task_id%}" method="post">
+    {% else %}
+        <form id="translation_form" action="{% url 'main:translation' %}" method="post">
+    {% endif %}
+        {% csrf_token %}
+        <div class="row d-flex justify-content-center" id="main-container">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-warning" role="alert">
+                        <h6 dir='ltr'>{{ message }}</h6>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            <div class="row justify-content-end">
+            <div class="d-flex justify-content-end" style="position: top: 0; right: 0; padding: 0px;">
+            <div class="row justify-content-center" id="d1">
+                <button type="submit" id="arrow-btn" name="translate-btn" onclick="encryptText(event, 'translating')" data-toggle="tooltip" data-placement="right" title="Translate! (Ctrl + Enter)"><img id="arrow-icon"></button>
+            </div>
+            {% if edit_mode %}
+                {% if mode == "user" %}
+                <button type="submit" id="back-btn" name="back-btn" style="margin-right: 85%" onclick="encryptText(event, 'back')">Back</button>
+                <button type="submit" id="edit-btn" name="edit-btn" class="btn" style="margin-right: 10px" onclick="encryptText(event, 'saving'); showMessage('Edit saved!', this)">Apply edits</button>
+                <button type="submit" id="remove-btn" name="remove-btn" class="btn btn-danger" onclick="encryptText(event, 'deleting')">Delete</button>
+                {% elif mode == "supervisor" %}
+                <button type="submit" id="back-btn" name="back-btn" style="margin-right: 95%" onclick="encryptText(event, 'back')">Back</button>
+                {% endif %}
+            {% else %}
+                <button type="submit" id="save-btn" name="save-btn" class="btn" onclick="encryptText(event, 'saving'); showMessage('Saved!', this)"><img id="save-icon">&nbspSave</button>
+            {% endif %}
+            </div>
+                <div class="col-md-6">
+                  <div class="btn-group-lg d-flex justify-content-center align-items-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px; margin-top: 0px;">
+                      <div style="margin-left: 7px;">
+                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-en" autocomplete="off" value="en" onclick="disableCorrespondingRadio('input', this); changeText()" checked>
+                          <label class="btn btn-outline-primary english-btn" for="btnInput-en">English</label>
+                      </div>
+                      <div style="margin-left: 7px;">
+                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-ar" autocomplete="off" value="ar" onclick="disableCorrespondingRadio('input', this); changeText()">
+                          <label class="btn btn-outline-primary arabic-btn" for="btnInput-ar">العربي</label>
+                      </div>
+                      <div style="margin-left: 7px;">
+                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-fa" autocomplete="off" value="fa" onclick="disableCorrespondingRadio('input', this); changeText()">
+                          <label class="btn btn-outline-primary persian-btn" for="btnInput-fa">فارسی</label>
+                      </div>
+                      <div style="margin-left: 7px;">
+                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-he" autocomplete="off" value="he" onclick="disableCorrespondingRadio('input', this); changeText()">
+                          <label class="btn btn-outline-primary hebrew-btn" for="btnInput-he">עִברִית</label>
+                      </div>
+                      <div style="margin-left: 25px;"> 
+                        <button type="button" class="btn btn-secondary" id="documentModalBtn" data-bs-toggle="modal" data-bs-target="#docModal" style="font-size: 18px;">Document</button>
+                      </div>
+                  </div>
+                    <div style="position: relative;">
+                    <textarea class="form-control" name="source_text" id="source_text" rows="21" placeholder="Enter English text" oninput="updateCharacterCount();"></textarea>
+                    <span id="charCount" style="position: absolute; bottom: -28px; right: 20px; padding: 0; margin: 0; font-weight: bold;"></span>
+                    <input type="hidden" id="source_text_hidden" value="{{ source_text }}">
+                    </div>
+                    <div class="text-center mt-2">
+                        <button type="button" class="btn clear-btn" onclick="clearText('source_text'); showMessage('Cleared!', this); updateCharacterCount()" data-toggle="tooltip" title="Clear text"><img id="clear-icon"></button>
+                        <button type="button" class="btn copy-btn" onclick="copyText('source_text'); showMessage('Copied!', this)" data-toggle="tooltip" title="Copy to clipboard"><img id="copy-icon"></button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="btn-group-lg d-flex justify-content-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px; margin-top: 0px;">
+                    <div style="margin-left: 7px;">
+                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-en" value="en" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()">
+                        <label class="btn btn-outline-primary english-btn" for="btnOutput-en">English</label>
+                    </div>
+                    <div style="margin-left: 7px;">
+                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-ar" value="ar" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()">
+                        <label class="btn btn-outline-primary arabic-btn" for="btnOutput-ar">العربي</label>
+                    </div>
+                    <div style="margin-left: 7px;">
+                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-fa" value="fa" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()" checked>
+                        <label class="btn btn-outline-primary persian-btn" for="btnOutput-fa">فارسی</label>
+                    </div>
+                    <div style="margin-left: 7px;">
+                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-he" value="he" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()">
+                        <label class="btn btn-outline-primary hebrew-btn" for="btnOutput-he">עִברִית</label>
+                    </div>
+                    </div>
+                    <div class="position-relative">
+                      <textarea class="form-control" name="translation" id="translation" rows="26" readonly dir='rtl'></textarea>
+                      <div class="spinner-border text-primary" id="spinner" role="status">
+                        <span class="sr-only"></span>
+                      </div>
+                    </div>
+                    <input type="hidden" id="translation_hidden" value="{{ translation }}">
+                    <input type="hidden" id="selected_user" name= "selected_user" value="{{ selected_user }}">
+                    <input type="hidden" id="mode" name= "mode" value="{{ mode }}">
+                    <input type="hidden" id="source_lang" name= "source_lang" value="{{ source_lang }}">
+                    <input type="hidden" id="target_lang" name= "target_lang" value="{{ target_lang }}">
+                    <input type="hidden" id="current_state" value="{{ source_lang }}">
+                    <div class="text-center mt-2">
+                        <button type="button" class="btn clear-btn" onclick="clearText('translation'); showMessage('Cleared!', this)" data-toggle="tooltip" title="Clear text"><img id="clear-icon"></button>
+                        <button type="button" class="btn copy-btn" onclick="copyText('translation'); showMessage('Copied!', this)" data-toggle="tooltip" title="Copy to clipboard"><img id="copy-icon"></button>
+                    </div>
+                </div>
+                {% comment %} <div class="col-md-6 position-relative" style="top: -30px; right: 440px; margin: 0px; padding: 0px; border: 0px;">
+                    <div class="text-center" style="margin: 0px; padding: 0px; border: 0px;">
+                        <button type="button" class="btn btn-primary">Your Button</button>
+                    </div>
+                </div> {% endcomment %}
+                  <div class="col-md-6 justify-content-center text-center" >
+                      <button type="button" id="swap-btn" onclick="swapTexts();" data-toggle="tooltip" data-placement="right" title="Swap languages (Ctrl + Shift + S)"><img id="swap-icon"></button>
+                  </div>
+            {% if mode == "user" %}
+            {% comment %} <div class="row justify-content-center">
+                <div class="col-12 text-center">
+                <div style="position: relative;">
+                    <button type="submit" id="translate-btn" name="translate-btn" class="btn" onclick="encryptText(event, 'translating')">Translate!</button>
+                    <div class="spinner-border" id="spinner" role="status" style="display: none; position: relative; top: 8px; left: 30px; padding: 0; margin: 0;">
+                    <span class="sr-only"></span>
+                    </div>
+                </div>
+                </div>
+            </div> {% endcomment %}
+            {% endif %}
+        </div>
+    </form>
+</div>
+</div>
+<!-- Modal Structure -->
+<div class="modal fade" id="docModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="translationForm" enctype="multipart/form-data">
+        <div class="modal-header">
+          <h5 class="modal-title" id="myModalLabel">Document translation</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Input Language Section -->
+          <div class="text-center mb-3">
+            <p style="font-size: 17px; color: gray; margin-bottom: 5px;">Input Language</p>
+            <hr style="border-top: 1px solid #6b6b6b; margin: 0 auto; width: 70%;">
+          </div>
+          <div class="btn-group-lg d-flex justify-content-center align-items-center mb-4" role="group" aria-label="Basic radio toggle button group">
+            <div style="margin-left: 7px;">
+              <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-en" autocomplete="off" value="en" checked>
+              <label class="btn btn-outline-primary english-btn" for="modal_btnInput-en">English</label>
+            </div>
+            <div style="margin-left: 7px;">
+              <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-ar" autocomplete="off" value="ar">
+              <label class="btn btn-outline-primary arabic-btn" for="modal_btnInput-ar">العربي</label>
+            </div>
+            <div style="margin-left: 7px;">
+              <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-fa" autocomplete="off" value="fa">
+              <label class="btn btn-outline-primary persian-btn" for="modal_btnInput-fa">فارسی</label>
+            </div>
+            <div style="margin-left: 7px;">
+              <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-he" autocomplete="off" value="he">
+              <label class="btn btn-outline-primary hebrew-btn" for="modal_btnInput-he">עִברִית</label>
+            </div>
+          </div>
+
+          <!-- Output Language Section -->
+          <div class="text-center mb-3">
+            <p style="font-size: 17px; color: gray; margin-bottom: 5px;">Output Language</p>
+            <hr style="border-top: 1px solid #6b6b6b; margin: 0 auto; width: 70%;">
+          </div>
+          <div class="btn-group-lg d-flex justify-content-center align-items-center mb-4" role="group" aria-label="Basic radio toggle button group">
+            <div style="margin-left: 7px;">
+              <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-en" autocomplete="off" value="en">
+              <label class="btn btn-outline-primary english-btn" for="modal_btnOutput-en">English</label>
+            </div>
+            <div style="margin-left: 7px;">
+              <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-ar" autocomplete="off" value="ar">
+              <label class="btn btn-outline-primary arabic-btn" for="modal_btnOutput-ar">العربي</label>
+            </div>
+            <div style="margin-left: 7px;">
+              <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-fa" autocomplete="off" value="fa" checked>
+              <label class="btn btn-outline-primary persian-btn" for="modal_btnOutput-fa">فارسی</label>
+            </div>
+            <div style="margin-left: 7px;">
+              <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-he" autocomplete="off" value="he" checked>
+              <label class="btn btn-outline-primary hebrew-btn" for="modal_btnOutput-he">עִברִית</label>
+            </div>
+          </div>
+
+          <!-- File Upload Section -->
+          <div class="text-center">
+            <label for="fileUpload" class="form-label" style="font-size: 17px; color: gray;">Upload your document</label>
+            <input class="form-control" type="file" id="fileUpload" name="document" style="max-width: 70%; margin: 0 auto;">
+          </div>
+        </div>
+        <div class="modal-footer d-flex justify-content-center">
+          <button class="btn btn-primary w-100" id="translateButton" type="submit">
+            <span class="spinner-border spinner-border-sm" id="translateSpinner" role="status" aria-hidden="true" style="display: none;"></span>
+            <span id="translateTextModalBtn">Translate</span>
+          </button>
+        </div>
+      </form>
+      <div id="progressContainer">
+        {% comment %} <p id="progressText">Progress: 0%</p> {% endcomment %}
+        <div class="progress">
+            <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" aria-valuenow="0"
+                aria-valuemin="0" aria-valuemax="100" style="height: 60px; font-size: 16px;"></div>
+        </div>
+    </div>
+    </div>
+  </div>
+</div>
+<input type="hidden" id="translationTaskId" name="translation_task_id">
+<input type="hidden" id="haveDoneFileTranslation" name="haveDoneFileTranslation">
+
+<script>
+var translationTaskIdInput = document.getElementById('translationTaskId');
+const progressBar = document.getElementById('progressBar');
+var fileInputName = ""
+
+// *** File encryption & decryption fucntions ***
+
+// Function to convert ArrayBuffer to CryptoJS WordArray
+function arrayBufferToWordArray(arrayBuffer) {
+    var wordArray = CryptoJS.lib.WordArray.create(arrayBuffer);
+    return wordArray;
+}
+
+// Function to encrypt file
+function encryptFile(file) {
+    return new Promise((resolve, reject) => {
+        var aesRawKey = generateRandomKey(16);
+        var aesKey = CryptoJS.enc.Utf8.parse(aesRawKey);  // AES key as WordArray
+        localStorage.setItem("aesRawKey_translation", aesRawKey);  // Store key
+
+        // Use FileReader to read the file as ArrayBuffer
+        var reader = new FileReader();
+
+        reader.onload = function(event) {
+            var arrayBuffer = event.target.result;
+
+            // Convert ArrayBuffer to WordArray
+            var wordArray = arrayBufferToWordArray(arrayBuffer);
+            // Encrypt the WordArray using AES
+            var encryptedFile = CryptoJS.AES.encrypt(wordArray, aesKey, {mode: CryptoJS.mode.ECB}).toString();
+
+            // Encrypted data is returned as a base64 string
+            //var encryptedFile = encryptedFile.toString();
+
+            // RSA Encryption on AES key using RSA public key
+            var encrypt = new JSEncrypt();
+            encrypt.setPublicKey(publicKey);
+            var encryptedAesKey = encrypt.encrypt(aesKey.toString(CryptoJS.enc.Base64));
+
+            // Resolve the Promise with the encrypted data
+            resolve({
+              encryptedFile: encryptedFile,
+              encryptedAesKey: encryptedAesKey
+            });
+        };
+
+        reader.onerror = function(event) {
+            reject(new Error("File could not be read: " + event.target.error.code));
+        };
+
+        reader.readAsArrayBuffer(file);  // Read file as binary data
+    });
+}
+
+function decryptFile(encryptedBlob, key) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = function () {
+            var aesRawKey = localStorage.getItem("aesRawKey_translation");
+            var aesKey = CryptoJS.enc.Utf8.parse(aesRawKey);
+            const decrypted = CryptoJS.AES.decrypt(reader.result, aesKey, {mode: CryptoJS.mode.ECB});
+            const typedArray = wordArrayToUint8Array(decrypted);
+            const blob = new Blob([typedArray], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+            resolve(blob);
+        };
+        reader.onerror = reject;
+        reader.readAsBinaryString(encryptedBlob);
+    });
+}
+
+// Function to convert a CryptoJS WordArray to a Uint8Array
+function wordArrayToUint8Array(wordArray) {
+    const words = wordArray.words;
+    const sigBytes = wordArray.sigBytes;
+
+    // Create a Uint8Array to hold the decrypted data
+    const u8Array = new Uint8Array(sigBytes);
+
+    // Convert words to bytes
+    for (let i = 0; i < sigBytes; i++) {
+        u8Array[i] = (words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff;
+    }
+    return u8Array;
+}
+// *** END of File encryption & decryption fucntions ***
+
+
+document.getElementById('translationForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    // Get button and spinner elements
+    const translateButton = document.getElementById('translateButton');
+    const translateSpinner = document.getElementById('translateSpinner');
+    const translateTextModalBtn = document.getElementById('translateTextModalBtn');
+
+    // Create FormData object to collect form data
+    let formData = new FormData(this);
+
+    // Check if languages are the same
+    if (formData.get('input_language') === formData.get('output_language')) {
+        alert('Error: Input and output languages cannot be the same. Please choose different languages.');
+        return; // Prevent form submission if languages are the same
+    };
+
+    // Check if a file has been selected
+    const fileInput = document.getElementById('fileUpload');
+    if (!fileInput.files.length) {
+        alert('Please select a file to translate.');
+        return;
+    }
+
+    var haveDoneFileTranslation = document.getElementById('haveDoneFileTranslation');
+    haveDoneFileTranslation.value = "True";
+
+    // Show spinner and disable button
+    translateSpinner.style.display = 'inline-block';
+    translateTextModalBtn.innerText = "Translating..."
+    translateButton.disabled = true;
+
+    fileInputName = document.getElementById('fileUpload').files[0].name;
+    const validExtensions = ['.docx', '.doc', '.pdf'];
+    const fileExtension = fileInputName.substring(fileInputName.lastIndexOf('.')).toLowerCase();
+
+    if (!validExtensions.includes(fileExtension)) {
+        alert('Error: File format must be .doc, .docx, or .pdf');
+        // Hide spinner and re-enable button after successful response
+        translateSpinner.style.display = 'none';
+        translateButton.disabled = false;
+        translateTextModalBtn.innerText = "Translate";
+        return;  // Prevent form submission if the file format is incorrect
+    }
+
+    // Step 1: Create translation task
+    fetch("{% url 'main:create_translation_task' %}", {
+        method: 'POST',
+        body: new URLSearchParams({
+            input_language: formData.get('input_language'),
+            output_language: formData.get('output_language'),
+        }), 
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            var translationTaskId = data.translation_task_id;
+            translationTaskIdInput.value = data.translation_task_id;
+            formData.append('translation_task_id', translationTaskId);
+
+            // Step 2: Encrypt the file
+            return encryptFile(fileInput.files[0]);
+        } else {
+            throw new Error('Failed to create translation task.');
+        }
+    })
+    .then(({ encryptedFile, encryptedAesKey }) => {
+        // Step 3: Append the encrypted file data and AES key to formData
+        fileInputName = document.getElementById('fileUpload').files[0].name;
+        formData.append('fileInputName', fileInputName);
+        formData.append('encryptedData', JSON.stringify(encryptedFile));
+        formData.append('encryptedAesKey', JSON.stringify(encryptedAesKey));
+        formData.delete("document")
+
+        // Step 4: Submit the form after encryption is complete
+        return fetch("{% url 'main:document_translation' %}", {
+            method: 'POST',
+            body: formData,
+        });
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to translate the document.');
+        }
+
+        // Get the filename from the response headers
+        const contentDisposition = response.headers.get('Content-Disposition');
+        var filename = 'translated_document.docx'; // Default filename
+
+        if (contentDisposition && contentDisposition.indexOf('filename=') !== -1) {
+            filename = contentDisposition.split('filename=')[1].replace(/['"]/g, '');
+        }
+
+        return response.blob().then(blob => ({ blob, filename })); // Return both blob and filename
+    })
+    .then(({ blob, filename }) => {
+        const encryptionKey = formData.get('encryptedAesKey'); // Retrieve the encryption key
+        if (!encryptionKey) {
+            throw new Error('Encryption key not found.');
+        }
+        return decryptFile(blob, encryptionKey).then(decryptedBlob => ({ decryptedBlob, filename })); // Pass both decryptedBlob and filename
+    })
+    .then(({ decryptedBlob, filename }) => {
+        // Hide spinner and re-enable button after successful response
+        translateSpinner.style.display = 'none';
+        translateButton.disabled = false;
+        translateTextModalBtn.innerText = "Translate";
+        
+        // Handle document download
+        const url = window.URL.createObjectURL(decryptedBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', filename); // Use the correct filename
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    })
+    .catch(error => {
+        // Hide spinner and re-enable button on error
+        translateSpinner.style.display = 'none';
+        translateButton.disabled = false;
+
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    });
+});
+
+
+
+function updateProgress() {
+if (document.getElementById('haveDoneFileTranslation').value === "True") {
+    // Function to fetch and update progress
+    //const progressText = document.getElementById('progressText');
+    const progressBar = document.getElementById('progressBar');
+
+    fetch(`/check_translation_progress/?translation_task_id=${document.getElementById('translationTaskId').value}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const progress = data.progress;
+
+                // Update progress text and bar
+                //progressText.textContent = `Progress: ${progress}%`;
+                if (progress === "uploading") {
+                  progressBar.classList.add('bg-info');
+                  progressBar.style.width = "100%";
+                  progressBar.innerText = "Uploading...";
+                } else if (progress === "preprocessing") {
+                  progressBar.classList.add('bg-info');
+                  progressBar.style.width = "100%";
+                  progressBar.innerText = "Extracting contents...";
+                } else if (progress >= 100) {
+                if (progressBar.classList.contains('bg-info')) {
+                    progressBar.classList.remove('bg-info');
+                  };
+                  progressBar.classList.add('bg-success');
+                  progressBar.innerText = "Translation completed"
+                  progressBar.style.width = '100%';
+                  setTimeout(() => {
+                    document.getElementById('haveDoneFileTranslation').value = "False";
+                    document.getElementById('fileUpload').value = '';
+                    progressBar.style.width = '0%';
+                    progressBar.innerText = "0%";
+                    progressBar.classList.remove('bg-success');
+                    progressBar.classList.remove('bg-info');
+                  }, 1500);
+                } else {
+                if (progressBar.classList.contains('bg-info')) {
+                    progressBar.classList.remove('bg-info');
+                };
+                progressBar.style.width = `${progress}%`;
+                progressBar.setAttribute('aria-valuenow', progress);
+                progressBar.innerText = progress + "%"
+                }
+            } else {
+                console.error('Failed to get translation progress:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+};
+}
+
+
+</script>
+<!-- END of Modal Structure -->
+
+<script type="text/javascript" src="{% static 'js/main/translation.js' %}"></script>
+<script>
+window.onload = function() {
+    var translation = document.getElementById("translation");
+    var source_text = document.getElementById("source_text");
+    var sourceLang = document.getElementById('source_lang').value; 
+    var targetLang = document.getElementById('target_lang').value;
+    var translation_hidden = document.getElementById("translation_hidden").value;
+    var source_text_hidden = document.getElementById("source_text_hidden").value;
+    var aesRawKey = localStorage.getItem("aesRawKey_translation");
+    var aesKey = CryptoJS.enc.Utf8.parse(aesRawKey);
+    var decryptedSourceText = CryptoJS.AES.decrypt(source_text_hidden, aesKey, {mode: CryptoJS.mode.ECB});
+    var decryptedTranslation = CryptoJS.AES.decrypt(translation_hidden, aesKey, {mode: CryptoJS.mode.ECB});
+    var decryptedSourceTextValue = decryptedSourceText.toString(CryptoJS.enc.Utf8);
+    var decryptedTranslationValue = decryptedTranslation.toString(CryptoJS.enc.Utf8);
+    decryptedSourceTextValue = decryptedSourceTextValue.replace(/[\x00-\x09\x0B-\x1F\x7F-\x9F]/g, '');
+    decryptedTranslationValue = decryptedTranslationValue.replace(/[\x00-\x09\x0B-\x1F\x7F-\x9F]/g, '');
+    source_text.value = decryptedSourceTextValue;
+    translation.value = decryptedTranslationValue;
+    if (sourceLang === "en" ) {
+      sourceText_English = decryptedSourceTextValue;
+    } else if (sourceLang === "ar" ){
+      sourceText_Arabic = decryptedSourceTextValue;
+    } else if (sourceLang === "fa" ){
+      sourceText_Persian = decryptedSourceTextValue;
+    } else if (sourceLang === "he" ){
+      sourceText_Hebrew = decryptedSourceTextValue;
+    };
+    if (targetLang === "en" ) {
+      transText_English = decryptedTranslationValue;
+    } else if (targetLang === "ar" ){
+      transText_Arabic = decryptedTranslationValue;
+    } else if (targetLang === "fa" ){
+      transText_Persian = decryptedTranslationValue;
+    } else if (targetLang === "he" ){
+      transText_Hebrew = decryptedTranslationValue;
+    };
+    localStorage.removeItem("aesRawKey_translation");
+
+
+    var textArea1 = document.getElementById('source_text');
+    var textArea2 = document.getElementById('translation');
+
+    var radioInput = document.getElementsByName("btnRadio_input");
+    var radioOutput = document.getElementsByName("btnRadio_output");
+
+  if (sourceLangElement.value === "en") {
+    applyLanguageSettings (textArea1, "en", "input")
+    for (var i = 0; i < radioInput.length; i++) {
+      if (radioInput[i].id === "btnInput-en") {radioInput[i].checked = true;} else {radioInput[i].checked = false};        
+    }
+  };
+  if (sourceLangElement.value === "ar") {
+    applyLanguageSettings (textArea1, "ar", "input")
+    for (var i = 0; i < radioInput.length; i++) {
+      if (radioInput[i].id === "btnInput-ar") {radioInput[i].checked = true;} else {radioInput[i].checked = false};        
+    }
+  };
+  if (sourceLangElement.value === "fa") {
+    applyLanguageSettings (textArea1, "fa", "input")
+    for (var i = 0; i < radioInput.length; i++) {
+      if (radioInput[i].id === "btnInput-fa") {radioInput[i].checked = true;} else {radioInput[i].checked = false};        
+    }
+  };
+  if (sourceLangElement.value === "he") {
+    applyLanguageSettings (textArea1, "he", "input")
+    for (var i = 0; i < radioInput.length; i++) {
+      if (radioInput[i].id === "btnInput-he") {radioInput[i].checked = true;} else {radioInput[i].checked = false};        
+    }
+  };
+  if (targetLangElement.value === "en") {
+    applyLanguageSettings (textArea2, "en", "output")
+    for (var i = 0; i < radioOutput.length; i++) {
+      if (radioOutput[i].id === "btnOutput-en") {radioOutput[i].checked = true;} else {radioOutput[i].checked = false};        
+    }
+  };
+  if (targetLangElement.value === "ar") {
+    applyLanguageSettings (textArea2, "ar", "output")
+    for (var i = 0; i < radioOutput.length; i++) {
+      if (radioOutput[i].id === "btnOutput-ar") {radioOutput[i].checked = true;} else {radioOutput[i].checked = false};        
+    }
+  };
+  if (targetLangElement.value === "fa") {
+    applyLanguageSettings (textArea2, "fa", "output")
+    for (var i = 0; i < radioOutput.length; i++) {
+      if (radioOutput[i].id === "btnOutput-fa") {radioOutput[i].checked = true;} else {radioOutput[i].checked = false};        
+    }
+  };
+  if (targetLangElement.value === "he") {
+    applyLanguageSettings (textArea2, "he", "output")
+    for (var i = 0; i < radioOutput.length; i++) {
+      if (radioOutput[i].id === "btnOutput-he") {radioOutput[i].checked = true;} else {radioOutput[i].checked = false};        
+    }
+  };
+  }
+
+
+function updateProgressRepeater() {
+  updateProgress();
+  setTimeout(updateProgressRepeater, 1000);
+}
+
+updateProgressRepeater();
+
+
+function showMessage(message, button) {
+  const messageBox = document.createElement('div');
+  messageBox.textContent = message;
+  messageBox.classList.add('showing-message');
+  button.appendChild(messageBox);
+
+  const buttonRect = button.getBoundingClientRect();
+  const messageBoxRect = messageBox.getBoundingClientRect();
+  const topOffset = buttonRect.top - messageBoxRect.height + 10;
+  const leftOffset = buttonRect.left + (buttonRect.width - messageBoxRect.width) / 2;
+
+  messageBox.style.top = topOffset + 'px';
+  messageBox.style.left = leftOffset + 'px';
+
+  setTimeout(function() {
+    messageBox.remove();
+  }, 500);
+}
+
+
+function updateCharacterCount() {
+  var textarea = document.getElementById('source_text');
+  var charCount = document.getElementById('charCount');
+  var maxLength = 20000;
+  var currentLength = textarea.value.length;
+  if (currentLength > maxLength) {
+    charCount.textContent = currentLength + '/' + "20,000" + ' characters';
+    charCount.style.color = 'red';
+  } else {
+    charCount.textContent = currentLength + '/' + "20,000" + ' characters';
+    charCount.style.color = 'black';
+  }
+}
+
+document.addEventListener('keydown', function(event) {
+  if (event.ctrlKey && event.key === 'Enter') {
+    var arrowBtn = document.getElementById('arrow-btn');
+    arrowBtn.click();
+  }
+});
+
+
+document.addEventListener('keydown', function(event) {
+  if (event.ctrlKey && event.shiftKey && event.key === 'S') {
+    var arrowBtn = document.getElementById('swap-btn');
+    arrowBtn.click();
+  }
+});
+</script>
+{% endblock %}

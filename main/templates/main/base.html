@@ -5,6 +5,7 @@
 <head>
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <meta name="csrf-token" content="{{ csrf_token }}">
    <link rel="icon" href="{% static 'icons/logo3.png' %}" type="image/png">
    
 {% block head-title %}
@@ -112,12 +113,25 @@ function generateAESKey() {
                 {% endif %}
                 <ul class="navbar-nav d-flex justify-content-center align-items-center ms-auto">
                     {% if user|has_group:"Admins" or user.is_superuser %}
-                        <li class="nav-item">
-                        <form id="all_saved_table_form" action="{% url 'main:supervisor_table' %}" method="post">
-                        {% csrf_token %}
-                            <a class="nav-link active nav-item-english" aria-current="page" href="#" onclick="appendAESKeyAndSubmitModal(event, 'supervisor')">Supervisor panel</a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle active nav-item-english" href="#" id="supervisorDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Supervisor
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="supervisorDropdown">
+                                <!-- Users Saved Texts -->
+                                <li>
+                                    <form id="all_saved_table_form" action="{% url 'main:supervisor_table' %}" method="post">
+                                        {% csrf_token %}
+                                        <a class="dropdown-item" href="#" onclick="appendAESKeyAndSubmitModal(event, 'supervisor')">Users Saved Texts</a>
+                                    </form>
+                                </li>
+
+                                <!-- Users Management -->
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'main:users_table' %}">Users Management</a>
+                                </li>
+                            </ul>
                         </li>
-                        </form>
                     {% endif %}
                     <li class="nav-item" >
                     <form id="saved_table_form" action="{% url 'main:saved_table' %}" method="post">

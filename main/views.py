@@ -10,6 +10,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -18,12 +19,13 @@ from django.contrib import auth, messages
 from jdatetime import datetime as jdatetime, timedelta
 from .decorators import admins_only
 from main.utilities.argos import translate
-from main.utilities.pre_post_text_processing import modify_translation, preprocess_text
+from main.utilities.pre_post_text_processing import modify_translation, preprocess_text, analyse_text, postprocess_text
 from main.utilities.lang import detect_language
 from main.utilities.encryption import *
 # from datetime import datetime, timedelta
 from .models import *
 from users.models import User
+from users.forms import UserForm
 import logging
 import base64
 from main.utilities.file_translation import file_translation_handler
@@ -37,35 +39,42 @@ documents_repo = r"documents_repo"
 def Translation(request):
     if request.method == 'GET':
         return render(request, 'main/translation.html', {"mode": "user", "source_lang": "en", "target_lang": "fa", "main_page": True,})
-    
+
     elif (request.method == 'POST') and "translate-btn" in request.POST:
         source_lang = request.POST.get('source_lang')
         target_lang = request.POST.get('target_lang')
         encoded_text = request.POST.get('encryptedText')
         encrypted_aes_key = request.POST.get('encryptedAesKey')
+
         aes_key = decrypt_aes_key(encrypted_aes_key)
         source_text = decrypt_AES_ECB(encoded_text, aes_key)
 
-        # if detected_lang not in [None, source_lang]:
-        #     # detect_lang_fa = "فارسی" if detected_lang == "Persian" else "انگلیسی"
-        #     # target_lang_fa = "فارسی" if detect_lang_fa == "انگلیسی" else "انگلیسی"
-        #     # messages.info(request, f'زبان ورودی {detect_lang_fa} شناسایی شد، در صورتیکه شما زبان ورودی را {target_lang_fa} انتخاب کردید. ترجمه بر اساس زبان ورودی {detect_lang_fa} و زبان مقصد {target_lang_fa} انجام شد.')
-        #     messages.info(request, f"Detected language is {detected_lang}, and you probably chose wrong input language! Translation performed based on {detected_lang} input.")
-        #     source_lang = detected_lang
-        
         source_text_preprocessed = preprocess_text(source_text)
+        source_text_analysis = analyse_text(source_text)
         translation = translate(source_text_preprocessed, source_lang, target_lang)
-        for i in range(5):
-            translation = modify_translation(translation)
-
+        translation = postprocess_text(translation, source_text_analysis)
 
         encrypted_translation = encrypt_AES_ECB(translation, aes_key).decode('utf-8')
         encrypted_source_text = encrypt_AES_ECB(source_text, aes_key).decode('utf-8')
 
-        return render(request, 'main/translation.html', {'translation': encrypted_translation, "source_text": encrypted_source_text,
-                                                         "mode": "user", "source_lang": source_lang, "target_lang": target_lang, "main_page": True,})
-                                                                     
-
+        # Check if the request is AJAX
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'translation': encrypted_translation,
+                'source_text': encrypted_source_text,
+                'source_lang': source_lang,
+                'target_lang': target_lang,
+            })
+        else:
+            return render(request, 'main/translation.html', {
+                'translation': encrypted_translation,
+                'source_text': encrypted_source_text,
+                'mode': "user",
+                'source_lang': source_lang,
+                'target_lang': target_lang,
+                'main_page': True,
+            })
+        
     elif (request.method == 'POST') and "save-btn" in request.POST:
         source_lang = request.POST.get('source_lang')
         target_lang = request.POST.get('target_lang')
@@ -77,15 +86,56 @@ def Translation(request):
         translation = decrypt_AES_ECB(encoded_translation, aes_key)
         
         if not ((source_text.strip() == "") and (translation.strip() == "")):
-            task = TranslationTask.objects.create(user=request.user, source_text=source_text, translation=translation,
-                                                source_language=source_lang, target_language=target_lang)
+            task = TranslationTask.objects.create(
+                user=request.user,
+                source_text=source_text,
+                translation=translation,
+                source_language=source_lang,
+                target_language=target_lang
+            )
             task.save()
 
         encrypted_translation = encrypt_AES_ECB(translation, aes_key).decode('utf-8')
         encrypted_source_text = encrypt_AES_ECB(source_text, aes_key).decode('utf-8')
 
-        return render(request, 'main/translation.html', {'translation': encrypted_translation, "source_text": encrypted_source_text,
-                                                         "mode": "user", "source_lang": source_lang, "target_lang": target_lang, })
+        # Check if the request is AJAX
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': 'Translation saved successfully!',
+                'translation': encrypted_translation,
+                'source_text': encrypted_source_text,
+            })
+        else:
+            return render(request, 'main/translation.html', {
+                'translation': encrypted_translation,
+                'source_text': encrypted_source_text,
+                'mode': "user",
+                'source_lang': source_lang,
+                'target_lang': target_lang,
+            })
+                                                                     
+
+    # elif (request.method == 'POST') and "save-btn" in request.POST:
+    #     source_lang = request.POST.get('source_lang')
+    #     target_lang = request.POST.get('target_lang')
+    #     encoded_text = request.POST.get('encryptedText')
+    #     encoded_translation = request.POST.get('encryptedTranslation')
+    #     encrypted_aes_key = request.POST.get('encryptedAesKey')
+    #     aes_key = decrypt_aes_key(encrypted_aes_key)
+    #     source_text = decrypt_AES_ECB(encoded_text, aes_key)
+    #     translation = decrypt_AES_ECB(encoded_translation, aes_key)
+        
+    #     if not ((source_text.strip() == "") and (translation.strip() == "")):
+    #         task = TranslationTask.objects.create(user=request.user, source_text=source_text, translation=translation,
+    #                                             source_language=source_lang, target_language=target_lang)
+    #         task.save()
+
+    #     encrypted_translation = encrypt_AES_ECB(translation, aes_key).decode('utf-8')
+    #     encrypted_source_text = encrypt_AES_ECB(source_text, aes_key).decode('utf-8')
+
+    #     return render(request, 'main/translation.html', {'translation': encrypted_translation, "source_text": encrypted_source_text,
+    #                                                      "mode": "user", "source_lang": source_lang, "target_lang": target_lang, })
 
 
 @login_required(login_url='users:login')
@@ -309,6 +359,7 @@ def EditText(request, task_id):
             context["selected_user"] = selected_user
         
         return render(request, 'main/translation.html', context = context)
+    
 
 
 def DeleteText(request, task_id):
@@ -320,6 +371,49 @@ def DeleteText(request, task_id):
         return HttpResponseRedirect(reverse('main:saved_table',))
     
 
+# @csrf_exempt
+# def file_translation(request):
+#     if request.method == 'POST':
+#         user = request.user
+#         input_language = request.POST.get('input_language')
+#         output_language = request.POST.get('output_language')
+#         translation_task_id = request.POST.get('translation_task_id')
+#         document = request.FILES.get('document')
+
+#         if not document:
+#             return JsonResponse({'success': False, 'error': 'No file uploaded.'})
+
+#         # Input file naming
+#         doc_name, doc_suffix = os.path.splitext(document.name)
+#         formatted_datetime = datetime.now().strftime('%Y-%m-%d--%H-%M')
+#         doc_save_name = f"{user.username}_{doc_name}_{formatted_datetime}{doc_suffix}"
+
+#         # Save document to the specified repository
+#         doc_path = os.path.join(documents_repo, doc_save_name)
+#         doc_path = default_storage.get_available_name(doc_path)
+#         default_storage.save(doc_path, ContentFile(document.read()))
+
+#         # Define the output path for the translated file
+#         output_path = os.path.splitext(doc_path)[0] + "_translation" + ".docx"
+
+#         # Handle file translation (this function should perform the actual translation)
+#         file_translation_handler(doc_path, output_path, input_language, output_language, translation_task_id)
+
+#         # Ensure the file is properly handled and returned with correct headers
+#         try:
+#             with open(output_path, 'rb') as file:
+#                 response = HttpResponse(file.read(), content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+#                 response['Content-Disposition'] = f'attachment; filename="{os.path.basename(output_path)}"'
+#                 response['X-File-Name'] = os.path.basename(output_path)  # Adding file name to header
+#                 return response
+#         except FileNotFoundError:
+#             return JsonResponse({'success': False, 'error': 'Translated file not found.'})
+#         except Exception as e:
+#             return JsonResponse({'success': False, 'error': str(e)})
+
+#     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
 @csrf_exempt
 def file_translation(request):
     if request.method == 'POST':
@@ -327,15 +421,23 @@ def file_translation(request):
         input_language = request.POST.get('input_language')
         output_language = request.POST.get('output_language')
         translation_task_id = request.POST.get('translation_task_id')
-        document = request.FILES.get('document')
-
-        if not document:
-            return JsonResponse({'success': False, 'error': 'No file uploaded.'})
-
+        encrypted_data = request.POST.get('encryptedData')
+        encrypted_aes_key = request.POST.get('encryptedAesKey')
+        file_name = request.POST.get('fileInputName')
+        aes_key = decrypt_aes_key(encrypted_aes_key)
+    
         # Input file naming
-        doc_name, doc_suffix = os.path.splitext(document.name)
+        doc_name, doc_suffix = os.path.splitext(file_name)
         formatted_datetime = datetime.now().strftime('%Y-%m-%d--%H-%M')
         doc_save_name = f"{user.username}_{doc_name}_{formatted_datetime}{doc_suffix}"
+
+        if encrypted_data:
+            decrypted_data = decrypt_file_AES_ECB(encrypted_data, aes_key)
+
+            # Create a Django file-like object from the decoded data
+            document = ContentFile(decrypted_data, name=doc_save_name)
+            print("\n\ndecryption done\n\n")
+
 
         # Save document to the specified repository
         doc_path = os.path.join(documents_repo, doc_save_name)
@@ -348,10 +450,13 @@ def file_translation(request):
         # Handle file translation (this function should perform the actual translation)
         file_translation_handler(doc_path, output_path, input_language, output_language, translation_task_id)
 
-        # Ensure the file is properly handled and returned with correct headers
         try:
             with open(output_path, 'rb') as file:
-                response = HttpResponse(file.read(), content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+                file_content = file.read()
+                encrypted_file = encrypt_file_AES_ECB(file_content, aes_key)
+
+                # response = HttpResponse(file.read(), content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+                response = HttpResponse(encrypted_file, content_type='application/octet-stream')
                 response['Content-Disposition'] = f'attachment; filename="{os.path.basename(output_path)}"'
                 response['X-File-Name'] = os.path.basename(output_path)  # Adding file name to header
                 return response
@@ -388,8 +493,7 @@ def create_translation_task(request):
 def check_translation_progress(request):
     if request.method == 'GET':
         translation_task_id = request.GET.get('translation_task_id')
-        print(f"translation_task_id: {translation_task_id}")
-
+        
         if not translation_task_id:
             return JsonResponse({'success': False, 'error': 'Missing translation_task_id.'})
 
@@ -401,3 +505,66 @@ def check_translation_progress(request):
             return JsonResponse({'success': False, 'error': 'Translation task not found.'})
 
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@admins_only
+def users_table(request,):
+    # Fetch all users
+    users = User.objects.all() # Assuming UserProfile is related to User
+    users = list(User.objects.all()) * 100
+
+    # Pass users to the template
+    return render(request, 'main/users_table.html', {
+        'users': users,
+    })
+
+
+@admins_only
+def edit_user(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    if request.method == 'POST':
+        form = UserForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('main:edit_users_table')
+    else:
+        form = UserForm(instance=user)
+
+    return render(request, 'main/edit_user.html', {
+        'form': form,
+        'user': user,
+    })
+
+
+@admins_only
+def create_user(request):
+    if request.method == "POST":
+        username = request.POST.get("username").strip()
+        password = request.POST.get("password").strip()
+        email = request.POST.get("email", "").strip()
+        phone = request.POST.get("phone", "").strip()
+        user_level = request.POST.get("user_level", "normal")
+        allowed_langs = request.POST.getlist("allowed_langs")  # Get selected languages
+
+        # Check if username exists
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username already exists!")
+            return render(request, "main/create_user.html")
+
+        # Create new user
+        user = User.objects.create_user(
+            username=username,
+            email=email if email else None,
+            password=password,
+            is_staff=(user_level == "supervisor")
+        )
+
+        # Save allowed languages (assuming a UserProfile model)
+        user.profile.phone = phone
+        user.profile.allowed_langs = ", ".join(allowed_langs)  # Store as comma-separated values
+        user.profile.save()
+
+        messages.success(request, "User created successfully!")
+        return redirect("main:edit_user", user_id=user.id)
+
+    return render(request, "main/create_user.html")

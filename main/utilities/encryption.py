@@ -7,13 +7,14 @@ import base64
 from Cryptodome.PublicKey import RSA
 from Cryptodome.Cipher import PKCS1_v1_5
 from base64 import b64decode
+from Crypto import Random
+from Crypto.Util.Padding import pad, unpad
 
 
 def decode_chuncks(encrypted_chunks, lang, chunkded=False):
     with open('private_key.pem', 'rb') as f:
         private_key_data = f.read()
     private_key = RSA.import_key(private_key_data)
-    print(f"\private_key: {private_key}\n")
     cipher = PKCS1_v1_5.new(private_key)
 
     if chunkded == False:
@@ -31,6 +32,7 @@ def decode_chuncks(encrypted_chunks, lang, chunkded=False):
     decrypted_text = "".join(decrypted_chuncks)
     return decrypted_text
 
+
 def encrypt3(raw, encrypted_aes_key):
         aes_key = decode_RSA(encrypted_aes_key).encode('utf-8')
         aes_key = base64.b64decode(aes_key)
@@ -43,7 +45,6 @@ def encrypt_and_chunck(text, lang):
     with open('public_key.pem', 'rb') as f:
         public_key_data = f.read()
     public_key = RSA.import_key(public_key_data)
-    print(f"\public_key: {public_key}\n")
     cipher = PKCS1_v1_5.new(public_key)
 
     if lang == "Persian":
@@ -70,18 +71,18 @@ def decode_RSA(encrypted_text, private_key_path:str='private_key.pem'):
 def decrypt_AES_CBC(encrypted_text, encrypted_aes_key):
     aes_key = decode_RSA(encrypted_aes_key).encode('utf-8')
     aes_key = base64.b64decode(aes_key)
-    print(f"\naes_key: {aes_key}\n")
     iv = aes_key  # Use the AES key as the initialization vector (IV)
     cipher = AES.new(aes_key, AES.MODE_CBC, iv)
     decrypted_text = cipher.decrypt(base64.b64decode(encrypted_text)).decode('utf-8').strip()
     return decrypted_text, aes_key
 
+
 def decrypt_aes_key(encrypted_aes_key):
     # decrypting AES key with our RSA private key
     aes_key = decode_RSA(encrypted_aes_key).encode('utf-8')
     aes_key = base64.b64decode(aes_key)
-    print(f"\naes_key: {aes_key}\n")
     return aes_key
+
 
 def decrypt_AES_ECB(encrypted_text, aes_key):
     cipher = AES.new(aes_key, AES.MODE_ECB)
@@ -89,7 +90,6 @@ def decrypt_AES_ECB(encrypted_text, aes_key):
     return decrypted_text
 
 
-from Crypto.Util.Padding import pad, unpad
 # def encrypt_AES(text, aes_key):
 #     iv = get_random_bytes(16)  # Use the AES key as the initialization vector (IV) for demonstration purposes
 #     cipher = AES.new(aes_key, AES.MODE_CBC, iv)
@@ -98,7 +98,7 @@ from Crypto.Util.Padding import pad, unpad
 #     encrypted_text = base64.b64encode(encrypted_text)
 #     return decrypt_AES(encrypted_text, aes_key)[0]
 
-from Crypto import Random
+
 def encrypt_AES(plain_text, aes_key):
     # Assuming aes_key is already in bytes form and properly decoded from base64 if it was encoded
     if isinstance(aes_key, str):
@@ -130,3 +130,24 @@ def encrypt_AES_ECB(plain_text, aes_key):
     
     # Returning the encrypted data and the IV so that decryption can occur
     return encrypted_text # Prepend the IV to the encrypted data for use in decryption
+
+
+def decrypt_file_AES_ECB(encrypted_file, aes_key):
+    cipher = AES.new(aes_key, AES.MODE_ECB)
+    decrypted_file = cipher.decrypt(base64.b64decode(encrypted_file))
+    return decrypted_file
+
+
+def encrypt_file_AES_ECB(file, aes_key):
+    # Assuming aes_key is already in bytes form and properly decoded from base64 if it was encoded
+    if isinstance(aes_key, str):
+        aes_key = base64.b64decode(aes_key.encode('utf-8'))
+    
+    # Create cipher object and encrypt the data
+    cipher = AES.new(aes_key, AES.MODE_ECB)
+    padded_data = pad(file, AES.block_size)
+    encrypted_file = cipher.encrypt(padded_data)
+    encrypted_file = base64.b64encode(encrypted_file)
+    
+    # Returning the encrypted data and the IV so that decryption can occur
+    return encrypted_file # Prepend the IV to the encrypted data for use in decryption

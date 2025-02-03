@@ -1,23 +1,43 @@
 {% extends "main\base.html" %}
 {% load static %}
-{% comment %} {% load js %} {% endcomment %}
 
 {% block head-static %}
-{% comment %} <script type="text/javascript" src="{% static 'js/main/translation-Eng_default.js' %}"></script> {% endcomment %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/main/translation.css' %}">
 <script type="text/javascript" src="{% static 'jquery-3.7.1.min.js' %}"></script>
-{% comment %} <script src="{% static 'index.min.js' %}"></script> {% endcomment %}
 <script src="{% static 'jsencrypt.js' %}"></script>
-{% comment %} <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script> {% endcomenmt %}
-{% comment %} <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.2.1/jsencrypt.min.js"></script> {% endcomment %}
 <script src="{% static 'crypto-js.js' %}"></script>
 <script>
+// Set up CSRF token for all AJAX requests
+$.ajaxSetup({
+    headers: {
+        "X-CSRFToken": $('meta[name="csrf-token"]').attr('content'),
+    },
+});
+
+var publicKey = "-----BEGIN PUBLIC KEY-----\n" +
+            "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvRW2QcbKbzDobMdkLqvY\n" +
+            "Fb66Ih41T1+X3spW1WP6UduM1kS+bVh7HwG23pt8e/XJAf9G4IhWTZfkgVBdMsFP\n" +
+            "UfCJDiP/9cbQBgNDtT85jlFHjB1dBlJ51Hh8kDkx/1/dgy2b/ZjJ0YwAFLpk2k8W\n" +
+            "ZO8wtIOEHMSdLryVh8Jkpk1qSYZPZZuW+QEE/G+TJcF286mLEpTfZ/RQN4mg/nCS\n" +
+            "FhW4Rv9wnF8dhgU43kTiLwV8wVgOTKxAseDxMyvbjKiiH+u5YByZNN1hPVFSYQNx\n" +
+            "06IK0Ea7wk0UTRhCwLFu2AOPGL3AylFnjlHCd+/vbDrW3WDj3KRTbZFxtysYqn3B\n" +
+            "SnNZy6D1xPn79nsgWfKrgQo9KTgP9gpSoebBZwFIRmBD5Q2BpwZvbZj5lJgEYJpe\n" +
+            "xH5LW6Rfv2GZjU+S5SEPNXMlSf6kmfbJAEhsyqKj+tWZtri3AfEBhG7hkmmz51zA\n" +
+            "32JwSGV/IFqblOHsONsZizOl4OxzSytgfhCyOkAg6zcb5Hcd3Zod0SHscgkYPAeO\n" +
+            "9ZZvD6pneRrcB1tgBPz3CSp6UOe9ktK0Lo5ZlapNUmpIR1Av/immdBnfRfB6m+ax\n" +
+            "efNjY6Myl8/aepuND/E1MJviOMCm3cyrmOsNj5rwg2AIGO4vw4hdjXqOLez87t/X\n" +
+            "OYNP74TrWvLmcNmlKfQNfMsCAwEAAQ==\n" +
+            "-----END PUBLIC KEY-----";
+
 var sourceText_English = ""
 var sourceText_Persian = ""
 var sourceText_Arabic = ""
+var sourceText_Hebrew = ""
 var transText_English = ""
 var transText_Persian = ""
 var transText_Arabic = ""
+var transText_Hebrew = ""
+
 function generateRandomKey(length) {
       var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
       var result = "";
@@ -27,7 +47,8 @@ function generateRandomKey(length) {
       return result;
     }
 
-function encryptText(event, query) {
+
+function editText(event, query) {
     if (query === "translating") {
       var inputLang = document.querySelector('input[name="btnRadio_input"]:checked').value;
       var outputLang = document.querySelector('input[name="btnRadio_output"]:checked').value;
@@ -37,20 +58,6 @@ function encryptText(event, query) {
         return false;
       }}
       
-    var publicKey = "-----BEGIN PUBLIC KEY-----\n" +
-                "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvRW2QcbKbzDobMdkLqvY\n" +
-                "Fb66Ih41T1+X3spW1WP6UduM1kS+bVh7HwG23pt8e/XJAf9G4IhWTZfkgVBdMsFP\n" +
-                "UfCJDiP/9cbQBgNDtT85jlFHjB1dBlJ51Hh8kDkx/1/dgy2b/ZjJ0YwAFLpk2k8W\n" +
-                "ZO8wtIOEHMSdLryVh8Jkpk1qSYZPZZuW+QEE/G+TJcF286mLEpTfZ/RQN4mg/nCS\n" +
-                "FhW4Rv9wnF8dhgU43kTiLwV8wVgOTKxAseDxMyvbjKiiH+u5YByZNN1hPVFSYQNx\n" +
-                "06IK0Ea7wk0UTRhCwLFu2AOPGL3AylFnjlHCd+/vbDrW3WDj3KRTbZFxtysYqn3B\n" +
-                "SnNZy6D1xPn79nsgWfKrgQo9KTgP9gpSoebBZwFIRmBD5Q2BpwZvbZj5lJgEYJpe\n" +
-                "xH5LW6Rfv2GZjU+S5SEPNXMlSf6kmfbJAEhsyqKj+tWZtri3AfEBhG7hkmmz51zA\n" +
-                "32JwSGV/IFqblOHsONsZizOl4OxzSytgfhCyOkAg6zcb5Hcd3Zod0SHscgkYPAeO\n" +
-                "9ZZvD6pneRrcB1tgBPz3CSp6UOe9ktK0Lo5ZlapNUmpIR1Av/immdBnfRfB6m+ax\n" +
-                "efNjY6Myl8/aepuND/E1MJviOMCm3cyrmOsNj5rwg2AIGO4vw4hdjXqOLez87t/X\n" +
-                "OYNP74TrWvLmcNmlKfQNfMsCAwEAAQ==\n" +
-                "-----END PUBLIC KEY-----";
     var plainText = document.getElementById('source_text').value;
     var translationTextArea = document.getElementById('translation');
     var mode_element = document.getElementById('mode');
@@ -64,7 +71,7 @@ function encryptText(event, query) {
     if (query === "translating") {
     var spinner = document.getElementById('spinner');
     spinner.style.display = 'inline-block'; // Show the spinner
-    translationTextArea.style.color = '#B5B5B5 ';
+    translationTextArea.style.color = '#B5B5B5';
     };
 
     // Generate a random 128-bit (16 bytes) AES key
@@ -129,6 +136,170 @@ function encryptText(event, query) {
     };
 }
 
+function encryptText(event, query) {
+
+    if (query === "translating") {
+        var inputLang = document.querySelector('input[name="btnRadio_input"]:checked').value;
+        var outputLang = document.querySelector('input[name="btnRadio_output"]:checked').value;
+        if (inputLang === outputLang) {
+            alert("Input and output languages should not be same!");
+            event.preventDefault();
+            return false;
+        }
+    };
+
+    var plainText = document.getElementById('source_text').value;
+    var translationTextArea = document.getElementById('translation');
+    var mode_element = document.getElementById('mode');
+
+    if (plainText.length > 20000) {
+        alert("Input texts should not exceed 20,000 characters long regarding computational limits. Your input text is " + plainText.length + " characters long.");
+        event.preventDefault();
+        return false;
+    }
+
+    if (query === "translating") {
+        var spinner = document.getElementById('spinner');
+        spinner.style.display = 'inline-block'; // Show the spinner
+        translationTextArea.style.color = '#B5B5B5';
+
+        // Disable the "Translate" button to prevent multiple requests
+        var translateButton = document.getElementById('arrow-btn');
+        translateButton.disabled = true;
+
+    }
+
+    // Generate a random 128-bit (16 bytes) AES key
+    var aesRawKey = generateRandomKey(16);
+    var aesKey = CryptoJS.enc.Utf8.parse(aesRawKey);
+    localStorage.setItem("aesRawKey_translation", aesRawKey);
+
+    // Encrypt the text with the AES key
+    var encryptedText = CryptoJS.AES.encrypt(plainText, aesKey, {mode: CryptoJS.mode.ECB}).toString();
+
+    // RSA Encryption on AES key using RSA public key
+    var encrypt = new JSEncrypt();
+    encrypt.setPublicKey(publicKey);
+    var encryptedAesKey = encrypt.encrypt(aesKey.toString(CryptoJS.enc.Base64));
+
+    // Debug: Log the encrypted AES key and text
+
+    // Send data via AJAX
+    $.ajax({
+        url: "{% url 'main:translation' %}",
+        method: "POST",
+        headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": "{{ csrf_token }}",
+        },
+        data: {
+            source_lang: inputLang,
+            target_lang: outputLang,
+            encryptedText: encryptedText,
+            encryptedAesKey: encryptedAesKey,
+            "translate-btn": true,
+        },
+        success: function(response) {
+            // Decrypt the response
+            var decryptedTranslation = CryptoJS.AES.decrypt(response.translation, aesKey, {mode: CryptoJS.mode.ECB}).toString(CryptoJS.enc.Utf8);
+            //var decryptedSourceText = CryptoJS.AES.decrypt(response.source_text, aesKey, {mode: CryptoJS.mode.ECB}).toString(CryptoJS.enc.Utf8);
+
+            // Update the UI
+            document.getElementById('translation').value = decryptedTranslation;
+            //document.getElementById('source_text').value = decryptedSourceText;
+
+            // Hide the spinner
+            spinner.style.display = 'none';
+            translationTextArea.style.color = '#000';
+
+            // Re-enable the "Translate" button
+            var translateButton = document.getElementById('arrow-btn');
+            translateButton.disabled = false;
+
+            // Reset the flag
+            isRequestInProgress = false;
+        },
+        error: function(xhr, status, error) {
+            console.error("Error:", error);
+            alert("An error occurred during translation. Please try again.");
+            spinner.style.display = 'none';
+            translationTextArea.style.color = '#000';
+
+            // Re-enable the "Translate" button
+            var translateButton = document.getElementById('arrow-btn');
+            translateButton.disabled = false;
+        },
+    });
+
+    return false; // Prevent form submission
+};
+
+function saveTranslation(event) {
+    event.preventDefault(); // Prevent form submission
+
+    // Get the necessary elements
+    var saveButton = document.getElementById('save-btn');
+    var spinner = document.getElementById('spinner');
+    var translationTextArea = document.getElementById('translation');
+
+    // Show the spinner and disable the "Save" button
+    spinner.style.display = 'inline-block';
+    saveButton.disabled = true;
+
+    // Get the AES key from localStorage
+    var aesRawKey = localStorage.getItem("aesRawKey_translation");
+    var aesKey = CryptoJS.enc.Utf8.parse(aesRawKey);
+
+    // Encrypt the source text and translation
+    var sourceText = document.getElementById('source_text').value;
+    var translation = document.getElementById('translation').value;
+    var encryptedSourceText = CryptoJS.AES.encrypt(sourceText, aesKey, {mode: CryptoJS.mode.ECB}).toString();
+    var encryptedTranslation = CryptoJS.AES.encrypt(translation, aesKey, {mode: CryptoJS.mode.ECB}).toString();
+
+    // RSA Encryption on AES key using RSA public key
+    var encrypt = new JSEncrypt();
+    encrypt.setPublicKey(publicKey);
+    var encryptedAesKey = encrypt.encrypt(aesKey.toString(CryptoJS.enc.Base64));
+
+    // Get the source and target languages
+    var sourceLang = document.querySelector('input[name="btnRadio_input"]:checked').value;
+    var targetLang = document.querySelector('input[name="btnRadio_output"]:checked').value;
+
+    // Send data via AJAX
+    $.ajax({
+        url: "{% url 'main:translation' %}",
+        method: "POST",
+        headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": "{{ csrf_token }}",
+        },
+        data: {
+            source_lang: sourceLang,
+            target_lang: targetLang,
+            encryptedText: encryptedSourceText,
+            encryptedTranslation: encryptedTranslation,
+            encryptedAesKey: encryptedAesKey,
+            "save-btn": true,
+        },
+        success: function(response) {
+            // Hide the spinner and re-enable the "Save" button
+            spinner.style.display = 'none';
+            saveButton.disabled = false;
+        },
+        error: function(xhr, status, error) {
+            // Hide the spinner and re-enable the "Save" button
+            spinner.style.display = 'none';
+            saveButton.disabled = false;
+
+            // Show an error message
+            alert("An error occurred while saving the translation. Please try again.");
+            console.error("Error:", error);
+        },
+    });
+
+    return false; // Prevent form submission
+};
+
 </script>
 {% endblock %}
 
@@ -156,14 +327,14 @@ function encryptText(event, query) {
             </div>
             {% if edit_mode %}
                 {% if mode == "user" %}
-                <button type="submit" id="back-btn" name="back-btn" style="margin-right: 85%" onclick="encryptText(event, 'back')">Back</button>
-                <button type="submit" id="edit-btn" name="edit-btn" class="btn" style="margin-right: 10px" onclick="encryptText(event, 'saving'); showMessage('Edit saved!', this)">Apply edits</button>
-                <button type="submit" id="remove-btn" name="remove-btn" class="btn btn-danger" onclick="encryptText(event, 'deleting')">Delete</button>
+                <button type="submit" id="back-btn" name="back-btn" style="margin-right: 85%" onclick="editText(event, 'back')">Back</button>
+                <button type="submit" id="edit-btn" name="edit-btn" class="btn" style="margin-right: 10px" onclick="editText(event, 'saving'); showMessage('Edit saved!', this)">Apply edits</button>
+                <button type="submit" id="remove-btn" name="remove-btn" class="btn btn-danger" onclick="editText(event, 'deleting')">Delete</button>
                 {% elif mode == "supervisor" %}
-                <button type="submit" id="back-btn" name="back-btn" style="margin-right: 95%" onclick="encryptText(event, 'back')">Back</button>
+                <button type="submit" id="back-btn" name="back-btn" style="margin-right: 95%" onclick="editText(event, 'back')">Back</button>
                 {% endif %}
             {% else %}
-                <button type="submit" id="save-btn" name="save-btn" class="btn" onclick="encryptText(event, 'saving'); showMessage('Saved!', this)"><img id="save-icon">&nbspSave</button>
+                <button type="submit" id="save-btn" name="save-btn" class="btn" onclick="saveTranslation(event); showMessage('Saved!', this)"><img id="save-icon">&nbspSave</button>
             {% endif %}
             </div>
                 <div class="col-md-6">
@@ -213,7 +384,7 @@ function encryptText(event, query) {
                         <label class="btn btn-outline-primary persian-btn" for="btnOutput-fa">فارسی</label>
                     </div>
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-he" value="he" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()" checked>
+                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-he" value="he" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()">
                         <label class="btn btn-outline-primary hebrew-btn" for="btnOutput-he">עִברִית</label>
                     </div>
                     </div>
@@ -240,7 +411,7 @@ function encryptText(event, query) {
                     </div>
                 </div> {% endcomment %}
                   <div class="col-md-6 justify-content-center text-center" >
-                      <button type="button" id="swap-btn" onclick="swapTexts();" data-toggle="tooltip" data-placement="right" title="Swap languages (Ctrl + Shift + S)"><img id="swap-icon"></button>
+                      <button type="button" id="swap-btn" onclick="swapTexts();" data-toggle="tooltip" data-placement="right" title="Swap languages (Ctrl + Shift + X)"><img id="swap-icon"></button>
                   </div>
             {% if mode == "user" %}
             {% comment %} <div class="row justify-content-center">
@@ -332,7 +503,7 @@ function encryptText(event, query) {
       <div id="progressContainer">
         {% comment %} <p id="progressText">Progress: 0%</p> {% endcomment %}
         <div class="progress">
-            <div id="progressBar" class="progress-bar progress-bar-striped" role="progressbar" style="width: 0%;" aria-valuenow="0"
+            <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" aria-valuenow="0"
                 aria-valuemin="0" aria-valuemax="100" style="height: 60px; font-size: 16px;"></div>
         </div>
     </div>
@@ -345,6 +516,92 @@ function encryptText(event, query) {
 <script>
 var translationTaskIdInput = document.getElementById('translationTaskId');
 const progressBar = document.getElementById('progressBar');
+var fileInputName = ""
+
+// *** File encryption & decryption fucntions ***
+
+// Function to convert ArrayBuffer to CryptoJS WordArray
+function arrayBufferToWordArray(arrayBuffer) {
+    var wordArray = CryptoJS.lib.WordArray.create(arrayBuffer);
+    return wordArray;
+}
+
+// Function to encrypt file
+function encryptFile(file) {
+    return new Promise((resolve, reject) => {
+        var aesRawKey = generateRandomKey(16);
+        var aesKey = CryptoJS.enc.Utf8.parse(aesRawKey);  // AES key as WordArray
+        localStorage.setItem("aesRawKey_translation", aesRawKey);  // Store key
+
+        // Use FileReader to read the file as ArrayBuffer
+        var reader = new FileReader();
+
+        reader.onload = function(event) {
+            var arrayBuffer = event.target.result;
+
+            // Convert ArrayBuffer to WordArray
+            var wordArray = arrayBufferToWordArray(arrayBuffer);
+            // Encrypt the WordArray using AES
+            var encryptedFile = CryptoJS.AES.encrypt(wordArray, aesKey, {mode: CryptoJS.mode.ECB}).toString();
+
+            // Encrypted data is returned as a base64 string
+            //var encryptedFile = encryptedFile.toString();
+
+            // RSA Encryption on AES key using RSA public key
+            var encrypt = new JSEncrypt();
+            encrypt.setPublicKey(publicKey);
+            var encryptedAesKey = encrypt.encrypt(aesKey.toString(CryptoJS.enc.Base64));
+
+            // Resolve the Promise with the encrypted data
+            resolve({
+              encryptedFile: encryptedFile,
+              encryptedAesKey: encryptedAesKey
+            });
+        };
+
+        reader.onerror = function(event) {
+            reject(new Error("File could not be read: " + event.target.error.code));
+        };
+
+        reader.readAsArrayBuffer(file);  // Read file as binary data
+    });
+}
+
+function decryptFile(encryptedBlob, key) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = function () {
+            var aesRawKey = localStorage.getItem("aesRawKey_translation");
+            var aesKey = CryptoJS.enc.Utf8.parse(aesRawKey);
+            const decrypted = CryptoJS.AES.decrypt(reader.result, aesKey, {mode: CryptoJS.mode.ECB});
+            const typedArray = wordArrayToUint8Array(decrypted);
+            const blob = new Blob([typedArray], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+            resolve(blob);
+        };
+        reader.onerror = reject;
+        reader.readAsBinaryString(encryptedBlob);
+    });
+}
+
+// Function to convert a CryptoJS WordArray to a Uint8Array
+function wordArrayToUint8Array(wordArray) {
+    const words = wordArray.words;
+    const sigBytes = wordArray.sigBytes;
+
+    // Create a Uint8Array to hold the decrypted data
+    const u8Array = new Uint8Array(sigBytes);
+
+    // Convert words to bytes
+    for (let i = 0; i < sigBytes; i++) {
+        u8Array[i] = (words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff;
+    }
+    return u8Array;
+}
+// *** END of File encryption & decryption fucntions ***
+
+//document.getElementById('arrow-btn').addEventListener('click', function(event) {
+//    encryptText(event, 'translating');
+//});
 
 document.getElementById('translationForm').addEventListener('submit', function (event) {
     event.preventDefault();
@@ -359,17 +616,15 @@ document.getElementById('translationForm').addEventListener('submit', function (
 
     // Check if languages are the same
     if (formData.get('input_language') === formData.get('output_language')) {
-      alert('Error: Input and output languages cannot be the same. Please choose different languages.');
-      return; // Prevent form submission if languages are the same
+        alert('Error: Input and output languages cannot be the same. Please choose different languages.');
+        return; // Prevent form submission if languages are the same
     };
-
-    console.log("formData.get('document'): " + formData.get('document'))
 
     // Check if a file has been selected
     const fileInput = document.getElementById('fileUpload');
     if (!fileInput.files.length) {
-      alert('Please select a file to translate.');
-      return;
+        alert('Please select a file to translate.');
+        return;
     }
 
     var haveDoneFileTranslation = document.getElementById('haveDoneFileTranslation');
@@ -380,68 +635,101 @@ document.getElementById('translationForm').addEventListener('submit', function (
     translateTextModalBtn.innerText = "Translating..."
     translateButton.disabled = true;
 
+    fileInputName = document.getElementById('fileUpload').files[0].name;
+    const validExtensions = ['.docx', '.doc', '.pdf'];
+    const fileExtension = fileInputName.substring(fileInputName.lastIndexOf('.')).toLowerCase();
+
+    if (!validExtensions.includes(fileExtension)) {
+        alert('Error: File format must be .doc, .docx, or .pdf');
+        // Hide spinner and re-enable button after successful response
+        translateSpinner.style.display = 'none';
+        translateButton.disabled = false;
+        translateTextModalBtn.innerText = "Translate";
+        return;  // Prevent form submission if the file format is incorrect
+    }
+
+    // Step 1: Create translation task
     fetch("{% url 'main:create_translation_task' %}", {
-      method: 'POST',
-      body: new URLSearchParams({
-          input_language: formData.get('input_language'),
-          output_language: formData.get('output_language'),
-      }),
+        method: 'POST',
+        body: new URLSearchParams({
+            input_language: formData.get('input_language'),
+            output_language: formData.get('output_language'),
+        }), 
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-          var translationTaskId = data.translation_task_id;
-          translationTaskIdInput.value = data.translation_task_id;
-          formData.append('translation_task_id', translationTaskId);
+            var translationTaskId = data.translation_task_id;
+            translationTaskIdInput.value = data.translation_task_id;
+            formData.append('translation_task_id', translationTaskId);
 
-    // AJAX request to the backend
-    fetch("{% url 'main:document_translation' %}", {
-        method: 'POST',
-        body: formData,
+            // Step 2: Encrypt the file
+            return encryptFile(fileInput.files[0]);
+        } else {
+            throw new Error('Failed to create translation task.');
+        }
     })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to translate the document.');
-            }
+    .then(({ encryptedFile, encryptedAesKey }) => {
+        // Step 3: Append the encrypted file data and AES key to formData
+        fileInputName = document.getElementById('fileUpload').files[0].name;
+        formData.append('fileInputName', fileInputName);
+        formData.append('encryptedData', JSON.stringify(encryptedFile));
+        formData.append('encryptedAesKey', JSON.stringify(encryptedAesKey));
+        formData.delete("document")
 
-            // Get the filename from the response headers
-            const contentDisposition = response.headers.get('Content-Disposition');
-            let filename = 'translated_document.docx'; // Default filename
-
-            if (contentDisposition && contentDisposition.indexOf('filename=') !== -1) {
-                filename = contentDisposition.split('filename=')[1].replace(/['"]/g, '');
-            }
-
-            return response.blob().then(blob => ({ blob, filename })); // Return both blob and filename
-        })
-        .then(({ blob, filename }) => {
-            // Hide spinner and re-enable button after successful response
-            translateSpinner.style.display = 'none';
-            translateButton.disabled = false;
-            translateTextModalBtn.innerText = "Translate";
-
-            // Handle document download
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', filename); // Use the filename extracted from response
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-        })
-        .catch(error => {
-            // Hide spinner and re-enable button on error
-            translateSpinner.style.display = 'none';
-            translateButton.disabled = false;
-
-            console.error('Error:', error);
-            alert('An error occurred. Please try again.');
+        // Step 4: Submit the form after encryption is complete
+        return fetch("{% url 'main:document_translation' %}", {
+            method: 'POST',
+            body: formData,
         });
-      } else {
-        console.error('Failed to create translation task:', data.error);
-      }
     })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to translate the document.');
+        }
+
+        // Get the filename from the response headers
+        const contentDisposition = response.headers.get('Content-Disposition');
+        var filename = 'translated_document.docx'; // Default filename
+
+        if (contentDisposition && contentDisposition.indexOf('filename=') !== -1) {
+            filename = contentDisposition.split('filename=')[1].replace(/['"]/g, '');
+        }
+
+        return response.blob().then(blob => ({ blob, filename })); // Return both blob and filename
+    })
+    .then(({ blob, filename }) => {
+        const encryptionKey = formData.get('encryptedAesKey'); // Retrieve the encryption key
+        if (!encryptionKey) {
+            throw new Error('Encryption key not found.');
+        }
+        return decryptFile(blob, encryptionKey).then(decryptedBlob => ({ decryptedBlob, filename })); // Pass both decryptedBlob and filename
+    })
+    .then(({ decryptedBlob, filename }) => {
+        // Hide spinner and re-enable button after successful response
+        translateSpinner.style.display = 'none';
+        translateButton.disabled = false;
+        translateTextModalBtn.innerText = "Translate";
+        
+        // Handle document download
+        const url = window.URL.createObjectURL(decryptedBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', filename); // Use the correct filename
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    })
+    .catch(error => {
+        // Hide spinner and re-enable button on error
+        translateSpinner.style.display = 'none';
+        translateButton.disabled = false;
+
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    });
 });
+
 
 
 function updateProgress() {
@@ -455,19 +743,15 @@ if (document.getElementById('haveDoneFileTranslation').value === "True") {
         .then(data => {
             if (data.success) {
                 const progress = data.progress;
-                console.log(progress)
 
                 // Update progress text and bar
                 //progressText.textContent = `Progress: ${progress}%`;
-                console.log(progress)
                 if (progress === "uploading") {
                   progressBar.classList.add('bg-info');
-                  progressBar.classList.remove('progress-bar-animated');
                   progressBar.style.width = "100%";
                   progressBar.innerText = "Uploading...";
                 } else if (progress === "preprocessing") {
                   progressBar.classList.add('bg-info');
-                  progressBar.classList.remove('progress-bar-animated');
                   progressBar.style.width = "100%";
                   progressBar.innerText = "Extracting contents...";
                 } else if (progress >= 100) {
@@ -489,7 +773,6 @@ if (document.getElementById('haveDoneFileTranslation').value === "True") {
                 if (progressBar.classList.contains('bg-info')) {
                     progressBar.classList.remove('bg-info');
                 };
-                progressBar.classList.add('progress-bar-animated');
                 progressBar.style.width = `${progress}%`;
                 progressBar.setAttribute('aria-valuenow', progress);
                 progressBar.innerText = progress + "%"
@@ -632,6 +915,7 @@ function showMessage(message, button) {
   }, 500);
 }
 
+
 function updateCharacterCount() {
   var textarea = document.getElementById('source_text');
   var charCount = document.getElementById('charCount');
@@ -644,7 +928,6 @@ function updateCharacterCount() {
     charCount.textContent = currentLength + '/' + "20,000" + ' characters';
     charCount.style.color = 'black';
   }
-
 }
 
 document.addEventListener('keydown', function(event) {
@@ -656,7 +939,7 @@ document.addEventListener('keydown', function(event) {
 
 
 document.addEventListener('keydown', function(event) {
-  if (event.ctrlKey && event.shiftKey && event.key === 'S') {
+  if (event.ctrlKey && event.shiftKey && event.key === 'X') {
     var arrowBtn = document.getElementById('swap-btn');
     arrowBtn.click();
   }
