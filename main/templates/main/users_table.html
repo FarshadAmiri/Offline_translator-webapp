@@ -31,17 +31,17 @@
                     <th>Username</th>
                     <th>Name</th>
                     <th>User Level</th>
-                    <th>Allowed Languages</th>
+                    <th>Languages Access</th>
                 </tr>
             </thead>
             <tbody>
                 {% for user in users %}
                 <tr>
                     <td><a href="{% url 'main:edit_user' user.pk %}">{{ user.username }}</a></td>
-                    <td>{{ user.get_full_name }}</td>
+                    <td>{{ user.full_name }}</td>
                     <td>
                         {% if user.is_superuser %}
-                            Superuser
+                            Admin
                         {% elif user.groups.all %}
                             {{ user.groups.first.name }}
                         {% else %}
@@ -50,7 +50,9 @@
                     </td>
                     <td>
                         {% if user.allowed_langs.all %}
-                            {{ user.allowed_langs.all|join:", " }}
+                            {% for lang in user.allowed_langs.all %}
+                                {{ lang.code }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
                         {% else %}
                             N/A
                         {% endif %}

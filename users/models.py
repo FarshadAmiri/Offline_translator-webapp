@@ -3,15 +3,10 @@ from django.contrib.auth.models import AbstractUser
 
 
 class Language(models.Model):
-    code = models.CharField(
-        max_length=2, 
-        unique=True, 
-        choices=[("fa", "Farsi"), ("en", "English"), ("ar", "Arabic"), ("he", "Hebrew")]
-    )
+    code = models.CharField(max_length=32, unique=True)
 
     def __str__(self):
-        return self.get_code_display()
-
+        return self.code
 
 class User(AbstractUser):
     username = models.CharField(max_length=150, primary_key=True)

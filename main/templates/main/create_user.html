@@ -10,7 +10,16 @@
 <div class="container mt-5" style="max-width: 720px; width: 100%;"> 
     <div class="card p-4 shadow-lg rounded-4" style="max-width: 600px; width: 100%; background: #f8f9fa;">
         <h2 class="text-center mb-4">Create New User</h2>
-        
+        {% if messages %}
+            <div class="container mt-3">
+                {% for message in messages %}
+                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
         <form id="createUserForm" method="post">
             {% csrf_token %}
             
@@ -19,18 +28,32 @@
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
                         <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
-                        <label for="username">Username</label>
+                        <label for="username">Username*</label>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
                         <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
-                        <label for="password">Password</label>
+                        <label for="password">Password*</label>
                     </div>
                 </div>
             </div>
-
-            <!-- Row 2: Email & Phone -->
+            <!-- Row 2: First Name & Last Name -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="firstname" name="firstname" placeholder="First Name">
+                        <label for="firstname">First Name</label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                        <input type="lastname" class="form-control" id="lastname" name="lastname" placeholder="Last Name">
+                        <label for="lastname">Last Name</label>
+                    </div>
+                </div>
+            </div>
+            <!-- Row 3: Email & Phone -->
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
@@ -45,14 +68,13 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Row 3: User Level & Allowed Languages -->
+            <!-- Row 4: User Level & Allowed Languages -->
             <div class="row">
                 <div class="col-md-6">
                     <label class="form-label">User Level</label>
                     <select class="form-select mb-3" name="user_level">
-                        <option value="normal">Normal</option>
-                        <option value="supervisor">Supervisor</option>
+                        <option value="regular">Regular</option>
+                        <option value="admin">Admin</option>
                     </select>
                 </div>
 
@@ -67,8 +89,8 @@
                         <label class="form-check-label" for="langArabic">Arabic</label>
                     </div>
                     <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" name="allowed_langs" value="Farsi" id="langFarsi" checked>
-                        <label class="form-check-label" for="langFarsi">Farsi</label>
+                        <input class="form-check-input" type="checkbox" name="allowed_langs" value="Persian" id="langPersian" checked>
+                        <label class="form-check-label" for="langFarsi">Persian</label>
                     </div>
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" name="allowed_langs" value="Hebrew" id="langHebrew" checked>
@@ -76,8 +98,7 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Row 4: Submit Button -->
+            <!-- Row 5: Submit Button -->
             <div class="row">
                 <div class="col-12 text-center">
                     <button type="submit" class="btn btn-primary mt-3 w-100">Create User</button>

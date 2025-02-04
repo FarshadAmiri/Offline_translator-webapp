@@ -231,3 +231,4 @@ function swapTexts() {
 
 
 
+// ------------------- Managing Language Accessabilties --------------------------------

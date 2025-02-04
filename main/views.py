@@ -24,8 +24,10 @@ from main.utilities.lang import detect_language
 from main.utilities.encryption import *
 # from datetime import datetime, timedelta
 from .models import *
-from users.models import User
-from users.forms import UserForm
+from users.models import User, Language
+from django.contrib.auth.models import Group
+from django.core.serializers.json import DjangoJSONEncoder
+import json
 import logging
 import base64
 from main.utilities.file_translation import file_translation_handler
@@ -38,11 +40,55 @@ documents_repo = r"documents_repo"
 @login_required(login_url='users:login')
 def Translation(request):
     if request.method == 'GET':
-        return render(request, 'main/translation.html', {"mode": "user", "source_lang": "en", "target_lang": "fa", "main_page": True,})
+        allowed_langs = request.user.allowed_langs.values_list('code', flat=True)
+        return render(request, 'main/translation.html', {"mode": "user", "source_lang": "en", "target_lang": "fa",
+                                                         "main_page": True, "allowed_langs": allowed_langs})
 
-    elif (request.method == 'POST') and "translate-btn" in request.POST:
+    # elif (request.method == 'POST') and "translate-btn" in request.POST:
+    #     source_lang = request.POST.get('source_lang')
+    #     target_lang = request.POST.get('target_lang')
+    #     encoded_text = request.POST.get('encryptedText')
+    #     encrypted_aes_key = request.POST.get('encryptedAesKey')
+
+    #     aes_key = decrypt_aes_key(encrypted_aes_key)
+    #     source_text = decrypt_AES_ECB(encoded_text, aes_key)
+
+    #     source_text_preprocessed = preprocess_text(source_text)
+    #     source_text_analysis = analyse_text(source_text)
+    #     translation = translate(source_text_preprocessed, source_lang, target_lang)
+    #     translation = postprocess_text(translation, source_text_analysis)
+
+    #     encrypted_translation = encrypt_AES_ECB(translation, aes_key).decode('utf-8')
+    #     encrypted_source_text = encrypt_AES_ECB(source_text, aes_key).decode('utf-8')
+
+    #     # Check if the request is AJAX
+    #     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+    #         return JsonResponse({
+    #             'translation': encrypted_translation,
+    #             'source_text': encrypted_source_text,
+    #             'source_lang': source_lang,
+    #             'target_lang': target_lang,
+    #         })
+    #     else:
+    #         return render(request, 'main/translation.html', {
+    #             'translation': encrypted_translation,
+    #             'source_text': encrypted_source_text,
+    #             'mode': "user",
+    #             'source_lang': source_lang,
+    #             'target_lang': target_lang,
+    #             'main_page': True,
+    #         })
+
+    elif request.method == 'POST' and "translate-btn" in request.POST:
         source_lang = request.POST.get('source_lang')
         target_lang = request.POST.get('target_lang')
+
+        # Ensure user has permission for selected languages
+        user_allowed_langs = request.user.allowed_langs.values_list('code', flat=True)
+        if source_lang not in user_allowed_langs or target_lang not in user_allowed_langs:
+            return JsonResponse({'error': 'You are not allowed to use these languages.'}, status=403)
+
+        # Continue translation if languages are allowed
         encoded_text = request.POST.get('encryptedText')
         encrypted_aes_key = request.POST.get('encryptedAesKey')
 
@@ -57,23 +103,13 @@ def Translation(request):
         encrypted_translation = encrypt_AES_ECB(translation, aes_key).decode('utf-8')
         encrypted_source_text = encrypt_AES_ECB(source_text, aes_key).decode('utf-8')
 
-        # Check if the request is AJAX
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({
-                'translation': encrypted_translation,
-                'source_text': encrypted_source_text,
-                'source_lang': source_lang,
-                'target_lang': target_lang,
-            })
-        else:
-            return render(request, 'main/translation.html', {
-                'translation': encrypted_translation,
-                'source_text': encrypted_source_text,
-                'mode': "user",
-                'source_lang': source_lang,
-                'target_lang': target_lang,
-                'main_page': True,
-            })
+        return JsonResponse({
+            'translation': encrypted_translation,
+            'source_text': encrypted_source_text,
+            'source_lang': source_lang,
+            'target_lang': target_lang,
+        })
+
         
     elif (request.method == 'POST') and "save-btn" in request.POST:
         source_lang = request.POST.get('source_lang')
@@ -511,7 +547,7 @@ def check_translation_progress(request):
 def users_table(request,):
     # Fetch all users
     users = User.objects.all() # Assuming UserProfile is related to User
-    users = list(User.objects.all()) * 100
+    # users = list(User.objects.all()) * 100
 
     # Pass users to the template
     return render(request, 'main/users_table.html', {
@@ -520,20 +556,43 @@ def users_table(request,):
 
 
 @admins_only
-def edit_user(request, user_id):
-    user = get_object_or_404(User, id=user_id)
-    if request.method == 'POST':
-        form = UserForm(request.POST, instance=user)
-        if form.is_valid():
-            form.save()
-            return redirect('main:edit_users_table')
-    else:
-        form = UserForm(instance=user)
+def edit_user(request, username):
+    user = get_object_or_404(User, username=username)
+    admin_group, created = Group.objects.get_or_create(name="Admin")
+    user_level = "admin" if (user.groups.filter(name="Admin").exists() or user.is_superuser) else "regular"
+    languages = Language.objects.all()
 
-    return render(request, 'main/edit_user.html', {
-        'form': form,
-        'user': user,
-    })
+    if request.method == "POST":
+        if "new_password" in request.POST:  # Password Change
+            new_password = request.POST.get("new_password")
+            confirm_password = request.POST.get("confirm_password")
+
+            if new_password != confirm_password:
+                messages.error(request, "New passwords do not match.")
+            else:
+                user.set_password(new_password)
+                user.save()
+                messages.success(request, "Password updated successfully.")
+        
+        else:  # Edit User Info
+            user.username = request.POST["username"]
+            user.first_name = request.POST.get("firstname", "")
+            user.last_name = request.POST.get("lastname", "")
+            user.email = request.POST.get("email", "")
+            user.phone = request.POST.get("phone", "")
+            selected_languages = request.POST.getlist("allowed_langs")
+            user.allowed_langs.set(Language.objects.filter(code__in=selected_languages))
+            user_level = request.POST.get("user_level", "regular")
+            if user_level == "admin":
+                user.groups.add(admin_group)
+            else:
+                user.groups.remove(admin_group)
+            user.save()
+            messages.success(request, "User updated successfully.")
+        
+        return redirect("main:edit_user", username=user.username)
+
+    return render(request, "main/edit_user.html", {"user": user, "user_level": user_level, "languages": languages})
 
 
 @admins_only
@@ -541,30 +600,40 @@ def create_user(request):
     if request.method == "POST":
         username = request.POST.get("username").strip()
         password = request.POST.get("password").strip()
+        firstname = request.POST.get("firstname").strip().capitalize()
+        lastname = request.POST.get("lastname").strip().capitalize()
         email = request.POST.get("email", "").strip()
         phone = request.POST.get("phone", "").strip()
-        user_level = request.POST.get("user_level", "normal")
+        user_level = request.POST.get("user_level", "regular")
         allowed_langs = request.POST.getlist("allowed_langs")  # Get selected languages
 
         # Check if username exists
         if User.objects.filter(username=username).exists():
-            messages.error(request, "Username already exists!")
+            messages.error(request, f'Username "{username}" already exists! Try another one')
             return render(request, "main/create_user.html")
 
         # Create new user
         user = User.objects.create_user(
             username=username,
+            first_name = firstname if firstname else "",
+            last_name = lastname if lastname else "",
             email=email if email else None,
+            phone=phone if phone else None,
             password=password,
-            is_staff=(user_level == "supervisor")
         )
 
-        # Save allowed languages (assuming a UserProfile model)
-        user.profile.phone = phone
-        user.profile.allowed_langs = ", ".join(allowed_langs)  # Store as comma-separated values
-        user.profile.save()
+        # Assign user level
+        if user_level == "admin":
+            supervisor_group, _ = Group.objects.get_or_create(name="Admin")
+            user.groups.add(supervisor_group)
 
-        messages.success(request, "User created successfully!")
-        return redirect("main:edit_user", user_id=user.id)
+        # Save allowed languages (handling ManyToManyField)
+        if allowed_langs:
+            selected_languages = Language.objects.filter(code__in=allowed_langs)
+            user.allowed_langs.set(selected_languages) 
+
+        user.save()
+        messages.success(request, f'User "{username}" created successfully!')
+        return redirect("main:create_user")
 
     return render(request, "main/create_user.html")

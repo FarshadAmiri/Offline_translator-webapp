@@ -446,7 +446,7 @@ function saveTranslation(event) {
           </div>
           <div class="btn-group-lg d-flex justify-content-center align-items-center mb-4" role="group" aria-label="Basic radio toggle button group">
             <div style="margin-left: 7px;">
-              <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-en" autocomplete="off" value="en" checked>
+              <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-en" autocomplete="off" value="en" checked {% if "English" in allowed_langs %} disabled {% endif %}>
               <label class="btn btn-outline-primary english-btn" for="modal_btnInput-en">English</label>
             </div>
             <div style="margin-left: 7px;">
@@ -790,7 +790,6 @@ if (document.getElementById('haveDoneFileTranslation').value === "True") {
 
 </script>
 <!-- END of Modal Structure -->
-
 <script type="text/javascript" src="{% static 'js/main/translation.js' %}"></script>
 <script>
 window.onload = function() {
@@ -885,6 +884,7 @@ window.onload = function() {
       if (radioOutput[i].id === "btnOutput-he") {radioOutput[i].checked = true;} else {radioOutput[i].checked = false};        
     }
   };
+  disableUnavailableLanguages();
   }
 
 

@@ -112,10 +112,10 @@ function generateAESKey() {
                 </ul>
                 {% endif %}
                 <ul class="navbar-nav d-flex justify-content-center align-items-center ms-auto">
-                    {% if user|has_group:"Admins" or user.is_superuser %}
+                    {% if user|has_group:"Admin" or user.is_superuser %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle active nav-item-english" href="#" id="supervisorDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Supervisor
+                                Administration
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="supervisorDropdown">
                                 <!-- Users Saved Texts -->
@@ -128,7 +128,7 @@ function generateAESKey() {
 
                                 <!-- Users Management -->
                                 <li>
-                                    <a class="dropdown-item" href="{% url 'main:users_table' %}">Users Management</a>
+                                    <a class="dropdown-item" href="{% url 'main:users_table' %}">Add / Edit Users</a>
                                 </li>
                             </ul>
                         </li>
