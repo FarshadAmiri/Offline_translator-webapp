@@ -17,4 +17,6 @@ urlpatterns = [
     path('users_table/', users_table, name='users_table'),
     path('edit-user/<str:username>/', edit_user, name='edit_user'),
     path('create-user/', create_user, name='create_user'),
+    path('users/<str:username>/delete/', delete_user, name="delete_user"),
+
 ]

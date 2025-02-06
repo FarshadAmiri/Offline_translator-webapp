@@ -1,17 +1,15 @@
-{% extends "main\base.html" %}
+{% extends "main/base.html" %}
 {% load static %}
 {% load custom_filters %} 
 
 {% block head-title %}
-    <title>{{ user.firstname }}'s Profile Page</title>
+    <title>{{ user.username }}'s Profile Page</title>
 {% endblock %}
 
 {% block head-static %}
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/users/profile.css' %}">
-    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+   <link rel="stylesheet" type="text/css" href="{% static 'css/users/profile.css' %}">
 {% endblock %}
 
 
@@ -25,7 +23,7 @@
                 </div>
                 <div class="card-body p-5 text-left">
                 <div class="form-outline mb-4">
-                    {% if user|has_group:"Admins" or user.is_superuser%}
+                    {% if user|has_group:"Admin" or user.is_superuser%}
                     <h2 class="info">You are an Admin</h2>
                     <br>
                     {% endif %}

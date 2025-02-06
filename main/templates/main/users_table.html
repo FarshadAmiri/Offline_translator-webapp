@@ -9,13 +9,20 @@
 <link rel="stylesheet" type="text/css" href="{% static 'css/main/users_table.css' %}">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+<script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/jquery.dataTables.min.css' %}">
 {% endblock %}
 
 {% block body %}
 <div class="container">
+        {% if messages %}
+                {% for message in messages %}
+                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                {% endfor %}
+            </div>
+        {% endif %}
     <div class="header-section">
         <!-- Search box (DataTables will place its search input here) -->
         <div id="search-container"></div>
@@ -32,6 +39,10 @@
                     <th>Name</th>
                     <th>User Level</th>
                     <th>Languages Access</th>
+                    <th>No. of Saved Texts</th>
+                    <th>No. of File Translations</th>
+                    <th>Last Login</th>
+                    <th>Account Created</th>
                 </tr>
             </thead>
             <tbody>
@@ -41,7 +52,7 @@
                     <td>{{ user.full_name }}</td>
                     <td>
                         {% if user.is_superuser %}
-                            Admin
+                            Admin (Also Superuser)
                         {% elif user.groups.all %}
                             {{ user.groups.first.name }}
                         {% else %}
@@ -57,9 +68,22 @@
                             N/A
                         {% endif %}
                     </td>
+                    <td>{{ user.num_saved_texts|default:0 }}</td>
+                    <td>{{ user.num_file_translations|default:0 }}</td>
+                    {% comment %} <td>{{ user.date_joined|date:"Y-m-d H:i" }}</td> {% endcomment %}
+                    <td>
+                        {% if user.last_login %}
+                            {% comment %} {{ user.last_login|date:"Y-m-d H:i" }} {% endcomment %}
+                            {{ user.last_login_jalali }}
+                        {% else %}
+                            Never
+                        {% endif %}
+                    </td>
+                    <td>{{ user.date_joined_jalali }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
+
         </table>
     </div>
 </div>

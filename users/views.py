@@ -48,7 +48,9 @@ def profile_view(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
             # user_profile = get_object_or_404(Profile, username=request.user.username)
-            return render (request, 'Profile_page.html', {'user': request.user
+            return render (request, 'Profile_page.html', {
+                                                        #   'user': request.user, 
+                                                          "main_page": False
                                                               # ,'user_profile': user_profile
                                                               })
         return HttpResponse('You Must Log In First')

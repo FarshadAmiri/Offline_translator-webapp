@@ -137,16 +137,26 @@ function editText(event, query) {
 }
 
 function encryptText(event, query) {
-
     if (query === "translating") {
-        var inputLang = document.querySelector('input[name="btnRadio_input"]:checked').value;
-        var outputLang = document.querySelector('input[name="btnRadio_output"]:checked').value;
-        if (inputLang === outputLang) {
-            alert("Input and output languages should not be same!");
+        var inputLangElement = document.querySelector('input[name="btnRadio_input"]:checked');
+        var outputLangElement = document.querySelector('input[name="btnRadio_output"]:checked');
+
+        // Check if both language selections exist
+        if (!inputLangElement || !outputLangElement) {
+            alert("Please select both source and target languages.");
             event.preventDefault();
             return false;
         }
-    };
+
+        var inputLang = inputLangElement.value;
+        var outputLang = outputLangElement.value;
+
+        if (inputLang === outputLang) {
+            alert("Input and output languages should not be the same!");
+            event.preventDefault();
+            return false;
+        }
+    }
 
     var plainText = document.getElementById('source_text').value;
     var translationTextArea = document.getElementById('translation');
@@ -166,7 +176,6 @@ function encryptText(event, query) {
         // Disable the "Translate" button to prevent multiple requests
         var translateButton = document.getElementById('arrow-btn');
         translateButton.disabled = true;
-
     }
 
     // Generate a random 128-bit (16 bytes) AES key
@@ -181,8 +190,6 @@ function encryptText(event, query) {
     var encrypt = new JSEncrypt();
     encrypt.setPublicKey(publicKey);
     var encryptedAesKey = encrypt.encrypt(aesKey.toString(CryptoJS.enc.Base64));
-
-    // Debug: Log the encrypted AES key and text
 
     // Send data via AJAX
     $.ajax({
@@ -202,11 +209,9 @@ function encryptText(event, query) {
         success: function(response) {
             // Decrypt the response
             var decryptedTranslation = CryptoJS.AES.decrypt(response.translation, aesKey, {mode: CryptoJS.mode.ECB}).toString(CryptoJS.enc.Utf8);
-            //var decryptedSourceText = CryptoJS.AES.decrypt(response.source_text, aesKey, {mode: CryptoJS.mode.ECB}).toString(CryptoJS.enc.Utf8);
 
             // Update the UI
             document.getElementById('translation').value = decryptedTranslation;
-            //document.getElementById('source_text').value = decryptedSourceText;
 
             // Hide the spinner
             spinner.style.display = 'none';
@@ -215,24 +220,36 @@ function encryptText(event, query) {
             // Re-enable the "Translate" button
             var translateButton = document.getElementById('arrow-btn');
             translateButton.disabled = false;
-
-            // Reset the flag
-            isRequestInProgress = false;
         },
         error: function(xhr, status, error) {
             console.error("Error:", error);
-            alert("An error occurred during translation. Please try again.");
+
+            try {
+                var response = JSON.parse(xhr.responseText);
+                if (response.error) {
+                    // Show the JSON response error in an alert
+                    alert(response.error);
+                } else {
+                    // Fallback alert message
+                    alert("An error occurred during translation. Please try again.");
+                }
+            } catch (e) {
+                // If response is not JSON, fallback to generic alert
+                alert("An error occurred during translation. Please try again.");
+            }
+
             spinner.style.display = 'none';
             translationTextArea.style.color = '#000';
 
             // Re-enable the "Translate" button
             var translateButton = document.getElementById('arrow-btn');
             translateButton.disabled = false;
-        },
+        }
     });
 
     return false; // Prevent form submission
 };
+
 
 function saveTranslation(event) {
     event.preventDefault(); // Prevent form submission
@@ -340,19 +357,19 @@ function saveTranslation(event) {
                 <div class="col-md-6">
                   <div class="btn-group-lg d-flex justify-content-center align-items-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px; margin-top: 0px;">
                       <div style="margin-left: 7px;">
-                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-en" autocomplete="off" value="en" onclick="disableCorrespondingRadio('input', this); changeText()" checked>
+                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-en" autocomplete="off" value="en" onclick="disableCorrespondingRadio('input', this); changeText()" {% if checked_source_lang == "en"  %} checked {% endif %}{% if "en" in unallowed_langs %} disabled {% endif %}>
                           <label class="btn btn-outline-primary english-btn" for="btnInput-en">English</label>
                       </div>
                       <div style="margin-left: 7px;">
-                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-ar" autocomplete="off" value="ar" onclick="disableCorrespondingRadio('input', this); changeText()">
+                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-ar" autocomplete="off" value="ar" onclick="disableCorrespondingRadio('input', this); changeText()" {% if checked_source_lang == "ar"  %} checked {% endif %}{% if "ar" in unallowed_langs %} disabled {% endif %}>
                           <label class="btn btn-outline-primary arabic-btn" for="btnInput-ar">العربي</label>
                       </div>
                       <div style="margin-left: 7px;">
-                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-fa" autocomplete="off" value="fa" onclick="disableCorrespondingRadio('input', this); changeText()">
+                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-fa" autocomplete="off" value="fa" onclick="disableCorrespondingRadio('input', this); changeText()" {% if checked_source_lang == "fa"  %} checked {% endif %}{% if "fa" in unallowed_langs %} disabled {% endif %}>
                           <label class="btn btn-outline-primary persian-btn" for="btnInput-fa">فارسی</label>
                       </div>
                       <div style="margin-left: 7px;">
-                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-he" autocomplete="off" value="he" onclick="disableCorrespondingRadio('input', this); changeText()">
+                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-he" autocomplete="off" value="he" onclick="disableCorrespondingRadio('input', this); changeText()" {% if checked_source_lang == "he"  %} checked {% endif %}{% if "he" in unallowed_langs %} disabled {% endif %}>
                           <label class="btn btn-outline-primary hebrew-btn" for="btnInput-he">עִברִית</label>
                       </div>
                       <div style="margin-left: 25px;"> 
@@ -360,7 +377,7 @@ function saveTranslation(event) {
                       </div>
                   </div>
                     <div style="position: relative;">
-                    <textarea class="form-control" name="source_text" id="source_text" rows="21" placeholder="Enter English text" oninput="updateCharacterCount();"></textarea>
+                    <textarea class="form-control" name="source_text" id="source_text" rows="21" placeholder="" oninput="updateCharacterCount();"></textarea>
                     <span id="charCount" style="position: absolute; bottom: -28px; right: 20px; padding: 0; margin: 0; font-weight: bold;"></span>
                     <input type="hidden" id="source_text_hidden" value="{{ source_text }}">
                     </div>
@@ -372,19 +389,19 @@ function saveTranslation(event) {
                 <div class="col-md-6">
                     <div class="btn-group-lg d-flex justify-content-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px; margin-top: 0px;">
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-en" value="en" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()">
+                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-en" value="en" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()" {% if checked_target_lang == "en"  %} checked {% endif %}{% if "en" in unallowed_langs %} disabled {% endif %}>
                         <label class="btn btn-outline-primary english-btn" for="btnOutput-en">English</label>
                     </div>
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-ar" value="ar" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()">
+                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-ar" value="ar" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()" {% if checked_target_lang == "ar"  %} checked {% endif %}{% if "ar" in unallowed_langs %} disabled {% endif %}>
                         <label class="btn btn-outline-primary arabic-btn" for="btnOutput-ar">العربي</label>
                     </div>
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-fa" value="fa" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()" checked>
+                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-fa" value="fa" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()" {% if checked_target_lang == "fa"  %} checked {% endif %}{% if "fa" in unallowed_langs %} disabled {% endif %}>
                         <label class="btn btn-outline-primary persian-btn" for="btnOutput-fa">فارسی</label>
                     </div>
                     <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-he" value="he" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()">
+                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-he" value="he" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()" {% if checked_target_lang == "he"  %} checked {% endif %}{% if "he" in unallowed_langs %} disabled {% endif %}>
                         <label class="btn btn-outline-primary hebrew-btn" for="btnOutput-he">עִברִית</label>
                     </div>
                     </div>
@@ -446,19 +463,19 @@ function saveTranslation(event) {
           </div>
           <div class="btn-group-lg d-flex justify-content-center align-items-center mb-4" role="group" aria-label="Basic radio toggle button group">
             <div style="margin-left: 7px;">
-              <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-en" autocomplete="off" value="en" checked {% if "English" in allowed_langs %} disabled {% endif %}>
+              <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-en" autocomplete="off" value="en" {% if checked_source_lang == "en"  %} checked {% endif %}{% if "en" in unallowed_langs %} disabled {% endif %}>
               <label class="btn btn-outline-primary english-btn" for="modal_btnInput-en">English</label>
             </div>
             <div style="margin-left: 7px;">
-              <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-ar" autocomplete="off" value="ar">
+              <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-ar" autocomplete="off" value="ar" {% if checked_source_lang == "ar"  %} checked {% endif %}{% if "ar" in unallowed_langs %} disabled {% endif %}>
               <label class="btn btn-outline-primary arabic-btn" for="modal_btnInput-ar">العربي</label>
             </div>
             <div style="margin-left: 7px;">
-              <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-fa" autocomplete="off" value="fa">
+              <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-fa" autocomplete="off" value="fa" {% if checked_source_lang == "fa"  %} checked {% endif %}{% if "fa" in unallowed_langs %} disabled {% endif %}>
               <label class="btn btn-outline-primary persian-btn" for="modal_btnInput-fa">فارسی</label>
             </div>
             <div style="margin-left: 7px;">
-              <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-he" autocomplete="off" value="he">
+              <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-he" autocomplete="off" value="he" {% if checked_source_lang == "he"  %} checked {% endif %}{% if "he" in unallowed_langs %} disabled {% endif %}>
               <label class="btn btn-outline-primary hebrew-btn" for="modal_btnInput-he">עִברִית</label>
             </div>
           </div>
@@ -470,19 +487,19 @@ function saveTranslation(event) {
           </div>
           <div class="btn-group-lg d-flex justify-content-center align-items-center mb-4" role="group" aria-label="Basic radio toggle button group">
             <div style="margin-left: 7px;">
-              <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-en" autocomplete="off" value="en">
+              <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-en" autocomplete="off" value="en" {% if checked_target_lang == "en"  %} checked {% endif %}{% if "en" in unallowed_langs %} disabled {% endif %}>
               <label class="btn btn-outline-primary english-btn" for="modal_btnOutput-en">English</label>
             </div>
             <div style="margin-left: 7px;">
-              <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-ar" autocomplete="off" value="ar">
+              <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-ar" autocomplete="off" value="ar" {% if checked_target_lang == "ar"  %} checked {% endif %}{% if "ar" in unallowed_langs %} disabled {% endif %}>
               <label class="btn btn-outline-primary arabic-btn" for="modal_btnOutput-ar">العربي</label>
             </div>
             <div style="margin-left: 7px;">
-              <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-fa" autocomplete="off" value="fa" checked>
+              <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-fa" autocomplete="off" value="fa" {% if checked_target_lang == "fa"  %} checked {% endif %}{% if "fa" in unallowed_langs %} disabled {% endif %}>
               <label class="btn btn-outline-primary persian-btn" for="modal_btnOutput-fa">فارسی</label>
             </div>
             <div style="margin-left: 7px;">
-              <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-he" autocomplete="off" value="he" checked>
+              <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-he" autocomplete="off" value="he" {% if checked_target_lang == "he"  %} checked {% endif %}{% if "he" in unallowed_langs %} disabled {% endif %}>
               <label class="btn btn-outline-primary hebrew-btn" for="modal_btnOutput-he">עִברִית</label>
             </div>
           </div>
@@ -883,8 +900,20 @@ window.onload = function() {
     for (var i = 0; i < radioOutput.length; i++) {
       if (radioOutput[i].id === "btnOutput-he") {radioOutput[i].checked = true;} else {radioOutput[i].checked = false};        
     }
-  };
-  disableUnavailableLanguages();
+  }
+
+    // Define language-specific placeholders
+    let placeholders = {
+        "fa": "متن فارسی را وارد کنید", // Persian
+        "ar": "أدخل النص العربي",      // Arabic
+        "he": "הזן טקסט בעברית",       // Hebrew
+        "en": "Enter English text" // English
+    };
+
+    // Update placeholder if sourceLang is in the predefined set
+    if (placeholders[sourceLang]) {
+        source_text.placeholder = placeholders[sourceLang];
+    }
   }
 
 

@@ -7,19 +7,20 @@ table {
 table th, table td {
     padding: 12px;
     text-align: left;
+    text-align: center;
 }
 
 table th {
     background-color: #f8f9fa;
 }
 
-.btn-primary {
+/* .btn-primary {
     margin-bottom: 20px;
-}
+} */
 
 /* Main container */
 .container {
-    max-width: 90%;
+    max-width: 1600px;
     margin: 20px auto;
     padding: 20px;
     background: #fff;
@@ -32,12 +33,13 @@ table th {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 0px;
 }
 
 /* Button styling */
 .add-user-btn {
     padding: 10px 15px;
+    margin-bottom: 15px;
     background: #007bff;
     color: #fff;
     text-decoration: none;
@@ -85,6 +87,10 @@ margin-left: 10px; /* Adjust spacing as needed */
     color: #fff; /* Ensures text remains visible */
 }
 
+#search-container {
+    margin-top: -20px; /* Adjust this value as needed */
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .container {
@@ -103,3 +109,4 @@ margin-left: 10px; /* Adjust spacing as needed */
         text-align: center;
     }
 }
+

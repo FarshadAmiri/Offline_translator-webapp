@@ -27,6 +27,7 @@ from .models import *
 from users.models import User, Language
 from django.contrib.auth.models import Group
 from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import OuterRef, Subquery, Count
 import json
 import logging
 import base64
@@ -36,13 +37,39 @@ from datetime import datetime
 
 
 documents_repo = r"documents_repo"
+language_code2name = {"fa":"Persian", "en": "English", "ar": "Arabic","he": "Hebrew"}
+language_name2code = {v: k for k, v in language_code2name.items()}
 
 @login_required(login_url='users:login')
 def Translation(request):
+    global language_code2name
     if request.method == 'GET':
-        allowed_langs = request.user.allowed_langs.values_list('code', flat=True)
-        return render(request, 'main/translation.html', {"mode": "user", "source_lang": "en", "target_lang": "fa",
-                                                         "main_page": True, "allowed_langs": allowed_langs})
+        all_langs = {"English", "Arabic", "Persian", "Hebrew"}
+        allowed_langs = set(request.user.allowed_langs.values_list('code', flat=True))
+        unallowed_langs = all_langs - allowed_langs
+        allowed_langs, unallowed_langs = list(allowed_langs), list(unallowed_langs)
+        priority_langs = {"English": 4, "Arabic":3, "Hebrew":2, "Persian": 1}
+        modified_priority_langs = {k: v for k, v in priority_langs.items() if k not in unallowed_langs}
+
+        if len(allowed_langs) == 0:
+            checked_source_lang = None
+            checked_target_lang = None
+        elif len(allowed_langs) == 1:
+            checked_source_lang = allowed_langs[0]
+            checked_target_lang = allowed_langs[0]
+        elif len(allowed_langs) >= 2:
+            checked_source_lang, checked_target_lang = sorted(modified_priority_langs, key=lambda x: modified_priority_langs[x], reverse=True)[:2]
+            if "Persian" in allowed_langs:
+                checked_target_lang = "Persian" 
+        
+        checked_source_lang = language_name2code[checked_source_lang]
+        checked_target_lang = language_name2code[checked_target_lang]
+        allowed_langs = [language_name2code[i] for i in allowed_langs]
+        unallowed_langs = [language_name2code[i] for i in unallowed_langs]
+
+        return render(request, 'main/translation.html', {"mode": "user", "source_lang": checked_source_lang, "target_lang": checked_target_lang, "main_page": True,
+                                                          "allowed_langs": allowed_langs, "unallowed_langs": unallowed_langs, 
+                                                          "checked_source_lang": checked_source_lang, "checked_target_lang": checked_target_lang})
 
     # elif (request.method == 'POST') and "translate-btn" in request.POST:
     #     source_lang = request.POST.get('source_lang')
@@ -82,10 +109,11 @@ def Translation(request):
     elif request.method == 'POST' and "translate-btn" in request.POST:
         source_lang = request.POST.get('source_lang')
         target_lang = request.POST.get('target_lang')
+        source_lang_name, target_lang_name = language_code2name[source_lang], language_code2name[target_lang]
 
         # Ensure user has permission for selected languages
         user_allowed_langs = request.user.allowed_langs.values_list('code', flat=True)
-        if source_lang not in user_allowed_langs or target_lang not in user_allowed_langs:
+        if source_lang_name not in user_allowed_langs or target_lang_name not in user_allowed_langs:
             return JsonResponse({'error': 'You are not allowed to use these languages.'}, status=403)
 
         # Continue translation if languages are allowed
@@ -461,6 +489,13 @@ def file_translation(request):
         encrypted_aes_key = request.POST.get('encryptedAesKey')
         file_name = request.POST.get('fileInputName')
         aes_key = decrypt_aes_key(encrypted_aes_key)
+
+        source_lang_name, target_lang_name = language_code2name[input_language], language_code2name[output_language]
+
+        # Ensure user has permission for selected languages
+        user_allowed_langs = request.user.allowed_langs.values_list('code', flat=True)
+        if source_lang_name not in user_allowed_langs or target_lang_name not in user_allowed_langs:
+            return JsonResponse({'error': 'You are not allowed to use these languages.'}, status=403)
     
         # Input file naming
         doc_name, doc_suffix = os.path.splitext(file_name)
@@ -544,22 +579,44 @@ def check_translation_progress(request):
 
 
 @admins_only
-def users_table(request,):
-    # Fetch all users
-    users = User.objects.all() # Assuming UserProfile is related to User
-    # users = list(User.objects.all()) * 100
+def users_table(request):
+    # Subqueries to count related records per user
+    saved_texts_subquery = TranslationTask.objects.filter(user=OuterRef('pk')).order_by().values('user').annotate(count=Count('pk')).values('count')
+    file_translations_subquery = FileTranslationTask.objects.filter(user=OuterRef('pk')).order_by().values('user').annotate(count=Count('pk')).values('count')
 
-    # Pass users to the template
+    # Fetch users along with related counts
+    users = User.objects.annotate(
+        num_saved_texts=Subquery(saved_texts_subquery, output_field=models.IntegerField()),
+        num_file_translations=Subquery(file_translations_subquery, output_field=models.IntegerField())
+    )
+    
+    # Convert created_at and last_login to Jalali datetime
+    for user in users:
+        if user.date_joined:
+            date_joined_jalali = jdatetime.fromgregorian(date=user.date_joined)
+            date_joined_jalali = date_joined_jalali + timedelta(hours=3, minutes=30)
+            date_joined_jalali = date_joined_jalali.strftime("%Y/%m/%d ‌‌ ‌ ‌ ‌  %H:%M")
+            user.date_joined_jalali = date_joined_jalali
+        else:
+            user.date_joined_jalali = None
+        
+        if user.last_login:
+            last_login_jalali = jdatetime.fromgregorian(date=user.last_login)
+            last_login_jalali = last_login_jalali + timedelta(hours=3, minutes=30)
+            last_login_jalali = last_login_jalali.strftime("%Y/%m/%d ‌‌ ‌ ‌ ‌  %H:%M")
+            user.last_login_jalali = last_login_jalali
+        else:
+            user.last_login_jalali = None
+
     return render(request, 'main/users_table.html', {
         'users': users,
     })
 
-
 @admins_only
 def edit_user(request, username):
-    user = get_object_or_404(User, username=username)
+    editing_user = get_object_or_404(User, username=username)
     admin_group, created = Group.objects.get_or_create(name="Admin")
-    user_level = "admin" if (user.groups.filter(name="Admin").exists() or user.is_superuser) else "regular"
+    user_level = "admin" if (editing_user.groups.filter(name="Admin").exists() or editing_user.is_superuser) else "regular"
     languages = Language.objects.all()
 
     if request.method == "POST":
@@ -570,29 +627,29 @@ def edit_user(request, username):
             if new_password != confirm_password:
                 messages.error(request, "New passwords do not match.")
             else:
-                user.set_password(new_password)
-                user.save()
+                editing_user.set_password(new_password)
+                editing_user.save()
                 messages.success(request, "Password updated successfully.")
         
         else:  # Edit User Info
-            user.username = request.POST["username"]
-            user.first_name = request.POST.get("firstname", "")
-            user.last_name = request.POST.get("lastname", "")
-            user.email = request.POST.get("email", "")
-            user.phone = request.POST.get("phone", "")
+            editing_user.username = request.POST["username"]
+            editing_user.first_name = request.POST.get("firstname", "")
+            editing_user.last_name = request.POST.get("lastname", "")
+            editing_user.email = request.POST.get("email", "")
+            editing_user.phone = request.POST.get("phone", "")
             selected_languages = request.POST.getlist("allowed_langs")
-            user.allowed_langs.set(Language.objects.filter(code__in=selected_languages))
+            editing_user.allowed_langs.set(Language.objects.filter(code__in=selected_languages))
             user_level = request.POST.get("user_level", "regular")
             if user_level == "admin":
-                user.groups.add(admin_group)
+                editing_user.groups.add(admin_group)
             else:
-                user.groups.remove(admin_group)
-            user.save()
+                editing_user.groups.remove(admin_group)
+            editing_user.save()
             messages.success(request, "User updated successfully.")
         
-        return redirect("main:edit_user", username=user.username)
+        return redirect("main:edit_user", username=editing_user.username)
 
-    return render(request, "main/edit_user.html", {"user": user, "user_level": user_level, "languages": languages})
+    return render(request, "main/edit_user.html", {"editing_user": editing_user, "user_level": user_level, "languages": languages})
 
 
 @admins_only
@@ -617,8 +674,8 @@ def create_user(request):
             username=username,
             first_name = firstname if firstname else "",
             last_name = lastname if lastname else "",
-            email=email if email else None,
-            phone=phone if phone else None,
+            email=email if email else "",
+            phone=phone if phone else "",
             password=password,
         )
 
@@ -637,3 +694,20 @@ def create_user(request):
         return redirect("main:create_user")
 
     return render(request, "main/create_user.html")
+
+
+@admins_only
+def delete_user(request, username):
+    user = get_object_or_404(User, username=username)
+    
+    if request.method == "POST":
+        if user.is_superuser:
+            messages.warning(request, "A Superuser cannot be deleted from here! Contact the management if you persist.")
+            # return redirect("main:users_table")  # Redirect back to users list
+            return redirect("main:edit_user", username=user.username)
+        
+        user.delete()
+        messages.success(request, f'User "{username}" deleted successfully.')
+        return redirect("main:users_table")  # Redirect back to users list
+    
+    return redirect("main:edit_user", username=username)
