@@ -372,9 +372,19 @@ function saveTranslation(event) {
                           <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-he" autocomplete="off" value="he" onclick="disableCorrespondingRadio('input', this); changeText()" {% if checked_source_lang == "he"  %} checked {% endif %}{% if "he" in unallowed_langs %} disabled {% endif %}>
                           <label class="btn btn-outline-primary hebrew-btn" for="btnInput-he">עִברִית</label>
                       </div>
-                      <div style="margin-left: 25px;"> 
-                        <button type="button" class="btn btn-secondary" id="documentModalBtn" data-bs-toggle="modal" data-bs-target="#docModal" style="font-size: 18px;">Document</button>
-                      </div>
+                      {% comment %} <div style="margin-left: 25px;"> 
+                        <button type="button" class="btn btn-secondary" id="documentModalBtn" data-bs-toggle="modal" data-bs-target="#docModal" style="font-size: 18px;">File Translation</button>
+                      </div> {% endcomment %}
+                    <div style="margin-left: 25px;">
+                        <button type="button" class="btn btn-secondary" id="documentModalBtn" data-bs-toggle="modal" data-bs-target="#docModal" 
+                            style="font-size: 18px; display: flex; align-items: center; gap: 8px; padding: 8px 12px;">
+                            {% comment %} <span>File Translation</span> {% endcomment %}
+                            <span style="display: flex; align-items: center; gap: 2px;">
+                                <img src="static/icons/doc_2.svg" width="24" height="24" alt="Icon 1">
+                                <img src="static/icons/microphone-lines.svg" width="24" height="24" alt="Icon 2">
+                            </span>
+                        </button>
+                    </div>
                   </div>
                     <div style="position: relative;">
                     <textarea class="form-control" name="source_text" id="source_text" rows="21" placeholder="" oninput="updateCharacterCount();"></textarea>
@@ -446,13 +456,13 @@ function saveTranslation(event) {
     </form>
 </div>
 </div>
-<!-- Modal Structure -->
+<!-- File translation Modal (document or speech) -->
 <div class="modal fade" id="docModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <form id="translationForm" enctype="multipart/form-data">
         <div class="modal-header">
-          <h5 class="modal-title" id="myModalLabel">Document translation</h5>
+          <h5 class="modal-title" id="myModalLabel">File Translation (Document or Speech)</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -506,7 +516,7 @@ function saveTranslation(event) {
 
           <!-- File Upload Section -->
           <div class="text-center">
-            <label for="fileUpload" class="form-label" style="font-size: 17px; color: gray;">Upload your document</label>
+            <label for="fileUpload" class="form-label" style="font-size: 17px; color: gray;">Upload your file (document or speech)</label>
             <input class="form-control" type="file" id="fileUpload" name="document" style="max-width: 70%; margin: 0 auto;">
           </div>
         </div>
@@ -653,11 +663,11 @@ document.getElementById('translationForm').addEventListener('submit', function (
     translateButton.disabled = true;
 
     fileInputName = document.getElementById('fileUpload').files[0].name;
-    const validExtensions = ['.docx', '.doc', '.pdf'];
+    const validExtensions = ['.docx', '.doc', '.pdf', '.wav', '.mp3', '.ogg', '.m4a', '.wma', '.aac'];
     const fileExtension = fileInputName.substring(fileInputName.lastIndexOf('.')).toLowerCase();
 
     if (!validExtensions.includes(fileExtension)) {
-        alert('Error: File format must be .doc, .docx, or .pdf');
+        alert("Error: File format must be one of these: ['.docx', '.doc', '.pdf', '.wav', '.mp3', '.ogg', '.m4a', '.wma', '.aac']");
         // Hide spinner and re-enable button after successful response
         translateSpinner.style.display = 'none';
         translateButton.disabled = false;
@@ -701,19 +711,28 @@ document.getElementById('translationForm').addEventListener('submit', function (
         });
     })
     .then(response => {
-        if (!response.ok) {
-            throw new Error('Failed to translate the document.');
-        }
+    if (!response.ok) {
+        throw new Error('Failed to translate the document.');
+    }
 
-        // Get the filename from the response headers
-        const contentDisposition = response.headers.get('Content-Disposition');
-        var filename = 'translated_document.docx'; // Default filename
+    // Get the filename and file type from response headers
+    const contentDisposition = response.headers.get('Content-Disposition');
+    const fileType = response.headers.get('X-File-Type');  // Retrieve file type
+    let filename = 'translated_document.bin'; // Default filename
 
-        if (contentDisposition && contentDisposition.indexOf('filename=') !== -1) {
-            filename = contentDisposition.split('filename=')[1].replace(/['"]/g, '');
-        }
+    // Assign correct file extension
+    if (fileType === "doc") {
+        filename = "translated_document.docx";
+    } else if (fileType === "wav") {
+        filename = "translated_speech.wav";
+    }
 
-        return response.blob().then(blob => ({ blob, filename })); // Return both blob and filename
+    // Extract filename if available
+    if (contentDisposition && contentDisposition.indexOf('filename=') !== -1) {
+        filename = contentDisposition.split('filename=')[1].replace(/['"]/g, '');
+    }
+
+    return response.blob().then(blob => ({ blob, filename })); // Return both blob and filename
     })
     .then(({ blob, filename }) => {
         const encryptionKey = formData.get('encryptedAesKey'); // Retrieve the encryption key
@@ -738,7 +757,7 @@ document.getElementById('translationForm').addEventListener('submit', function (
         link.remove();
     })
     .catch(error => {
-        // Hide spinner and re-enable button on error
+        // Hide spinner and re-enable button on error 
         translateSpinner.style.display = 'none';
         translateButton.disabled = false;
 
@@ -771,6 +790,18 @@ if (document.getElementById('haveDoneFileTranslation').value === "True") {
                   progressBar.classList.add('bg-info');
                   progressBar.style.width = "100%";
                   progressBar.innerText = "Extracting contents...";
+                } else if (progress === "transcripting") {
+                  progressBar.classList.add('bg-secondary');
+                  progressBar.style.width = "100%";
+                  progressBar.innerText = "Transcripting...";
+                } else if (progress === "translating") {
+                  progressBar.classList.add('bg-info');
+                  progressBar.style.width = "100%";
+                  progressBar.innerText = "Translating...";
+                } else if (progress === "generating speech") {
+                  progressBar.classList.add('bg-primary');
+                  progressBar.style.width = "100%";
+                  progressBar.innerText = "Generating speech...";
                 } else if (progress >= 100) {
                 if (progressBar.classList.contains('bg-info')) {
                     progressBar.classList.remove('bg-info');

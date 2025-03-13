@@ -36,7 +36,7 @@ import os
 from datetime import datetime
 
 
-documents_repo = r"documents_repo"
+files_repo = r"documents_repo"
 language_code2name = {"fa":"Persian", "en": "English", "ar": "Arabic","he": "Hebrew"}
 language_name2code = {v: k for k, v in language_code2name.items()}
 
@@ -498,45 +498,85 @@ def file_translation(request):
             return JsonResponse({'error': 'You are not allowed to use these languages.'}, status=403)
     
         # Input file naming
-        doc_name, doc_suffix = os.path.splitext(file_name)
+        file_name, file_suffix = os.path.splitext(file_name)
         formatted_datetime = datetime.now().strftime('%Y-%m-%d--%H-%M')
-        doc_save_name = f"{user.username}_{doc_name}_{formatted_datetime}{doc_suffix}"
+        file_save_name = f"{user.username}_{file_name}_{formatted_datetime}{file_suffix}"
 
         if encrypted_data:
             decrypted_data = decrypt_file_AES_ECB(encrypted_data, aes_key)
 
             # Create a Django file-like object from the decoded data
-            document = ContentFile(decrypted_data, name=doc_save_name)
+            document = ContentFile(decrypted_data, name=file_save_name)
             print("\n\ndecryption done\n\n")
 
-
         # Save document to the specified repository
-        doc_path = os.path.join(documents_repo, doc_save_name)
-        doc_path = default_storage.get_available_name(doc_path)
-        default_storage.save(doc_path, ContentFile(document.read()))
+        file_path = os.path.join(files_repo, file_save_name)
+        file_path = default_storage.get_available_name(file_path)
+        default_storage.save(file_path, ContentFile(document.read()))
 
         # Define the output path for the translated file
-        output_path = os.path.splitext(doc_path)[0] + "_translation" + ".docx"
+        if file_suffix in [".docx", ".doc", ".pdf", ".txt"]:
+            file_type = "doc"
+            output_path = os.path.splitext(file_path)[0] + "_translation" + ".docx"
+        elif file_suffix in [".wav", ".mp3", ".ogg", ".m4a", ".wma", ".aac"]:
+            file_type = "speech"
+            output_path = os.path.splitext(file_path)[0] + "_translation" + ".wav"
+        else:
+            return JsonResponse({'success': False, 'error': 'Invalid input type.'})
+        
+
+        translation_object = FileTranslationTask.objects.get(task_id=translation_task_id)
+        translation_object.task_type = file_type
+        translation_object.save()
+
 
         # Handle file translation (this function should perform the actual translation)
-        file_translation_handler(doc_path, output_path, input_language, output_language, translation_task_id)
+        file_translation_handler(file_path, output_path, file_type, input_language, output_language, translation_task_id)
 
         try:
             with open(output_path, 'rb') as file:
                 file_content = file.read()
                 encrypted_file = encrypt_file_AES_ECB(file_content, aes_key)
 
-                # response = HttpResponse(file.read(), content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-                response = HttpResponse(encrypted_file, content_type='application/octet-stream')
+                # Determine content type and file extension
+                file_extensions = {"doc": "docx", "wav": "wav"}  # Map file types to extensions
+                file_extension = file_extensions.get(file_type, "bin")  # Default to .bin if unknown
+                content_types = {"doc": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                "wav": "audio/x-wav"}
+
+                content_type = content_types.get(file_type, "application/octet-stream")  # Default binary stream
+
+                # Create response
+                response = HttpResponse(encrypted_file, content_type=content_type)
                 response['Content-Disposition'] = f'attachment; filename="{os.path.basename(output_path)}"'
                 response['X-File-Name'] = os.path.basename(output_path)  # Adding file name to header
+                response['X-File-Type'] = file_type  # Adding file type to header
+                print("File sent to client")
+
                 return response
         except FileNotFoundError:
             return JsonResponse({'success': False, 'error': 'Translated file not found.'})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
+        
+    #     try:
+    #         with open(output_path, 'rb') as file:
+    #             file_content = file.read()
+    #             encrypted_file = encrypt_file_AES_ECB(file_content, aes_key)
+    #             content_type = 'application/octet-stream' if file_type == "doc" else 'audio/x-wav'
+    #             # response = HttpResponse(file.read(), content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    #             response = HttpResponse(encrypted_file, content_type=content_type)
+    #             response['Content-Disposition'] = f'attachment; filename="{os.path.basename(output_path)}"'
+    #             response['X-File-Name'] = os.path.basename(output_path)  # Adding file name to header
+    #             response['X-File-Type'] = file_type
+    #             print("file sent to client")
+    #             return response
+    #     except FileNotFoundError:
+    #         return JsonResponse({'success': False, 'error': 'Translated file not found.'})
+    #     except Exception as e:
+    #         return JsonResponse({'success': False, 'error': str(e)})
 
-    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+    # return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
 
 @csrf_exempt

@@ -18,6 +18,7 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from main.models import *
+from main.utilities.speech_translation import speech_translator
 
 
 def pdf2word(pdf_path, output_path):
@@ -159,16 +160,19 @@ def doc_translator(input_path, output_path, source_lang, target_lang, translatio
     print(f"Translation complete. The document has been saved to {output_path}.")
 
 
-def file_translation_handler(input_path, output_path, source_lang, target_lang, translation_object_id):
-    if input_path.endswith("pdf"):
-        doc_path = os.path.splitext(input_path)[0] + ".docx"
-        pdf2word(input_path, doc_path)
-        # os.remove(input_path)
-        input_path = doc_path
-    elif input_path.endswith("txt"):
-        pass # It should be completed later 
-    elif os.path.splitext(input_path)[1] not in [".docx", ".doc", ".txt", ".pdf"]:
-        raise TypeError("file's format is not supported. try: .docx, .doc, .pdf, .txt")
+def file_translation_handler(input_path, output_path, file_type, source_lang, target_lang, translation_object_id):
+    if file_type == "doc":
+        if input_path.endswith("pdf"):
+            doc_path = os.path.splitext(input_path)[0] + ".docx"
+            pdf2word(input_path, doc_path)
+            # os.remove(input_path)
+            input_path = doc_path
+        elif input_path.endswith("txt"):
+            pass # It should be completed later 
+        elif os.path.splitext(input_path)[1] not in [".docx", ".doc", ".txt", ".pdf"]:
+            raise TypeError("file's format is not supported. try: .docx, .doc, .pdf, .txt")
 
-    doc_translator(input_path, output_path, source_lang, target_lang, translation_object_id)
-    # os.remove(input_path)
+        doc_translator(input_path, output_path, source_lang, target_lang, translation_object_id)
+        # os.remove(input_path)
+    elif file_type == "speech":
+        speech_translator(input_path, output_path, source_lang, target_lang, translation_object_id)
