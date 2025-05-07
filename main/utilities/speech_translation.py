@@ -1,4 +1,4 @@
-import os
+import os, re
 import whisper
 import torch
 from main.utilities.pre_post_text_processing import modify_translation, preprocess_text, analyse_text, postprocess_text
@@ -19,8 +19,6 @@ def speech_to_text(file_path, lang):
     transcription = result["text"]
     return transcription
 
-
-import re
 
 def split_text_for_tts(text, max_length=250):
     # Split by sentence-ending punctuation
@@ -59,14 +57,16 @@ def generate_speech(text, lang, output_path, translation_object_id, temp_dir):
     if lang in ["en", "ar"]:
         reference_speaker = r"D:\Projects\Offline_translator-webapp\main\utilities\obama.ogg"
         tts = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2").to(device)
-        
+
         text_chunks = split_text_for_tts(text)
         print("\ntext_chunks:\n", text_chunks, "\n\n")
         n_chunks = len(text_chunks)
+        file_basename = os.path.basename(output_path)
         temp_files = []
 
         for i, chunk in enumerate(text_chunks):
-            temp_file = os.path.join(temp_dir, f"chunk_{i}.wav")
+            
+            temp_file = os.path.join(temp_dir, f"{file_basename}_chunk_{i}.wav")
             tts.tts_to_file(chunk, file_path=temp_file, speaker_wav=reference_speaker, language=lang)
             temp_files.append(temp_file)
 
@@ -101,6 +101,8 @@ def speech_translator(input_path, output_path, source_lang, target_lang, transla
 
     transcription = speech_to_text(input_path, source_lang)
 
+    print(f"**Transcription:\n{transcription}\n")
+
     translation_object.progress = "translating"
     translation_object.save()
 
@@ -108,6 +110,8 @@ def speech_translator(input_path, output_path, source_lang, target_lang, transla
     source_text_analysis = analyse_text(transcription)
     translation = translate(source_text_preprocessed, source_lang, target_lang)
     translation = postprocess_text(translation, source_text_analysis)
+
+    print(f"**Translation:\n{translation}\n")
 
     translation_object.progress = "generating speech"
     translation_object.save()

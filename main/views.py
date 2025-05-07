@@ -34,6 +34,7 @@ import base64
 from main.utilities.file_translation import file_translation_handler
 import os
 from datetime import datetime
+import time
 
 
 files_repo = r"documents_repo"
@@ -127,7 +128,7 @@ def Translation(request):
         source_text_analysis = analyse_text(source_text)
         translation = translate(source_text_preprocessed, source_lang, target_lang)
         translation = postprocess_text(translation, source_text_analysis)
-
+        
         encrypted_translation = encrypt_AES_ECB(translation, aes_key).decode('utf-8')
         encrypted_source_text = encrypt_AES_ECB(source_text, aes_key).decode('utf-8')
 
@@ -534,28 +535,37 @@ def file_translation(request):
         file_translation_handler(file_path, output_path, file_type, input_language, output_language, translation_task_id)
 
         try:
-            with open(output_path, 'rb') as file:
+            # Wait for the file to be fully written
+            for _ in range(5):
+                if os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
+                    break
+                time.sleep(1)
+
+            with default_storage.open(output_path, 'rb') as file:
                 file_content = file.read()
-                encrypted_file = encrypt_file_AES_ECB(file_content, aes_key)
 
-                # Determine content type and file extension
-                file_extensions = {"doc": "docx", "wav": "wav"}  # Map file types to extensions
-                file_extension = file_extensions.get(file_type, "bin")  # Default to .bin if unknown
-                content_types = {"doc": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                                "wav": "audio/x-wav"}
+            encrypted_file = encrypt_file_AES_ECB(file_content, aes_key)
 
-                content_type = content_types.get(file_type, "application/octet-stream")  # Default binary stream
+            file_extensions = {"doc": "docx", "wav": "wav"}
+            file_extension = file_extensions.get(file_type, "bin")
+            content_types = {
+                "doc": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "speech": "audio/x-wav"
+            }
+            content_type = content_types.get(file_type, "application/octet-stream")
 
-                # Create response
-                response = HttpResponse(encrypted_file, content_type=content_type)
-                response['Content-Disposition'] = f'attachment; filename="{os.path.basename(output_path)}"'
-                response['X-File-Name'] = os.path.basename(output_path)  # Adding file name to header
-                response['X-File-Type'] = file_type  # Adding file type to header
-                print("File sent to client")
+            response = HttpResponse(encrypted_file, content_type=content_type)
+            response['Content-Disposition'] = f'attachment; filename="{os.path.basename(output_path)}"'
+            response['X-File-Name'] = os.path.basename(output_path)
+            response['X-File-Type'] = file_type
 
-                return response
+            print("File sent to client")
+
+            return response
+
         except FileNotFoundError:
             return JsonResponse({'success': False, 'error': 'Translated file not found.'})
+
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
         

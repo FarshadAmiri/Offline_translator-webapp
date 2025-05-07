@@ -141,7 +141,7 @@ def doc_translator(input_path, output_path, source_lang, target_lang, translatio
             translation_object.progress = int((i + 1) * 100 / n_sections)
             translation_object.save()
 
-    # Step 3: Reinsert images at their original positions
+    # Step 3: Reinsert images at their   positions
     for idx, (sec_idx, para_idx, child_idx) in enumerate(image_positions):
         section = document.Sections[sec_idx]
         paragraph = section.Paragraphs[para_idx]
