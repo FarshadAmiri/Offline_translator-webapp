@@ -161,3 +161,4 @@ cython_debug/
 /documents_repo
 *.pth
 huggingface_credentials.txt
+*.pdf

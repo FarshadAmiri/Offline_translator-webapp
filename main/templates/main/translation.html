@@ -257,26 +257,60 @@ function saveTranslation(event) {
     // Get the necessary elements
     var saveButton = document.getElementById('save-btn');
     var spinner = document.getElementById('spinner');
-    var translationTextArea = document.getElementById('translation');
+    var translationTextArea = document.getElementById('translation'); // This variable is declared but not used for its value here. Ensure it's correct.
 
     // Show the spinner and disable the "Save" button
     spinner.style.display = 'inline-block';
+    // Optionally, change the button text to "Saving..."
+    // saveButton.textContent = "Saving...";
     saveButton.disabled = true;
 
     // Get the AES key from localStorage
     var aesRawKey = localStorage.getItem("aesRawKey_translation");
+    if (!aesRawKey) {
+        console.error("AES key not found in localStorage.");
+        alert("An internal error occurred. Please refresh the page.");
+        spinner.style.display = 'none';
+        saveButton.disabled = false;
+        return false;
+    }
     var aesKey = CryptoJS.enc.Utf8.parse(aesRawKey);
 
     // Encrypt the source text and translation
     var sourceText = document.getElementById('source_text').value;
     var translation = document.getElementById('translation').value;
-    var encryptedSourceText = CryptoJS.AES.encrypt(sourceText, aesKey, {mode: CryptoJS.mode.ECB}).toString();
-    var encryptedTranslation = CryptoJS.AES.encrypt(translation, aesKey, {mode: CryptoJS.mode.ECB}).toString();
 
+    // Only proceed with encryption if there's actual text
+    var encryptedSourceText = '';
+    var encryptedTranslation = '';
+
+    if (sourceText.trim() !== "") {
+        encryptedSourceText = CryptoJS.AES.encrypt(sourceText, aesKey, {mode: CryptoJS.mode.ECB}).toString();
+    }
+    if (translation.trim() !== "") {
+        encryptedTranslation = CryptoJS.AES.encrypt(translation, aesKey, {mode: CryptoJS.mode.ECB}).toString();
+    }
+    
     // RSA Encryption on AES key using RSA public key
+    // Ensure 'publicKey' is defined and accessible in this scope.
+    if (typeof JSEncrypt === 'undefined' || typeof publicKey === 'undefined') {
+        console.error("JSEncrypt library or publicKey is not defined.");
+        alert("An encryption library error occurred. Please refresh the page.");
+        spinner.style.display = 'none';
+        saveButton.disabled = false;
+        return false;
+    }
     var encrypt = new JSEncrypt();
     encrypt.setPublicKey(publicKey);
     var encryptedAesKey = encrypt.encrypt(aesKey.toString(CryptoJS.enc.Base64));
+
+    if (!encryptedAesKey) {
+        console.error("Failed to encrypt AES key with RSA public key.");
+        alert("An encryption error occurred. Please try again.");
+        spinner.style.display = 'none';
+        saveButton.disabled = false;
+        return false;
+    }
 
     // Get the source and target languages
     var sourceLang = document.querySelector('input[name="btnRadio_input"]:checked').value;
@@ -296,26 +330,42 @@ function saveTranslation(event) {
             encryptedText: encryptedSourceText,
             encryptedTranslation: encryptedTranslation,
             encryptedAesKey: encryptedAesKey,
-            "save-btn": true,
+            "save-btn": true, // This flag tells your backend it's a save request
         },
         success: function(response) {
             // Hide the spinner and re-enable the "Save" button
             spinner.style.display = 'none';
+            // saveButton.textContent = "Save"; // Reset button text
             saveButton.disabled = false;
+
+            // Check the 'saved' flag from the backend response
+            if (response.success && !response.saved) {
+                // If backend indicates success but saving was prevented (e.g., allow_save=False)
+                alert('Saving is disabled for your account.');
+            }
+            // If response.saved is true, no alert is shown as per requirement.
+            // If response.success is false, it means a different error occurred, handled by the 'error' callback.
         },
         error: function(xhr, status, error) {
             // Hide the spinner and re-enable the "Save" button
             spinner.style.display = 'none';
+            // saveButton.textContent = "Save"; // Reset button text
             saveButton.disabled = false;
 
-            // Show an error message
-            alert("An error occurred while saving the translation. Please try again.");
+            // More specific error message if available from server
+            var errorMessage = "An error occurred while saving the translation. Please try again.";
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                errorMessage = xhr.responseJSON.message;
+            }
+            alert(errorMessage);
             console.error("Error:", error);
+            console.error("XHR:", xhr);
         },
     });
 
     return false; // Prevent form submission
-};
+}
+
 
 </script>
 {% endblock %}
@@ -351,93 +401,123 @@ function saveTranslation(event) {
                 <button type="submit" id="back-btn" name="back-btn" style="margin-right: 95%" onclick="editText(event, 'back')">Back</button>
                 {% endif %}
             {% else %}
-                <button type="submit" id="save-btn" name="save-btn" class="btn" onclick="saveTranslation(event); showMessage('Saved!', this)"><img id="save-icon">&nbspSave</button>
+            {% comment %} {% if allow_save %} {% endcomment %}
+                <button type="submit" id="save-btn" name="save-btn" class="btn {% if not allow_save %}save-btn-hidden-space{% endif %}" onclick="saveTranslation(event); showMessage('Saved!', this)"><img id="save-icon">&nbsp;Save</button>
+            {% comment %} {% endif %} {% endcomment %}
             {% endif %}
             </div>
                 <div class="col-md-6">
-                  <div class="btn-group-lg d-flex justify-content-center align-items-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px; margin-top: 0px;">
+                  <div class="btn-group-lg d-flex justify-content-center align-items-center" role="group" aria-label="Source Language Selection" style="padding-bottom: 10px; padding-top: 0px; margin-top: 0px;">
+                      {% comment %} English Input Button {% endcomment %}
+                      {% if "en" not in unallowed_langs %}
                       <div style="margin-left: 7px;">
-                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-en" autocomplete="off" value="en" onclick="disableCorrespondingRadio('input', this); changeText()" {% if checked_source_lang == "en"  %} checked {% endif %}{% if "en" in unallowed_langs %} disabled {% endif %}>
+                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-en" autocomplete="off" value="en" onclick="disableCorrespondingRadio('input', this); changeText()" {% if checked_source_lang == "en" %} checked {% endif %}>
                           <label class="btn btn-outline-primary english-btn" for="btnInput-en">English</label>
                       </div>
+                      {% endif %}
+
+                      {% comment %} Arabic Input Button {% endcomment %}
+                      {% if "ar" not in unallowed_langs %}
                       <div style="margin-left: 7px;">
-                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-ar" autocomplete="off" value="ar" onclick="disableCorrespondingRadio('input', this); changeText()" {% if checked_source_lang == "ar"  %} checked {% endif %}{% if "ar" in unallowed_langs %} disabled {% endif %}>
+                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-ar" autocomplete="off" value="ar" onclick="disableCorrespondingRadio('input', this); changeText()" {% if checked_source_lang == "ar" %} checked {% endif %}>
                           <label class="btn btn-outline-primary arabic-btn" for="btnInput-ar">العربي</label>
                       </div>
+                      {% endif %}
+
+                      {% comment %} Persian Input Button {% endcomment %}
+                      {% if "fa" not in unallowed_langs %}
                       <div style="margin-left: 7px;">
-                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-fa" autocomplete="off" value="fa" onclick="disableCorrespondingRadio('input', this); changeText()" {% if checked_source_lang == "fa"  %} checked {% endif %}{% if "fa" in unallowed_langs %} disabled {% endif %}>
+                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-fa" autocomplete="off" value="fa" onclick="disableCorrespondingRadio('input', this); changeText()" {% if checked_source_lang == "fa" %} checked {% endif %}>
                           <label class="btn btn-outline-primary persian-btn" for="btnInput-fa">فارسی</label>
                       </div>
+                      {% endif %}
+
+                      {% comment %} Hebrew Input Button {% endcomment %}
+                      {% if "he" not in unallowed_langs %}
                       <div style="margin-left: 7px;">
-                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-he" autocomplete="off" value="he" onclick="disableCorrespondingRadio('input', this); changeText()" {% if checked_source_lang == "he"  %} checked {% endif %}{% if "he" in unallowed_langs %} disabled {% endif %}>
+                          <input type="radio" class="btn-check" name="btnRadio_input" id="btnInput-he" autocomplete="off" value="he" onclick="disableCorrespondingRadio('input', this); changeText()" {% if checked_source_lang == "he" %} checked {% endif %}>
                           <label class="btn btn-outline-primary hebrew-btn" for="btnInput-he">עִברִית</label>
                       </div>
-                      {% comment %} <div style="margin-left: 25px;"> 
-                        <button type="button" class="btn btn-secondary" id="documentModalBtn" data-bs-toggle="modal" data-bs-target="#docModal" style="font-size: 18px;">File Translation</button>
-                      </div> {% endcomment %}
-                    <div style="margin-left: 25px;">
-                        <button type="button" class="btn btn-secondary" id="documentModalBtn" data-bs-toggle="modal" data-bs-target="#docModal" 
-                            style="font-size: 18px; display: flex; align-items: center; gap: 8px; padding: 8px 12px;">
-                            {% comment %} <span>File Translation</span> {% endcomment %}
-                            <span style="display: flex; align-items: center; gap: 2px;">
-                                <img src="static/icons/doc_2.svg" width="24" height="24" alt="Icon 1">
-                                <img src="static/icons/microphone-lines.svg" width="24" height="24" alt="Icon 2">
-                            </span>
-                        </button>
-                    </div>
+                      {% endif %}
+
+                      {# File Translation Button (remains as is) #}
+                      {% if not edit_mode %}
+                      <div style="margin-left: 25px;">
+                          <button type="button" class="btn btn-secondary" id="documentModalBtn" data-bs-toggle="modal" data-bs-target="#docModal" 
+                              style="font-size: 18px; display: flex; align-items: center; gap: 8px; padding: 8px 12px;">
+                              <span style="display: flex; align-items: center; gap: 2px;">
+                                  <img src="static/icons/doc_2.svg" width="24" height="24" alt="Icon 1">
+                                  <img src="static/icons/microphone-lines.svg" width="24" height="24" alt="Icon 2">
+                              </span>
+                          </button>
+                      </div>
+                      {% endif %}
                   </div>
-                    <div style="position: relative;">
-                    <textarea class="form-control" name="source_text" id="source_text" rows="21" placeholder="" oninput="updateCharacterCount();"></textarea>
-                    <span id="charCount" style="position: absolute; bottom: -28px; right: 20px; padding: 0; margin: 0; font-weight: bold;"></span>
-                    <input type="hidden" id="source_text_hidden" value="{{ source_text }}">
-                    </div>
-                    <div class="text-center mt-2">
-                        <button type="button" class="btn clear-btn" onclick="clearText('source_text'); showMessage('Cleared!', this); updateCharacterCount()" data-toggle="tooltip" title="Clear text"><img id="clear-icon"></button>
-                        <button type="button" class="btn copy-btn" onclick="copyText('source_text'); showMessage('Copied!', this)" data-toggle="tooltip" title="Copy to clipboard"><img id="copy-icon"></button>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="btn-group-lg d-flex justify-content-center" role="group" aria-label="Basic radio toggle button group" style="padding-bottom: 10px; padding-top: 0px; margin-top: 0px;">
-                    <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-en" value="en" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()" {% if checked_target_lang == "en"  %} checked {% endif %}{% if "en" in unallowed_langs %} disabled {% endif %}>
-                        <label class="btn btn-outline-primary english-btn" for="btnOutput-en">English</label>
-                    </div>
-                    <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-ar" value="ar" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()" {% if checked_target_lang == "ar"  %} checked {% endif %}{% if "ar" in unallowed_langs %} disabled {% endif %}>
-                        <label class="btn btn-outline-primary arabic-btn" for="btnOutput-ar">العربي</label>
-                    </div>
-                    <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-fa" value="fa" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()" {% if checked_target_lang == "fa"  %} checked {% endif %}{% if "fa" in unallowed_langs %} disabled {% endif %}>
-                        <label class="btn btn-outline-primary persian-btn" for="btnOutput-fa">فارسی</label>
-                    </div>
-                    <div style="margin-left: 7px;">
-                        <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-he" value="he" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()" {% if checked_target_lang == "he"  %} checked {% endif %}{% if "he" in unallowed_langs %} disabled {% endif %}>
-                        <label class="btn btn-outline-primary hebrew-btn" for="btnOutput-he">עִברִית</label>
-                    </div>
-                    </div>
-                    <div class="position-relative">
+                  <div style="position: relative;">
+                      <textarea class="form-control" name="source_text" id="source_text" rows="21" placeholder="" oninput="updateCharacterCount();"></textarea>
+                      <span id="charCount" style="position: absolute; bottom: -28px; right: 20px; padding: 0; margin: 0; font-weight: bold;"></span>
+                      <input type="hidden" id="source_text_hidden" value="{{ source_text }}">
+                  </div>
+                  <div class="text-center mt-2">
+                      <button type="button" class="btn clear-btn" onclick="clearText('source_text'); showMessage('Cleared!', this); updateCharacterCount()" data-toggle="tooltip" title="Clear text"><img id="clear-icon"></button>
+                      <button type="button" class="btn copy-btn" onclick="copyText('source_text'); showMessage('Copied!', this)" data-toggle="tooltip" title="Copy to clipboard"><img id="copy-icon"></button>
+                  </div>
+              </div>
+
+              <div class="col-md-6">
+                  <div class="btn-group-lg d-flex justify-content-center" role="group" aria-label="Target Language Selection" style="padding-bottom: 10px; padding-top: 0px; margin-top: 0px;">
+                      {% comment %} English Output Button {% endcomment %}
+                      {% if "en" not in unallowed_langs %}
+                      <div style="margin-left: 7px;">
+                          <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-en" value="en" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()" {% if checked_target_lang == "en" %} checked {% endif %}>
+                          <label class="btn btn-outline-primary english-btn" for="btnOutput-en">English</label>
+                      </div>
+                      {% endif %}
+
+                      {% comment %} Arabic Output Button {% endcomment %}
+                      {% if "ar" not in unallowed_langs %}
+                      <div style="margin-left: 7px;">
+                          <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-ar" value="ar" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()" {% if checked_target_lang == "ar" %} checked {% endif %}>
+                          <label class="btn btn-outline-primary arabic-btn" for="btnOutput-ar">العربي</label>
+                      </div>
+                      {% endif %}
+
+                      {% comment %} Persian Output Button {% endcomment %}
+                      {% if "fa" not in unallowed_langs %}
+                      <div style="margin-left: 7px;">
+                          <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-fa" value="fa" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()" {% if checked_target_lang == "fa" %} checked {% endif %}>
+                          <label class="btn btn-outline-primary persian-btn" for="btnOutput-fa">فارسی</label>
+                      </div>
+                      {% endif %}
+
+                      {% comment %} Hebrew Output Button {% endcomment %}
+                      {% if "he" not in unallowed_langs %}
+                      <div style="margin-left: 7px;">
+                          <input type="radio" class="btn-check" name="btnRadio_output" id="btnOutput-he" value="he" autocomplete="off" onclick="disableCorrespondingRadio('output', this); changeText()" {% if checked_target_lang == "he" %} checked {% endif %}>
+                          <label class="btn btn-outline-primary hebrew-btn" for="btnOutput-he">עִברִית</label>
+                      </div>
+                      {% endif %}
+                  </div>
+                  <div class="position-relative">
                       <textarea class="form-control" name="translation" id="translation" rows="26" readonly dir='rtl'></textarea>
                       <div class="spinner-border text-primary" id="spinner" role="status">
-                        <span class="sr-only"></span>
+                          <span class="sr-only"></span>
                       </div>
-                    </div>
+                  </div>
+                  <div class="text-center mt-2">
+                      <button type="button" class="btn clear-btn" onclick="clearText('translation'); showMessage('Cleared!', this)" data-toggle="tooltip" title="Clear text"><img id="clear-icon"></button>
+                      <button type="button" class="btn copy-btn" onclick="copyText('translation'); showMessage('Copied!', this)" data-toggle="tooltip" title="Copy to clipboard"><img id="copy-icon"></button>
+                  </div>
+              </div> {# End of col-md-6 for target #}
+            </div> {# End of outer row containing col-md-6s #}
                     <input type="hidden" id="translation_hidden" value="{{ translation }}">
                     <input type="hidden" id="selected_user" name= "selected_user" value="{{ selected_user }}">
                     <input type="hidden" id="mode" name= "mode" value="{{ mode }}">
                     <input type="hidden" id="source_lang" name= "source_lang" value="{{ source_lang }}">
                     <input type="hidden" id="target_lang" name= "target_lang" value="{{ target_lang }}">
                     <input type="hidden" id="current_state" value="{{ source_lang }}">
-                    <div class="text-center mt-2">
-                        <button type="button" class="btn clear-btn" onclick="clearText('translation'); showMessage('Cleared!', this)" data-toggle="tooltip" title="Clear text"><img id="clear-icon"></button>
-                        <button type="button" class="btn copy-btn" onclick="copyText('translation'); showMessage('Copied!', this)" data-toggle="tooltip" title="Copy to clipboard"><img id="copy-icon"></button>
-                    </div>
-                </div>
-                {% comment %} <div class="col-md-6 position-relative" style="top: -30px; right: 440px; margin: 0px; padding: 0px; border: 0px;">
-                    <div class="text-center" style="margin: 0px; padding: 0px; border: 0px;">
-                        <button type="button" class="btn btn-primary">Your Button</button>
-                    </div>
-                </div> {% endcomment %}
-                  <div class="col-md-6 justify-content-center text-center" >
+                    <input type="hidden" id="allow_save" value="{{ allow_save }}">
+                <div class="col-md-6 justify-content-center text-center" >
                       <button type="button" id="swap-btn" onclick="swapTexts();" data-toggle="tooltip" data-placement="right" title="Swap languages (Ctrl + Shift + X)"><img id="swap-icon"></button>
                   </div>
             {% if mode == "user" %}
@@ -456,7 +536,7 @@ function saveTranslation(event) {
     </form>
 </div>
 </div>
-<!-- File translation Modal (document or speech) -->
+{% if not edit_mode %}
 <div class="modal fade" id="docModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -466,55 +546,82 @@ function saveTranslation(event) {
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <!-- Input Language Section -->
           <div class="text-center mb-3">
-            <p style="font-size: 17px; color: gray; margin-bottom: 5px;">Input Language</p>
-            <hr style="border-top: 1px solid #6b6b6b; margin: 0 auto; width: 70%;">
-          </div>
-          <div class="btn-group-lg d-flex justify-content-center align-items-center mb-4" role="group" aria-label="Basic radio toggle button group">
-            <div style="margin-left: 7px;">
-              <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-en" autocomplete="off" value="en" {% if checked_source_lang == "en"  %} checked {% endif %}{% if "en" in unallowed_langs %} disabled {% endif %}>
-              <label class="btn btn-outline-primary english-btn" for="modal_btnInput-en">English</label>
-            </div>
-            <div style="margin-left: 7px;">
-              <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-ar" autocomplete="off" value="ar" {% if checked_source_lang == "ar"  %} checked {% endif %}{% if "ar" in unallowed_langs %} disabled {% endif %}>
-              <label class="btn btn-outline-primary arabic-btn" for="modal_btnInput-ar">العربي</label>
-            </div>
-            <div style="margin-left: 7px;">
-              <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-fa" autocomplete="off" value="fa" {% if checked_source_lang == "fa"  %} checked {% endif %}{% if "fa" in unallowed_langs %} disabled {% endif %}>
-              <label class="btn btn-outline-primary persian-btn" for="modal_btnInput-fa">فارسی</label>
-            </div>
-            <div style="margin-left: 7px;">
-              <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-he" autocomplete="off" value="he" {% if checked_source_lang == "he"  %} checked {% endif %}{% if "he" in unallowed_langs %} disabled {% endif %}>
-              <label class="btn btn-outline-primary hebrew-btn" for="modal_btnInput-he">עִברִית</label>
-            </div>
-          </div>
+                      <p style="font-size: 17px; color: gray; margin-bottom: 5px;">Input Language</p>
+                      <hr style="border-top: 1px solid #6b6b6b; margin: 0 auto; width: 70%;">
+                    </div>
+                    <div class="btn-group-lg d-flex justify-content-center align-items-center mb-4" role="group" aria-label="Basic radio toggle button group">
+                      {% comment %} English Input Button {% endcomment %}
+                      {% if "en" not in unallowed_langs %}
+                      <div style="margin-left: 7px;">
+                        <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-en" autocomplete="off" value="en" {% if checked_source_lang == "en" %} checked {% endif %}>
+                        <label class="btn btn-outline-primary english-btn" for="modal_btnInput-en">English</label>
+                      </div>
+                      {% endif %}
 
-          <!-- Output Language Section -->
-          <div class="text-center mb-3">
-            <p style="font-size: 17px; color: gray; margin-bottom: 5px;">Output Language</p>
-            <hr style="border-top: 1px solid #6b6b6b; margin: 0 auto; width: 70%;">
-          </div>
-          <div class="btn-group-lg d-flex justify-content-center align-items-center mb-4" role="group" aria-label="Basic radio toggle button group">
-            <div style="margin-left: 7px;">
-              <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-en" autocomplete="off" value="en" {% if checked_target_lang == "en"  %} checked {% endif %}{% if "en" in unallowed_langs %} disabled {% endif %}>
-              <label class="btn btn-outline-primary english-btn" for="modal_btnOutput-en">English</label>
-            </div>
-            <div style="margin-left: 7px;">
-              <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-ar" autocomplete="off" value="ar" {% if checked_target_lang == "ar"  %} checked {% endif %}{% if "ar" in unallowed_langs %} disabled {% endif %}>
-              <label class="btn btn-outline-primary arabic-btn" for="modal_btnOutput-ar">العربي</label>
-            </div>
-            <div style="margin-left: 7px;">
-              <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-fa" autocomplete="off" value="fa" {% if checked_target_lang == "fa"  %} checked {% endif %}{% if "fa" in unallowed_langs %} disabled {% endif %}>
-              <label class="btn btn-outline-primary persian-btn" for="modal_btnOutput-fa">فارسی</label>
-            </div>
-            <div style="margin-left: 7px;">
-              <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-he" autocomplete="off" value="he" {% if checked_target_lang == "he"  %} checked {% endif %}{% if "he" in unallowed_langs %} disabled {% endif %}>
-              <label class="btn btn-outline-primary hebrew-btn" for="modal_btnOutput-he">עִברִית</label>
-            </div>
-          </div>
+                      {% comment %} Arabic Input Button {% endcomment %}
+                      {% if "ar" not in unallowed_langs %}
+                      <div style="margin-left: 7px;">
+                        <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-ar" autocomplete="off" value="ar" {% if checked_source_lang == "ar" %} checked {% endif %}>
+                        <label class="btn btn-outline-primary arabic-btn" for="modal_btnInput-ar">العربي</label>
+                      </div>
+                      {% endif %}
 
-          <!-- File Upload Section -->
+                      {% comment %} Persian Input Button {% endcomment %}
+                      {% if "fa" not in unallowed_langs %}
+                      <div style="margin-left: 7px;">
+                        <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-fa" autocomplete="off" value="fa" {% if checked_source_lang == "fa" %} checked {% endif %}>
+                        <label class="btn btn-outline-primary persian-btn" for="modal_btnInput-fa">فارسی</label>
+                      </div>
+                      {% endif %}
+
+                      {% comment %} Hebrew Input Button {% endcomment %}
+                      {% if "he" not in unallowed_langs %}
+                      <div style="margin-left: 7px;">
+                        <input type="radio" class="btn-check" name="input_language" id="modal_btnInput-he" autocomplete="off" value="he" {% if checked_source_lang == "he" %} checked {% endif %}>
+                        <label class="btn btn-outline-primary hebrew-btn" for="modal_btnInput-he">עִברִית</label>
+                      </div>
+                      {% endif %}
+                    </div>
+
+                    <div class="text-center mb-3">
+                      <p style="font-size: 17px; color: gray; margin-bottom: 5px;">Output Language</p>
+                      <hr style="border-top: 1px solid #6b6b6b; margin: 0 auto; width: 70%;">
+                    </div>
+                    <div class="btn-group-lg d-flex justify-content-center align-items-center mb-4" role="group" aria-label="Basic radio toggle button group">
+                      {% comment %} English Output Button {% endcomment %}
+                      {% if "en" not in unallowed_langs %}
+                      <div style="margin-left: 7px;">
+                        <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-en" autocomplete="off" value="en" {% if checked_target_lang == "en" %} checked {% endif %}>
+                        <label class="btn btn-outline-primary english-btn" for="modal_btnOutput-en">English</label>
+                      </div>
+                      {% endif %}
+
+                      {% comment %} Arabic Output Button {% endcomment %}
+                      {% if "ar" not in unallowed_langs %}
+                      <div style="margin-left: 7px;">
+                        <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-ar" autocomplete="off" value="ar" {% if checked_target_lang == "ar" %} checked {% endif %}>
+                        <label class="btn btn-outline-primary arabic-btn" for="modal_btnOutput-ar">العربي</label>
+                      </div>
+                      {% endif %}
+
+                      {% comment %} Persian Output Button {% endcomment %}
+                      {% if "fa" not in unallowed_langs %}
+                      <div style="margin-left: 7px;">
+                        <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-fa" autocomplete="off" value="fa" {% if checked_target_lang == "fa" %} checked {% endif %}>
+                        <label class="btn btn-outline-primary persian-btn" for="modal_btnOutput-fa">فارسی</label>
+                      </div>
+                      {% endif %}
+
+                      {% comment %} Hebrew Output Button {% endcomment %}
+                      {% if "he" not in unallowed_langs %}
+                      <div style="margin-left: 7px;">
+                        <input type="radio" class="btn-check" name="output_language" id="modal_btnOutput-he" autocomplete="off" value="he" {% if checked_target_lang == "he" %} checked {% endif %}>
+                        <label class="btn btn-outline-primary hebrew-btn" for="modal_btnOutput-he">עִברִית</label>
+                      </div>
+                      {% endif %}
+                    </div>
+
           <div class="text-center">
             <label for="fileUpload" class="form-label" style="font-size: 17px; color: gray;">Upload your file (document or speech)</label>
             <input class="form-control" type="file" id="fileUpload" name="document" style="max-width: 70%; margin: 0 auto;">
@@ -537,8 +644,10 @@ function saveTranslation(event) {
     </div>
   </div>
 </div>
+{% endif %}
 <input type="hidden" id="translationTaskId" name="translation_task_id">
 <input type="hidden" id="haveDoneFileTranslation" name="haveDoneFileTranslation">
+
 
 <script>
 var translationTaskIdInput = document.getElementById('translationTaskId');

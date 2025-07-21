@@ -7,134 +7,153 @@
 {% endblock %}
 
 {% block body %}
-<div class="container mt-5" style="max-width: 960px; width: 100%;"> 
+<div class="container mt-5" style="max-width: 1200px; width: 100%;"> 
     
     <div class="d-flex justify-content-start" style="margin-top: -30px; margin-bottom: 17px;">
         <a href="{% url 'main:users_table' %}" class="btn btn-secondary">← Back to Users Table</a>
     </div>
 
-        <div class="card p-4 shadow-lg rounded-4" style="background: #f8f9fa;">
-        <h3 class="text-center mb-4">Edit User</h3>
+    <div class="row">
+        <div class="col-md-7 mb-4"> {# Added mb-4 for spacing on smaller screens before stacking #}
+            <div class="card p-4 shadow-lg rounded-4" style="background: #f8f9fa;">
+                <h3 class="text-center mb-4">Edit User</h3>
 
-        <!-- User Information Form -->
-        <form id="editUserForm" method="post">
-            {% csrf_token %}
-            
-            <!-- Row 1: Username, First Name, Last Name, Email -->
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="form-floating mb-3">
-                        <input type="text" class="form-control" id="username" name="username" value="{{ editing_user.username }}" required>
-                        <label for="username">Username*</label>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-floating mb-3">
-                        <input type="text" class="form-control" id="firstname" name="firstname" value="{{ editing_user.first_name }}">
-                        <label for="firstname">First Name</label>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-floating mb-3">
-                        <input type="text" class="form-control" id="lastname" name="lastname" value="{{ editing_user.last_name }}">
-                        <label for="lastname">Last Name</label>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-floating mb-3">
-                        <input type="email" class="form-control" id="email" name="email" value="{{ editing_user.email }}">
-                        <label for="email">Email</label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Row 2: Phone, User Level, Languages -->
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="form-floating mb-3">
-                        <input type="text" class="form-control" id="phone" name="phone" value="{{ editing_user.phone }}">
-                        <label for="phone">Phone</label>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">User Level</label>
-                    <select class="form-select mb-3" name="user_level">
-                        <option value="regular" {% if user_level == "regular" %}selected{% endif %}>Regular</option>
-                        <option value="admin" {% if user_level == "admin" %}selected{% endif %}>Admin</option>
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Allowed Languages</label>
+                <form id="editUserForm" method="post">
+                    {% csrf_token %}
+                    
                     <div class="row">
-                        {% for lang in languages %}
-                        <div class="col-md-6">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" name="allowed_langs" value="{{ lang.code }}" id="lang{{ lang.code }}" 
-                                    {% if lang in editing_user.allowed_langs.all %}checked{% endif %}>
-                                <label class="form-check-label" for="lang{{ lang.code }}">{{ lang.code }}</label>
+                        <div class="col-md-12">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="username" name="username" value="{{ editing_user.username }}" required>
+                                <label for="username">Username*</label>
                             </div>
                         </div>
-                        {% endfor %}
                     </div>
-                </div>
-            </div>
 
-            <!-- Submit Button -->
-            <div class="row">
-                <div class="col-12 text-center">
-                    <button type="submit" class="btn btn-primary mt-3 w-100">Save Changes</button>
-                </div>
-            </div>
-        </form>
-    </div>
-
-        {% if messages %}
-            <div class="container mt-3">
-                {% for message in messages %}
-                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-
-    <!-- Change Password Section -->
-    <div class="card p-4 mt-4 shadow-lg rounded-4" style="background: #fff5f5;">
-        <h3 class="text-center mb-4">Change Password</h3>
-        <form id="changePasswordForm" method="post">
-            {% csrf_token %}
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-floating mb-3">
-                        <input type="password" class="form-control" id="new_password" name="new_password" placeholder="New Password" required>
-                        <label for="new_password">New Password</label>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="firstname" name="firstname" value="{{ editing_user.first_name }}">
+                                <label for="firstname">First Name</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="lastname" name="lastname" value="{{ editing_user.last_name }}">
+                                <label for="lastname">Last Name</label>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-floating mb-3">
-                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required>
-                        <label for="confirm_password">Confirm New Password</label>
-                    </div>
-                </div>
-            </div>
-            <div class="text-center">
-                <button type="submit" class="btn btn-danger w-100">Update Password</button>
-            </div>
-        </form>
-    </div>
 
-    <!-- Delete User Section -->
-    <div class="card p-3 mt-4 shadow rounded-3 mx-auto" style="max-width: 400px; background: #ffe5e5;">
-        <h5 class="text-center text-danger">Delete User</h5>
-        <div class="text-center">
-            <button type="button" class="btn btn-sm btn-outline-danger w-75" data-bs-toggle="modal" data-bs-target="#deleteUserModal">
-                Delete User
-            </button>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input type="email" class="form-control" id="email" name="email" value="{{ editing_user.email }}">
+                                <label for="email">Email</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3"> {# Wrap in form-floating #}
+                                <select class="form-select" id="userLevelSelect" name="user_level" aria-label="User Level">
+                                    <option value="regular" {% if user_level == "regular" %}selected{% endif %}>Regular</option>
+                                    <option value="admin" {% if user_level == "admin" %}selected{% endif %}>Admin</option>
+                                </select>
+                                <label for="userLevelSelect">User Level</label> {# Label comes AFTER select #}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="phone" name="phone" value="{{ editing_user.phone }}">
+                                <label for="phone">Phone</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Allow Save</label>
+                            <div class="form-check form-switch mb-3"> {# Added mb-3 for consistent spacing #}
+                                <input class="form-check-input" type="checkbox" id="allowSaveSwitch" name="allow_save" {% if editing_user.allow_save %}checked{% endif %}>
+                                <label class="form-check-label" for="allowSaveSwitch">
+                                    {% if editing_user.allow_save %}Enabled{% else %}Disabled{% endif %}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">Allowed Languages</label>
+                            <div class="row"> {# Inner row for the language checkboxes #}
+                                {% for lang in languages %}
+                                <div class="col-md-6"> {# These remain col-md-6 to create two columns of checkboxes #}
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="allowed_langs" value="{{ lang.code }}" id="lang{{ lang.code }}" 
+                                            {% if lang in editing_user.allowed_langs.all %}checked{% endif %}>
+                                        <label class="form-check-label" for="lang{{ lang.code }}">{{ lang.code }}</label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+            
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <button type="submit" class="btn btn-primary mt-3 w-100">Save Changes</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
 
-    <!-- Bootstrap Confirmation Modal -->
+        <div class="col-md-5">
+            <div class="card p-4 shadow-lg rounded-4 mb-4" style="background: #fff5f5;"> {# Added mb-4 for spacing #}
+                <h3 class="text-center mb-4">Change Password</h3>
+                <form id="changePasswordForm" method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-12"> {# Made these full width within their column #}
+                            <div class="form-floating mb-3">
+                                <input type="password" class="form-control" id="new_password" name="new_password" placeholder="New Password" required>
+                                <label for="new_password">New Password</label>
+                            </div>
+                        </div>
+                        <div class="col-md-12"> {# Made these full width within their column #}
+                            <div class="form-floating mb-3">
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required>
+                                <label for="confirm_password">Confirm New Password</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-danger w-100">Update Password</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card p-3 shadow rounded-3 mx-auto" style="max-width: 400px; background: #ffe5e5;"> {# Removed mt-4 as mb-4 on previous card handles spacing #}
+                <h5 class="text-center text-danger">Delete User</h5>
+                <div class="text-center">
+                    <button type="button" class="btn btn-sm btn-outline-danger w-75" data-bs-toggle="modal" data-bs-target="#deleteUserModal">
+                        Delete User
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div> {# End of Main Row #}
+
+    {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
     <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -155,8 +174,6 @@
             </div>
         </div>
     </div>
-
-
 </div>
 
 {% endblock %}

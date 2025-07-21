@@ -40,12 +40,12 @@ import time
 files_repo = r"documents_repo"
 language_code2name = {"fa":"Persian", "en": "English", "ar": "Arabic","he": "Hebrew"}
 language_name2code = {v: k for k, v in language_code2name.items()}
+all_langs = {"English", "Arabic", "Persian", "Hebrew"}
 
 @login_required(login_url='users:login')
 def Translation(request):
     global language_code2name
     if request.method == 'GET':
-        all_langs = {"English", "Arabic", "Persian", "Hebrew"}
         allowed_langs = set(request.user.allowed_langs.values_list('code', flat=True))
         unallowed_langs = all_langs - allowed_langs
         allowed_langs, unallowed_langs = list(allowed_langs), list(unallowed_langs)
@@ -68,8 +68,10 @@ def Translation(request):
         allowed_langs = [language_name2code[i] for i in allowed_langs]
         unallowed_langs = [language_name2code[i] for i in unallowed_langs]
 
+        allow_save = request.user.allow_save
+
         return render(request, 'main/translation.html', {"mode": "user", "source_lang": checked_source_lang, "target_lang": checked_target_lang, "main_page": True,
-                                                          "allowed_langs": allowed_langs, "unallowed_langs": unallowed_langs, 
+                                                          "allowed_langs": allowed_langs, "unallowed_langs": unallowed_langs, "allow_save": allow_save,
                                                           "checked_source_lang": checked_source_lang, "checked_target_lang": checked_target_lang})
 
     # elif (request.method == 'POST') and "translate-btn" in request.POST:
@@ -146,11 +148,17 @@ def Translation(request):
         encoded_text = request.POST.get('encryptedText')
         encoded_translation = request.POST.get('encryptedTranslation')
         encrypted_aes_key = request.POST.get('encryptedAesKey')
+
         aes_key = decrypt_aes_key(encrypted_aes_key)
         source_text = decrypt_AES_ECB(encoded_text, aes_key)
         translation = decrypt_AES_ECB(encoded_translation, aes_key)
-        
-        if not ((source_text.strip() == "") and (translation.strip() == "")):
+
+        saved = False  # track whether we actually saved
+
+        # Only save if the user allows saving and there is content
+        if request.user.allow_save and not (
+            source_text.strip() == "" and translation.strip() == ""
+        ):
             task = TranslationTask.objects.create(
                 user=request.user,
                 source_text=source_text,
@@ -159,26 +167,37 @@ def Translation(request):
                 target_language=target_lang
             )
             task.save()
+            saved = True
 
+        # Encrypt for return
         encrypted_translation = encrypt_AES_ECB(translation, aes_key).decode('utf-8')
         encrypted_source_text = encrypt_AES_ECB(source_text, aes_key).decode('utf-8')
 
-        # Check if the request is AJAX
+        # Prepare response
+        response_data = {
+            'success': True,
+            'saved': saved,
+            'message': 'Translation saved successfully!' if saved else 'Saving is disabled for your account.',
+            'translation': encrypted_translation,
+            'source_text': encrypted_source_text,
+        }
+
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({
-                'success': True,
-                'message': 'Translation saved successfully!',
-                'translation': encrypted_translation,
-                'source_text': encrypted_source_text,
-            })
+            return JsonResponse(response_data)
         else:
-            return render(request, 'main/translation.html', {
-                'translation': encrypted_translation,
-                'source_text': encrypted_source_text,
-                'mode': "user",
-                'source_lang': source_lang,
-                'target_lang': target_lang,
-            })
+            return render(
+                request,
+                'main/translation.html',
+                {
+                    'translation': encrypted_translation,
+                    'source_text': encrypted_source_text,
+                    'mode': "user",
+                    'source_lang': source_lang,
+                    'target_lang': target_lang,
+                    'message': response_data['message'],
+                }
+            )
+
                                                                      
 
     # elif (request.method == 'POST') and "save-btn" in request.POST:
@@ -331,6 +350,12 @@ def EditText(request, task_id):
         source_text = decrypt_AES_ECB(encrypted_source_text, aes_key)
         translation = decrypt_AES_ECB(encrypted_translation, aes_key)
 
+        allowed_langs = set(request.user.allowed_langs.values_list('code', flat=True))
+        unallowed_langs = all_langs - allowed_langs
+        allowed_langs, unallowed_langs = list(allowed_langs), list(unallowed_langs)
+        allowed_langs = [language_name2code[i] for i in allowed_langs]
+        unallowed_langs = [language_name2code[i] for i in unallowed_langs]
+
         if not ((source_text.strip() == "") and (translation.strip() == "")):
             task = TranslationTask.objects.get(task_id=task_id)
             task.source_text = source_text
@@ -342,9 +367,13 @@ def EditText(request, task_id):
             encrypted_translation = encrypt_AES_ECB(translation, aes_key).decode('utf-8')
             encrypted_source_text = encrypt_AES_ECB(source_text, aes_key).decode('utf-8')
 
-            return render(request, 'main/translation.html', {'translation': encrypted_translation, "source_text": encrypted_source_text,
-                                                    "task_id": task_id, "edit_mode":True, "mode": mode, "source_lang": source_lang,
-                                                    "target_lang": target_lang, })
+            context = {'translation': encrypted_translation, "source_text": encrypted_source_text,
+                        "task_id": task_id, "edit_mode":True, "mode": mode, "source_lang": source_lang,
+                        "target_lang": target_lang, "allowed_langs": allowed_langs,
+                        "unallowed_langs": unallowed_langs, "checked_source_lang": source_lang,
+                        "checked_target_lang": target_lang}
+
+            return render(request, 'main/translation.html', context)
         else:
             task = TranslationTask.objects.get(task_id=task_id)
             task.delete()
@@ -416,8 +445,16 @@ def EditText(request, task_id):
         encrypted_translation = encrypt_AES_ECB(translation, aes_key).decode('utf-8')
         encrypted_source_text = encrypt_AES_ECB(source_text, aes_key).decode('utf-8')
 
+        allowed_langs = set(request.user.allowed_langs.values_list('code', flat=True))
+        unallowed_langs = all_langs - allowed_langs
+        allowed_langs, unallowed_langs = list(allowed_langs), list(unallowed_langs)
+        allowed_langs = [language_name2code[i] for i in allowed_langs]
+        unallowed_langs = [language_name2code[i] for i in unallowed_langs]
+
         context = {'translation': encrypted_translation, "source_text": encrypted_source_text, "task_id": task_id,
-                   "edit_mode":True, "mode": mode, "source_lang": source_lang, "target_lang": target_lang, }
+                   "edit_mode":True, "mode": mode, "source_lang": source_lang, "target_lang": target_lang, 
+                   "allowed_langs": allowed_langs, "unallowed_langs": unallowed_langs,
+                   "checked_source_lang": source_lang, "checked_target_lang": target_lang}
         
         if (mode == "supervisor") and "selected_user" in request.POST:
             selected_user = request.POST["selected_user"]
@@ -670,7 +707,8 @@ def edit_user(request, username):
     languages = Language.objects.all()
 
     if request.method == "POST":
-        if "new_password" in request.POST:  # Password Change
+        if "new_password" in request.POST:
+            # Password Change
             new_password = request.POST.get("new_password")
             confirm_password = request.POST.get("confirm_password")
 
@@ -680,8 +718,9 @@ def edit_user(request, username):
                 editing_user.set_password(new_password)
                 editing_user.save()
                 messages.success(request, "Password updated successfully.")
-        
-        else:  # Edit User Info
+
+        else:
+            # Edit User Info
             editing_user.username = request.POST["username"]
             editing_user.first_name = request.POST.get("firstname", "")
             editing_user.last_name = request.POST.get("lastname", "")
@@ -689,17 +728,30 @@ def edit_user(request, username):
             editing_user.phone = request.POST.get("phone", "")
             selected_languages = request.POST.getlist("allowed_langs")
             editing_user.allowed_langs.set(Language.objects.filter(code__in=selected_languages))
+            editing_user.allow_save = request.POST.get("allow_save") == "on"
+
+            # Handle user level
             user_level = request.POST.get("user_level", "regular")
             if user_level == "admin":
                 editing_user.groups.add(admin_group)
             else:
                 editing_user.groups.remove(admin_group)
+
             editing_user.save()
             messages.success(request, "User updated successfully.")
-        
+
         return redirect("main:edit_user", username=editing_user.username)
 
-    return render(request, "main/edit_user.html", {"editing_user": editing_user, "user_level": user_level, "languages": languages})
+    return render(
+        request,
+        "main/edit_user.html",
+        {
+            "editing_user": editing_user,
+            "user_level": user_level,
+            "languages": languages,
+        },
+    )
+
 
 
 @admins_only

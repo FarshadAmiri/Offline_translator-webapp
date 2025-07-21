@@ -13,6 +13,7 @@ class User(AbstractUser):
     email = models.EmailField(unique= False, blank=True, null=True)
     phone = models.CharField(max_length=15, blank=True, null=True)
     allowed_langs = models.ManyToManyField(Language, blank=True)
+    allow_save = models.BooleanField(default=True, )
 
     def __str__(self):
         return self.username

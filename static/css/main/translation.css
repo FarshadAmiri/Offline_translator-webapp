@@ -341,3 +341,9 @@
   background-position: right center; /* change the direction of the change here */
   color: #ffffff;
 }
+
+.save-btn-hidden-space {
+    visibility: hidden; /* Makes the button invisible */
+    /* You might also want to prevent it from being clickable if invisible */
+    pointer-events: none; /* Prevents mouse events (like clicks) on the invisible area */
+}
