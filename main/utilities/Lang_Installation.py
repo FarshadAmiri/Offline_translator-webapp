@@ -1,8 +1,8 @@
 import argostranslate.package
 import argostranslate.translate
 
-from_code = "en"
-to_code = "de"
+# from_code = "en"
+# to_code = "de"
 
 necessary_packages = {("en", "fa"), ("fa", "en"), 
                       ("en", "ar"), ("ar", "en"),
